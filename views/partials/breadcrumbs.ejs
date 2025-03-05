@@ -1,0 +1,32 @@
+<link rel="stylesheet" href="/css/breadcrumbs.css">
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/"><i class="fas fa-home"></i></a>
+        </li>
+        
+        <% if (currentPath && currentPath.length > 0) { %>
+            <% let url = '' %>
+            <% currentPath.forEach((segment, index) => { %>
+                <% url += '/' + segment %>
+                <% 
+                    // Format the segment display text
+                    let displayText = segment;
+                    if (segment === 'WeeklyReport') {
+                        displayText = 'Weekly Report';
+                    } else {
+                        displayText = segment.charAt(0).toUpperCase() + segment.slice(1);
+                    }
+                %>
+                <li class="breadcrumb-item <%= (index === currentPath.length - 1) ? 'active' : '' %>"
+                    <%= (index === currentPath.length - 1) ? 'aria-current="page"' : '' %>>
+                    <% if (index === currentPath.length - 1 && typeof WeeklyReports !== 'undefined' && WeeklyReports.authorName) { %>
+                        <%= WeeklyReports.authorName %>
+                    <% } else { %>
+                        <a href="<%= url %>"><%= displayText %></a>
+                    <% } %>
+                </li>
+            <% }) %>
+        <% } %>
+    </ol>
+</nav>

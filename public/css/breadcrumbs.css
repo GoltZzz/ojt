@@ -1,0 +1,37 @@
+.breadcrumb {
+	background-color: transparent;
+	padding: 0.75rem 1rem;
+	margin-bottom: 1rem;
+	border-radius: 0.25rem;
+	display: flex;
+	align-items: center;
+}
+
+.breadcrumb-item {
+	display: flex;
+	align-items: center;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+	content: "/";
+	color: #6c757d;
+	padding: 0 0.5rem;
+}
+
+.breadcrumb-item a {
+	color: #2193b0;
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+.breadcrumb-item a:hover {
+	color: #6dd5ed;
+}
+
+.breadcrumb-item.active {
+	color: #6c757d;
+}
+
+.breadcrumb i {
+	font-size: 0.9rem;
+}

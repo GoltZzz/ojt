@@ -1,0 +1,114 @@
+<link rel="stylesheet" href="/css/sidebar.css" />
+<div class="sidebar bg-light">
+	<!-- Mobile navbar -->
+	<nav class="mobile-nav navbar navbar-expand-lg d-lg-none">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="/"
+				><i class="fa-solid fa-file-alt"></i> OJT Report</a
+			>
+			<button
+				class="navbar-toggler"
+				type="button"
+				data-bs-toggle="collapse"
+				data-bs-target="#mobileNav"
+				aria-controls="mobileNav"
+				aria-expanded="false"
+				aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="mobileNav">
+				<ul class="navbar-nav ms-auto">
+					<li class="nav-item">
+						<a href="/" class="nav-link"
+							><i class="fa-solid fa-home"></i> Home</a
+						>
+					</li>
+					<% if (currentUser) { %>
+					<li class="nav-item">
+						<a href="/dashboard" class="nav-link"
+							><i class="fa-solid fa-info-circle"></i> Dashboard</a
+						>
+					</li>
+					<li class="nav-item">
+						<a href="/WeeklyReport" class="nav-link"
+							><i class="fa-solid fa-info-circle"></i> Weekly Report</a
+						>
+					</li>
+					<li class="nav-item">
+						<a href="/WeeklyReport" class="nav-link"
+							><i class="fa-solid fa-info-circle"></i> Weekly Progress Report</a
+						>
+					</li>
+					<li class="nav-item">
+						<a href="Documentation" class="nav-link"
+							><i class="fa-solid fa-info-circle"></i> Documentation</a
+						>
+					</li>
+					<li class="nav-item">
+						<a href="TimeReport" class="nav-link"
+							><i class="fa-solid fa-info-circle"></i> Time Report</a
+						>
+					</li>
+					<li class="nav-item">
+						<a href="https://goltzzz.github.io/GoltZzz/" class="nav-link"
+							><i class="fa-solid fa-envelope"></i> Contact</a
+						>
+					</li>
+					<li class="nav-item">
+						<a href="/logout" class="nav-link"
+							><i class="fa-solid fa-right-from-bracket"></i> Logout</a
+						>
+					</li>
+					<% } %>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Desktop sidebar -->
+	<div class="desktop-sidebar d-none d-lg-block p-3">
+		<h2><i class="fa-solid fa-file-alt"></i> OJT Summary Report</h2>
+		<ul class="nav flex-column">
+			<li class="nav-item">
+				<a href="/" class="nav-link"><i class="fa-solid fa-home"></i> Home</a>
+			</li>
+			<% if (currentUser) { %>
+			<li class="nav-item">
+				<a href="/dashboard" class="nav-link"
+					><i class="fa-solid fa-info-circle"></i> Dashboard</a
+				>
+			</li>
+			<li class="nav-item">
+				<a href="/WeeklyReport" class="nav-link"
+					><i class="fa-solid fa-info-circle"></i> Weekly Report</a
+				>
+			</li>
+			<li class="nav-item">
+				<a href="/ProgessReport" class="nav-link"
+					><i class="fa-solid fa-info-circle"></i> Progress Report</a
+				>
+			</li>
+			<li class="nav-item">
+				<a href="Documentation" class="nav-link"
+					><i class="fa-solid fa-info-circle"></i> Documentation</a
+				>
+			</li>
+			<li class="nav-item">
+				<a href="TimeReport" class="nav-link"
+					><i class="fa-solid fa-info-circle"></i> Time Report</a
+				>
+			</li>
+			<li class="nav-item">
+				<a href="https://goltzzz.github.io/GoltZzz/" class="nav-link"
+					><i class="fa-solid fa-envelope"></i> Contact</a
+				>
+			</li>
+			<li class="nav-item">
+				<a href="/logout" class="nav-link"
+					><i class="fa-solid fa-right-from-bracket"></i> Logout</a
+				>
+			</li>
+			<% } %>
+		</ul>
+	</div>
+</div>

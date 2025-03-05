@@ -1,0 +1,72 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="css/register.css" />
+<div class="register-wrapper">
+	<div class="container">
+		<div class="row register-container">
+			<div class="info-container col-md-6 fade-in-left">
+				<div class="info-content">
+					<h2>Welcome!</h2>
+					<p>Start your journey with us today.</p>
+					<div class="features">
+						<div class="feature-item">
+							<i class="fas fa-check-circle"></i>
+							<span>Easy Registration</span>
+						</div>
+						<div class="feature-item">
+							<i class="fas fa-shield-alt"></i>
+							<span>Secure Account</span>
+						</div>
+						<div class="feature-item">
+							<i class="fas fa-clock"></i>
+							<span>24/7 Support</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6 form-container fade-in-right">
+				<h2>Create Account</h2>
+				<form
+					class="row g-3 needs-validation"
+					action="/login"
+					method="POST"
+					novalidate>
+					<div class="col-12">
+						<label for="username" class="form-label">Username</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="fas fa-user"></i></span>
+							<input
+								type="text"
+								class="form-control"
+								name="username"
+								id="username"
+								required />
+						</div>
+					</div>
+					<div class="col-12">
+						<label for="password" class="form-label">Password</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="fas fa-lock"></i></span>
+							<input
+								type="password"
+								class="form-control"
+								name="password"
+								id="password"
+								required />
+						</div>
+					</div>
+					<div class="col-12">
+						<button class="btn btn-primary w-100" type="submit">
+							<i class="fas fa-sign-in-alt"></i> Login
+						</button>
+					</div>
+					<div class="col-12 text-center mt-3">
+						<p class="mb-0">
+							Don't have an account?
+							<a href="/register" class="text-primary">Sign Up</a>
+						</p>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>

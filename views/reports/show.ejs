@@ -1,0 +1,124 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/weeklyReportsShow.css" />
+<div class="container mt-4">
+	<div class="report-header mb-4">
+		<h1>Weekly Report Details</h1>
+		<div class="report-meta">
+			<div class="report-info">
+				<span class="label">Student Name:</span>
+				<span class="value"><%= WeeklyReports.studentName %></span>
+			</div>
+			<div class="report-info">
+				<span class="label">Internship Site:</span>
+				<span class="value"><%= WeeklyReports.internshipSite %></span>
+			</div>
+			<div class="report-info">
+				<span class="label">Week Period:</span>
+				<span class="value"
+					><%= WeeklyReports.weekStartDate %> - <%= WeeklyReports.weekEndDate
+					%></span
+				>
+			</div>
+		</div>
+	</div>
+
+	<div class="daily-records">
+		<% ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day,
+		index) => { %>
+		<div class="card mb-3">
+			<div class="card-header">
+				<h5><%= day %></h5>
+			</div>
+			<div class="card-body">
+				<% if (WeeklyReports.dailyRecords && WeeklyReports.dailyRecords[index])
+				{ %>
+				<div class="time-records">
+					<div class="time-block">
+						<h6>Morning</h6>
+						<div class="time-detail">
+							<span
+								>In: <%= WeeklyReports.dailyRecords[index].timeIn.morning
+								%></span
+							>
+							<span
+								>Out: <%= WeeklyReports.dailyRecords[index].timeOut.morning
+								%></span
+							>
+						</div>
+					</div>
+					<div class="time-block">
+						<h6>Afternoon</h6>
+						<div class="time-detail">
+							<span
+								>In: <%= WeeklyReports.dailyRecords[index].timeIn.afternoon
+								%></span
+							>
+							<span
+								>Out: <%= WeeklyReports.dailyRecords[index].timeOut.afternoon
+								%></span
+							>
+						</div>
+					</div>
+				</div>
+				<div class="accomplishments mt-3">
+					<h6>Accomplishments:</h6>
+					<p><%= WeeklyReports.dailyRecords[index].accomplishments %></p>
+				</div>
+				<% } else { %>
+				<p class="text-muted">No records for this day</p>
+				<% } %>
+			</div>
+		</div>
+		<% }) %>
+	</div>
+
+	<div class="certification-section">
+		<p class="certification-text">
+			"I CERTIFY on my honor that the above is a true and correct report of the
+			hours of work performed, record of which was made daily at the time of
+			arrival at and departure from office."
+		</p>
+
+		<div class="signatures">
+			<div class="signature-block">
+				<div class="signature-line"></div>
+				<p class="signature-name"><%= WeeklyReports.supervisorName %></p>
+				<p class="signature-title">Company Supervisor's Signature</p>
+				<p class="signature-date">
+					Date: <%= new Date().toLocaleDateString() %>
+				</p>
+			</div>
+
+			<div class="signature-block">
+				<div class="signature-line"></div>
+				<p class="signature-name"><%= WeeklyReports.studentName %></p>
+				<p class="signature-title">Student Intern's Signature</p>
+				<p class="signature-date">
+					Date: <%= new Date().toLocaleDateString() %>
+				</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="action-buttons mt-4">
+		<a
+			href="/WeeklyReport/<%= WeeklyReports._id %>/edit"
+			class="btn btn-warning">
+			<i class="fas fa-edit"></i> Edit Report
+		</a>
+		<button onclick="window.print()" class="btn btn-info">
+			<i class="fas fa-print"></i> Print Report
+		</button>
+		<form
+			class="d-inline"
+			action="/WeeklyReport/<%= WeeklyReports._id %>?_method=DELETE"
+			method="POST">
+			<button
+				type="submit"
+				class="btn btn-danger"
+				onclick="return confirm('Are you sure you want to delete this report?')">
+				<i class="fas fa-trash"></i> Delete Report
+			</button>
+		</form>
+	</div>
+</div>

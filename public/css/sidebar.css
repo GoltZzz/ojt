@@ -1,0 +1,124 @@
+.sidebar {
+	width: 250px;
+	min-height: 100vh;
+	background: linear-gradient(45deg, #2193b0, #6dd5ed);
+}
+
+/* Desktop sidebar styles */
+.desktop-sidebar h2 {
+	padding: 1rem 0;
+	margin-bottom: 1.5rem;
+	border-bottom: 2px solid #dee2e6;
+	font-size: 1.4rem;
+	color: #1a2634;
+	animation: slideDown 0.5s ease;
+}
+
+.desktop-sidebar .nav-item {
+	margin-bottom: 0.5rem;
+	animation: slideIn 0.5s ease;
+	animation-fill-mode: both;
+}
+
+.desktop-sidebar .nav-item:nth-child(n) {
+	animation-delay: calc(0.1s * n);
+}
+
+.desktop-sidebar .nav-link {
+	padding: 0.8rem 1rem;
+	color: #495057;
+	border-radius: 8px;
+	transition: all 0.2s ease;
+	background: rgba(255, 255, 255, 0.5);
+	margin-bottom: 5px;
+}
+
+.desktop-sidebar .nav-link:hover {
+	background: linear-gradient(45deg, #2193b0, #6dd5ed);
+	transform: translateX(5px);
+	color: white;
+}
+
+.desktop-sidebar .nav-link i {
+	width: 20px;
+	margin-right: 10px;
+	transition: transform 0.2s ease;
+}
+
+.desktop-sidebar .nav-link:hover i {
+	transform: scale(1.2);
+	color: white;
+}
+
+/* Mobile navbar styles */
+.mobile-nav {
+	padding: 1rem;
+	background: linear-gradient(45deg, #2193b0, #6dd5ed);
+}
+
+.mobile-nav .navbar-brand {
+	color: white;
+	font-weight: 600;
+}
+
+.mobile-nav .navbar-toggler {
+	border-color: rgba(255, 255, 255, 0.5);
+}
+
+.mobile-nav .navbar-toggler-icon {
+	background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke='rgba(255, 255, 255, 0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg>");
+}
+
+.mobile-nav .nav-link {
+	color: white;
+	padding: 0.8rem 1rem;
+	border-radius: 8px;
+	transition: all 0.2s ease;
+}
+
+.mobile-nav .nav-link:hover {
+	background: rgba(255, 255, 255, 0.1);
+	transform: translateX(5px);
+}
+
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateX(-20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+	.sidebar {
+		width: 100%;
+		min-height: auto;
+	}
+
+	#mobileNav {
+		margin-top: 1rem;
+	}
+
+	.wrapper {
+		flex-direction: column;
+	}
+
+	.main-content {
+		margin-left: 0 !important;
+	}
+}

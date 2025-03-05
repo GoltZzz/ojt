@@ -1,0 +1,56 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/dashboard.css" />
+<div class="dashboard-container">
+	<% if(currentUser) { %>
+	<div class="welcome-section">
+		<h1>Welcome, <%= currentUser.username %></h1>
+		<p>Here's what's happening today</p>
+	</div>
+
+	<div class="dashboard-grid">
+		<!-- Quick Stats -->
+		<div class="dashboard-card">
+			<h3>Your Stats</h3>
+			<div class="stats-grid">
+				<div class="stat-item">
+					<span class="stat-number">0</span>
+					<span class="stat-label">Posts</span>
+				</div>
+				<div class="stat-item">
+					<span class="stat-number">0</span>
+					<span class="stat-label">Comments</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Recent Activity -->
+		<div class="dashboard-card">
+			<h3>Recent Activity</h3>
+			<div class="activity-list">
+				<p>No recent activity</p>
+			</div>
+		</div>
+
+		<!-- Quick Actions -->
+		<div class="dashboard-card">
+			<h3>Quick Actions</h3>
+			<div class="action-buttons">
+				<a href="/WeeklyReport/new" class="btn">Create New Post</a>
+				<a href="/profile" class="btn">Edit Profile</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="logout-section">
+		<a href="/logout" class="btn-logout">Logout</a>
+	</div>
+	<% } else { %>
+	<div class="auth-options">
+		<h2>Please login to access your dashboard</h2>
+		<div class="auth-buttons">
+			<a href="/login" class="btn">Login</a>
+			<a href="/register" class="btn">Register</a>
+		</div>
+	</div>
+	<% } %>
+</div>

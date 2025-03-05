@@ -1,0 +1,246 @@
+:root {
+	--gradient-primary: linear-gradient(135deg, #2193b0, #6dd5ed);
+	--gradient-success: linear-gradient(135deg, #2ecc71, #26c281);
+	--gradient-warning: linear-gradient(135deg, #f1c40f, #f39c12);
+	--gradient-danger: linear-gradient(135deg, #e74c3c, #c0392b);
+	--gradient-info: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.btn-group .btn {
+	margin-right: 3px;
+	border-radius: 6px !important;
+	transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+	transform: translateY(-1px);
+}
+
+.btn-group .btn-info {
+	background-image: var(--gradient-info);
+	border: none;
+}
+
+.btn-group .btn-warning {
+	background-image: var(--gradient-warning);
+	border: none;
+	color: #fff;
+}
+
+.btn-group .btn-danger {
+	background-image: var(--gradient-danger);
+	border: none;
+}
+
+.table th {
+	font-weight: 600;
+}
+
+.badge {
+	font-size: 0.85em;
+	padding: 0.5em 0.75em;
+	border-radius: 6px;
+	font-weight: 500;
+}
+
+.badge.bg-success {
+	background-image: var(--gradient-success) !important;
+}
+
+.badge.bg-warning {
+	background-image: var(--gradient-warning) !important;
+	color: #fff !important;
+}
+
+.table-responsive {
+	background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	border-radius: 12px;
+	overflow: hidden;
+	margin: 1rem 0;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+.table {
+	margin-bottom: 0;
+	width: 100%;
+	min-width: 800px; /* Ensures table doesn't get too squeezed */
+}
+
+.table thead th {
+	background: linear-gradient(to right, #f8f9fa, #ffffff);
+	border-bottom: 2px solid #dee2e6;
+	padding: 1rem;
+	font-weight: 600;
+	color: #495057;
+	border-top: none;
+}
+
+.table tbody tr {
+	transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+	background: linear-gradient(to right, #f8f9fa, #ffffff);
+	transform: translateY(-1px);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.table td {
+	padding: 1rem;
+	vertical-align: middle;
+}
+
+.alert {
+	border-radius: 12px;
+	padding: 2rem;
+	background-color: #f8f9fa;
+	border: 1px solid #dee2e6;
+	margin: 1rem 0;
+	padding: 1.5rem;
+}
+
+.alert-info {
+	background-image: linear-gradient(135deg, #e8f4f8, #d5e9f2);
+	border: none;
+}
+
+.container h1 {
+	color: #212529;
+	font-weight: 600;
+	margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+	padding: 0.5rem 1rem;
+	border-radius: 8px;
+	transition: all 0.2s ease;
+	background-image: var(--gradient-primary);
+	border: none;
+}
+
+.btn-primary:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+	opacity: 0.9;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Base styles */
+.container {
+	padding: 1rem;
+	width: 100%;
+	max-width: 1200px;
+}
+
+/* Header styles */
+.d-flex {
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+/* Responsive text and buttons */
+@media (max-width: 768px) {
+	.container h1 {
+		font-size: 1.5rem;
+	}
+
+	.btn-primary {
+		padding: 0.4rem 0.8rem;
+		font-size: 0.9rem;
+	}
+
+	.table td,
+	.table th {
+		padding: 0.75rem 0.5rem;
+		font-size: 0.9rem;
+	}
+
+	.btn-group .btn {
+		padding: 0.3rem 0.6rem;
+	}
+
+	.badge {
+		font-size: 0.75em;
+		padding: 0.4em 0.6em;
+	}
+}
+
+/* Small screen optimizations */
+@media (max-width: 576px) {
+	.container {
+		padding: 0.5rem;
+	}
+
+	.d-flex {
+		flex-direction: column;
+		align-items: stretch !important;
+	}
+
+	.btn-primary {
+		width: 100%;
+		text-align: center;
+	}
+
+	.table td,
+	.table th {
+		padding: 0.5rem 0.3rem;
+		font-size: 0.8rem;
+	}
+
+	.btn-group {
+		display: flex;
+		width: 100%;
+		gap: 0.25rem;
+	}
+
+	.btn-group .btn {
+		flex: 1;
+	}
+
+	/* Custom scrollbar for table */
+	.table-responsive::-webkit-scrollbar {
+		height: 6px;
+	}
+
+	.table-responsive::-webkit-scrollbar-track {
+		background: #f1f1f1;
+		border-radius: 3px;
+	}
+
+	.table-responsive::-webkit-scrollbar-thumb {
+		background: #888;
+		border-radius: 3px;
+	}
+
+	.table-responsive::-webkit-scrollbar-thumb:hover {
+		background: #555;
+	}
+
+	/* Add horizontal scroll indicator */
+	.table-responsive::after {
+		content: "← Scroll →";
+		position: absolute;
+		bottom: -20px;
+		left: 50%;
+		transform: translateX(-50%);
+		font-size: 0.8rem;
+		color: #666;
+		display: block;
+		text-align: center;
+		width: 100%;
+	}
+}
+
+/* Alert responsive styling */
+@media (max-width: 576px) {
+	.alert {
+		padding: 1rem;
+		font-size: 0.9rem;
+	}
+}
