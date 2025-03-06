@@ -15,5 +15,5 @@ router
 	.route("/:id")
 	.get(isLoggedIn, weeklyReports.showReport)
 	.delete(isLoggedIn, weeklyReports.deleteReport);
-
+router.route("/:id/edit").get(isLoggedIn, weeklyReports.renderEditForm);
 export default router;

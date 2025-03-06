@@ -65,6 +65,16 @@ export const showReport = catchAsync(async (req, res, next) => {
 	res.render("reports/show", { WeeklyReports });
 });
 
+export const renderEditForm = catchAsync(async (req, res) => {
+	const { id } = req.params;
+	const WeeklyReports = await WeeklyReport.findById(id);
+	if (!WeeklyReports) {
+		req.flash("error", "Cannot find that weekly report!");
+		return res.redirect("/WeeklyReport");
+	}
+	res.render("reports/edit", { WeeklyReports });
+});
+
 export const updateReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 	const WeeklyReports = await WeeklyReport.findByIdAndUpdate(id, req.body, {
