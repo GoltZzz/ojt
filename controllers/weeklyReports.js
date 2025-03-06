@@ -24,54 +24,50 @@ export const createReport = catchAsync(async (req, res) => {
 
 export const showReport = catchAsync(async (req, res, next) => {
 	const { id } = req.params;
-	const WeeklyReports = await WeeklyReport.findById(id)
-		.populate({
-			path: "author",
-			select: "username firstName lastName",
-		})
-		.lean();
 
+	// Fetch the weekly report with author details
+	const WeeklyReports = await WeeklyReport.findById(id).lean();
+	// Handle the case where the report is not found
 	if (!WeeklyReports) {
 		req.flash("error", "Cannot find that weekly report!");
 		return res.redirect("/WeeklyReport");
 	}
-
-	// Create a full name for breadcrumb
-	WeeklyReports.authorName =
-		WeeklyReports.author.firstName && WeeklyReports.author.lastName
-			? `${WeeklyReports.author.firstName} ${WeeklyReports.author.lastName}`
-			: WeeklyReports.author.username;
-
 	// Format dates for display
 	WeeklyReports.weekStartDate =
 		WeeklyReports.weekStartDate.toLocaleDateString();
 	WeeklyReports.weekEndDate = WeeklyReports.weekEndDate.toLocaleDateString();
-
-	// Format time records if they exist
+	// Format daily records if they exist
 	if (WeeklyReports.dailyRecords) {
-		WeeklyReports.dailyRecords = WeeklyReports.dailyRecords.map((record) => ({
-			...record,
-			timeIn: {
-				morning: record.timeIn?.morning || "N/A",
-				afternoon: record.timeIn?.afternoon || "01:00",
-			},
-			timeOut: {
-				morning: record.timeOut?.morning || "12:00",
-				afternoon: record.timeOut?.afternoon || "N/A",
-			},
-			accomplishments: record.accomplishments || "No accomplishments recorded",
-		}));
+		const defaultTimeIn = { morning: "N/A", afternoon: "01:00" };
+		const defaultTimeOut = { morning: "12:00", afternoon: "N/A" };
+		const defaultAccomplishments = "No accomplishments recorded";
+		WeeklyReports.dailyRecords = WeeklyReports.dailyRecords.map(
+			({ timeIn, timeOut, accomplishments }) => ({
+				timeIn: {
+					morning: timeIn?.morning || defaultTimeIn.morning,
+					afternoon: timeIn?.afternoon || defaultTimeIn.afternoon,
+				},
+				timeOut: {
+					morning: timeOut?.morning || defaultTimeOut.morning,
+					afternoon: timeOut?.afternoon || defaultTimeOut.afternoon,
+				},
+				accomplishments: accomplishments || defaultAccomplishments,
+			})
+		);
 	}
+	// Render the report view
 	res.render("reports/show", { WeeklyReports });
 });
 
 export const renderEditForm = catchAsync(async (req, res) => {
 	const { id } = req.params;
 	const WeeklyReports = await WeeklyReport.findById(id);
+
 	if (!WeeklyReports) {
 		req.flash("error", "Cannot find that weekly report!");
 		return res.redirect("/WeeklyReport");
 	}
+
 	res.render("reports/edit", { WeeklyReports });
 });
 
