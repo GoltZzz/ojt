@@ -1,126 +1,139 @@
 <%- layout('layouts/boilerplate') %>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 <link rel="stylesheet" href="/css/flashMsg.css" />
 <link rel="stylesheet" href="/css/sidebar.css" />
 <link rel="stylesheet" href="/css/footer.css" />
 <link rel="stylesheet" href="/css/breadcrumbs.css" />
 <link rel="stylesheet" href="/css/weeklyReportsNew.css" />
 <div class="container mt-4">
-	<h1 class="mb-4">Create New Weekly Report</h1>
-	<form action="/WeeklyReport" method="POST" novalidate class="validated-form">
-		<div class="mb-3">
-			<label for="studentName" class="form-label">Student Name</label>
-			<input
-				type="text"
-				class="form-control"
-				id="studentName"
-				name="studentName"
-				required />
-		</div>
-		<div class="mb-3">
-			<label for="internshipSite" class="form-label">Internship Site</label>
-			<input
-				type="text"
-				class="form-control"
-				id="internshipSite"
-				name="internshipSite"
-				required />
-		</div>
-		<div class="row">
-			<div class="col-md-6 mb-3">
-				<label for="weekStartDate" class="form-label">Week Start Date</label>
-				<input
-					type="date"
-					class="form-control"
-					id="weekStartDate"
-					name="weekStartDate"
-					required />
-			</div>
-			<div class="col-md-6 mb-3">
-				<label for="weekEndDate" class="form-label">Week End Date</label>
-				<input
-					type="date"
-					class="form-control"
-					id="weekEndDate"
-					name="weekEndDate"
-					required />
-			</div>
-		</div>
+  <h1 class="mb-4">Create New Weekly Report</h1>
+  <form action="/WeeklyReport" method="POST" novalidate class="validated-form">
+    <div class="mb-3">
+      <label for="studentName" class="form-label">Student Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="studentName"
+        name="studentName"
+        required
+      />
+    </div>
+    <div class="mb-3 form-group">
+      <label for="internshipSite" class="form-label">Internship Site</label>
+      <input
+        type="text"
+        class="form-control"
+        id="internshipSite"
+        name="internshipSite"
+        required
+      />
+    </div>
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label for="weekStartDate" class="form-label">Week Start Date</label>
+        <input
+          type="date"
+          class="form-control"
+          id="weekStartDate"
+          name="weekStartDate"
+          required
+        />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label for="weekEndDate" class="form-label">Week End Date</label>
+        <input
+          type="date"
+          class="form-control"
+          id="weekEndDate"
+          name="weekEndDate"
+          required
+        />
+      </div>
+    </div>
 
-		<!-- Daily Records -->
-		<div id="dailyRecords">
-			<% ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day,
-			index) => { %>
-			<div class="card mb-3">
-				<div class="card-header"><%= day %></div>
-				<div class="card-body">
-					<div class="row">
-						<div class="col-md-3">
-							<label>Morning Time In</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeIn][morning]" />
-						</div>
-						<div class="col-md-3">
-							<label>Morning Time Out</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeOut][morning]"
-								value="12:00"
-								readonly
-								style="background-color: #e9ecef" />
-						</div>
-						<div class="col-md-3">
-							<label>Afternoon Time In</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeIn][afternoon]"
-								value="01:00"
-								readonly
-								style="background-color: #e9ecef" />
-						</div>
-						<div class="col-md-3">
-							<label>Afternoon Time Out</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeOut][afternoon]" />
-						</div>
-						<div class="col-12 mt-2">
-							<label>Accomplishments</label>
-							<textarea
-								class="form-control"
-								name="dailyRecords[<%= index %>][accomplishments]"
-								placeholder="Enter your accomplishments for the day (optional)"></textarea>
-						</div>
-					</div>
-				</div>
-			</div>
-			<% }) %>
-		</div>
+    <!-- Daily Records -->
+    <div id="dailyRecords">
+      <% ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day,
+      index) => { %>
+      <div class="card mb-3">
+        <div class="card-header"><%= day %></div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3">
+              <label>Morning Time In</label>
+              <input
+                type="time"
+                class="form-control"
+                name="dailyRecords[<%= index %>][timeIn][morning]"
+              />
+            </div>
+            <div class="col-md-3">
+              <label>Morning Time Out</label>
+              <input
+                type="time"
+                class="form-control"
+                name="dailyRecords[<%= index %>][timeOut][morning]"
+                value="12:00"
+                readonly
+                style="background-color: #e9ecef"
+              />
+            </div>
+            <div class="col-md-3">
+              <label>Afternoon Time In</label>
+              <input
+                type="time"
+                class="form-control"
+                name="dailyRecords[<%= index %>][timeIn][afternoon]"
+                value="01:00"
+                readonly
+                style="background-color: #e9ecef"
+              />
+            </div>
+            <div class="col-md-3">
+              <label>Afternoon Time Out</label>
+              <input
+                type="time"
+                class="form-control"
+                name="dailyRecords[<%= index %>][timeOut][afternoon]"
+              />
+            </div>
+            <div class="col-12 mt-2">
+              <label>Accomplishments</label>
+              <textarea
+                class="form-control"
+                name="dailyRecords[<%= index %>][accomplishments]"
+                placeholder="Enter your accomplishments for the day (optional)"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
 
-		<div class="mb-3">
-			<label for="supervisorName" class="form-label">Supervisor Name</label>
-			<input
-				type="text"
-				class="form-control"
-				id="supervisorName"
-				name="supervisorName"
-				required />
-		</div>
+    <div class="mb-3">
+      <label for="supervisorName" class="form-label">Supervisor Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="supervisorName"
+        name="supervisorName"
+        required
+      />
+    </div>
 
-		<div class="mb-3">
-			<p class="text-center font-italic">
-				"I CERTIFY on my honor that the above is a true and correct report of
-				the hours of work performed, record of which was made daily at the time
-				of arrival at and departure from office."
-			</p>
-		</div>
+    <div class="mb-3">
+      <p class="text-center font-italic">
+        "I CERTIFY on my honor that the above is a true and correct report of
+        the hours of work performed, record of which was made daily at the time
+        of arrival at and departure from office."
+      </p>
+    </div>
 
-		<div class="text-center">
-			<button type="submit" class="btn btn-primary">Submit Report</button>
-		</div>
-	</form>
+    <div class="text-center">
+      <button type="submit" class="btn btn-primary">Submit Report</button>
+    </div>
+  </form>
 </div>
+<script src="/js/weeklyReportValidation.js"></script>
