@@ -1,6 +1,6 @@
 import express from "express";
 import passport from "passport";
-import users from "../controllers/users.js";
+import users from "../controllers/users/users.js";
 import catchAsync from "../utils/catchAsync.js";
 import { isLoggedIn } from "../middleware.js";
 const router = express.Router();

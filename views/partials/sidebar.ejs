@@ -29,24 +29,42 @@
 							><i class="fa-solid fa-info-circle"></i> Dashboard</a
 						>
 					</li>
+
+					<% if (currentUser.role === 'admin') { %>
+					<li class="nav-item">
+						<a href="/admin" class="nav-link"
+							><i class="fa-solid fa-user-shield"></i> Admin Panel</a
+						>
+					</li>
+					<li class="nav-item">
+						<a href="/admin/users" class="nav-link"
+							><i class="fa-solid fa-users-cog"></i> User Management</a
+						>
+					</li>
+					<% } %>
+
 					<li class="nav-item">
 						<a href="/WeeklyReport" class="nav-link"
-							><i class="fa-solid fa-info-circle"></i> Weekly Report</a
+							><i class="fa-solid fa-calendar-week"></i> Weekly Report</a
 						>
 					</li>
+
+					<% if (currentUser.role === 'admin') { %>
 					<li class="nav-item">
 						<a href="/WeeklyReport" class="nav-link"
-							><i class="fa-solid fa-info-circle"></i> Weekly Progress Report</a
+							><i class="fa-solid fa-chart-line"></i> Weekly Progress Report</a
+						>
+					</li>
+					<% } %>
+
+					<li class="nav-item">
+						<a href="/Documentation" class="nav-link"
+							><i class="fa-solid fa-file-alt"></i> Documentation</a
 						>
 					</li>
 					<li class="nav-item">
-						<a href="Documentation" class="nav-link"
-							><i class="fa-solid fa-info-circle"></i> Documentation</a
-						>
-					</li>
-					<li class="nav-item">
-						<a href="TimeReport" class="nav-link"
-							><i class="fa-solid fa-info-circle"></i> Time Report</a
+						<a href="/TimeReport" class="nav-link"
+							><i class="fa-solid fa-clock"></i> Time Report</a
 						>
 					</li>
 					<li class="nav-item">
@@ -78,19 +96,37 @@
 					><i class="fa-solid fa-info-circle"></i> Dashboard</a
 				>
 			</li>
+
+			<% if (currentUser.role === 'admin') { %>
+			<li class="nav-item">
+				<a href="/admin" class="nav-link"
+					><i class="fa-solid fa-user-shield"></i> Admin Panel</a
+				>
+			</li>
+			<li class="nav-item">
+				<a href="/admin/users" class="nav-link"
+					><i class="fa-solid fa-users-cog"></i> User Management</a
+				>
+			</li>
+			<% } %>
+
 			<li class="nav-item">
 				<a href="/WeeklyReport" class="nav-link"
-					><i class="fa-solid fa-info-circle"></i> Weekly Report</a
+					><i class="fa-solid fa-calendar-week"></i> Weekly Report</a
 				>
 			</li>
+
+			<% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
 				<a href="/ProgessReport" class="nav-link"
-					><i class="fa-solid fa-info-circle"></i> Progress Report</a
+					><i class="fa-solid fa-chart-line"></i> Progress Report</a
 				>
 			</li>
+			<% } %>
+
 			<li class="nav-item">
-				<a href="Documentation" class="nav-link"
-					><i class="fa-solid fa-info-circle"></i> Documentation</a
+				<a href="/Documentation" class="nav-link"
+					><i class="fa-solid fa-file-alt"></i> Documentation</a
 				>
 			</li>
 			<li class="nav-item">

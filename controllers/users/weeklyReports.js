@@ -1,6 +1,6 @@
-import catchAsync from "../utils/catchAsync.js";
-import WeeklyReport from "../models/weeklyReports.js";
-import ExpressError from "../utils/ExpressError.js";
+import catchAsync from "../../utils/catchAsync.js";
+import WeeklyReport from "../../models/weeklyReports.js";
+import ExpressError from "../../utils/ExpressError.js";
 
 export const index = catchAsync(async (req, res) => {
 	const WeeklyReports = await WeeklyReport.find({}).populate(
@@ -24,19 +24,14 @@ export const createReport = catchAsync(async (req, res) => {
 
 export const showReport = catchAsync(async (req, res, next) => {
 	const { id } = req.params;
-
-	// Fetch the weekly report with author details
 	const WeeklyReports = await WeeklyReport.findById(id).lean();
-	// Handle the case where the report is not found
 	if (!WeeklyReports) {
 		req.flash("error", "Cannot find that weekly report!");
 		return res.redirect("/WeeklyReport");
 	}
-	// Format dates for display
 	WeeklyReports.weekStartDate =
 		WeeklyReports.weekStartDate.toLocaleDateString();
 	WeeklyReports.weekEndDate = WeeklyReports.weekEndDate.toLocaleDateString();
-	// Format daily records if they exist
 	if (WeeklyReports.dailyRecords) {
 		const defaultTimeIn = { morning: "N/A", afternoon: "01:00" };
 		const defaultTimeOut = { morning: "12:00", afternoon: "N/A" };
@@ -55,7 +50,6 @@ export const showReport = catchAsync(async (req, res, next) => {
 			})
 		);
 	}
-	// Render the report view
 	res.render("reports/show", { WeeklyReports });
 });
 

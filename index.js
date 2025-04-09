@@ -16,9 +16,15 @@ const app = express();
 //for user routes
 import userRoutes from "./routes/users.js";
 // for dashboard routes
-import dashboardRoutes from "./routes/dashboard.js";
+import dashboardRoutes from "./routes/users/dashboard.js";
 //for weeklyReports routes
-import weeklyReportRoutes from "./routes/weeklyReports.js";
+import weeklyReportRoutes from "./routes/users/weeklyReports.js";
+// for admin routes
+import adminRoutes from "./routes/admin/admin.js";
+// for documentation routes
+import documentationRoutes from "./routes/users/documentation.js";
+// for time report routes
+import timeReportRoutes from "./routes/users/timeReport.js";
 
 // for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -79,6 +85,12 @@ app.use((req, res, next) => {
 app.use("/WeeklyReport", weeklyReportRoutes);
 // for dashboard routes
 app.use("/dashboard", dashboardRoutes);
+// for admin routes
+app.use("/admin", adminRoutes);
+// for documentation routes
+app.use("/Documentation", documentationRoutes);
+// for time report routes
+app.use("/TimeReport", timeReportRoutes);
 app.use("/", userRoutes);
 // for homepage
 app.get("/", (req, res) => {

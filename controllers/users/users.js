@@ -1,13 +1,20 @@
-import User from "../models/users.js";
+import User from "../../models/users.js";
 
-const renderRegister = async (req, res) => {
+const renderRegister = async (_, res) => {
 	res.render("forms/register");
 };
 
 const createUser = async (req, res, next) => {
 	try {
-		const { firstName, middleName, lastName, username, password } = req.body;
+		const { username, password } = req.body;
 		const user = new User(req.body);
+
+		// If this is the first user, make them an admin
+		const userCount = await User.countDocuments({});
+		if (userCount === 0) {
+			user.role = "admin";
+		}
+
 		const registeredUser = await User.register(user, password);
 		await registeredUser.save();
 		req.flash("success", `Welcome ${username} to OJT`);
@@ -17,7 +24,7 @@ const createUser = async (req, res, next) => {
 	}
 };
 
-const renderLogin = async (req, res) => {
+const renderLogin = async (_, res) => {
 	res.render("forms/login");
 };
 
