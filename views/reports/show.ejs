@@ -381,15 +381,5 @@
 	</div>
 </div>
 
-<!-- Script to transfer archive reason to form -->
-<script>
-	document.addEventListener("DOMContentLoaded", function () {
-		const archiveReasonTextarea = document.getElementById("archiveReason");
-		const archiveReasonInput = document.getElementById("archiveReasonInput");
-		const archiveForm = archiveReasonInput.closest("form");
-
-		archiveForm.addEventListener("submit", function () {
-			archiveReasonInput.value = archiveReasonTextarea.value;
-		});
-	});
-</script>
+<!-- Include the modal handlers script -->
+<script src="/js/modalHandlers.js"></script>
