@@ -2,13 +2,18 @@
 <link rel="stylesheet" href="/css/dashboard.css" />
 
 <div class="dashboard-container">
-    <div class="welcome-section">
-        <h1>Time Report</h1>
-        <p>Track and manage your time reports</p>
-    </div>
+	<div class="welcome-section">
+		<h1>Time Report</h1>
+		<p>Track and manage your time reports</p>
+	</div>
 
-    <div class="dashboard-card">
-        <h3>Your Time Reports</h3>
-        <p>No time reports available yet.</p>
-    </div>
+	<div class="dashboard-card">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h3>Your Time Reports</h3>
+			<% if (currentUser && currentUser.role !== 'admin') { %>
+			<a href="/timereport/new" class="btn">Create Time Report</a>
+			<% } %>
+		</div>
+		<p>No time reports available yet.</p>
+	</div>
 </div>

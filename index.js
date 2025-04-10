@@ -77,24 +77,27 @@ app.use((req, res, next) => {
 	res.locals.currentUser = req.user;
 	res.locals.success = req.flash("success");
 	res.locals.error = req.flash("error");
+	res.locals.info = req.flash("info");
 	res.locals.currentPath = req.path.split("/").filter((segment) => segment);
 	next();
 });
 
 // for weeklyReports routes
-app.use("/WeeklyReport", weeklyReportRoutes);
+app.use("/weeklyreport", weeklyReportRoutes);
 // for dashboard routes
 app.use("/dashboard", dashboardRoutes);
 // for admin routes
 app.use("/admin", adminRoutes);
 // for documentation routes
-app.use("/Documentation", documentationRoutes);
+app.use("/documentation", documentationRoutes);
 // for time report routes
-app.use("/TimeReport", timeReportRoutes);
+app.use("/timereport", timeReportRoutes);
+
 app.use("/", userRoutes);
 // for homepage
-app.get("/", (req, res) => {
-	res.render("home");
+app.get("/", async (req, res) => {
+	const userCount = await User.countDocuments({});
+	res.render("home", { hasUsers: userCount > 0 });
 });
 
 app.all("*", (req, res, next) => {

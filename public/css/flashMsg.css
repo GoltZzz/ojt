@@ -1,91 +1,159 @@
 .alert {
-    position: fixed;
-    top: 30px;
-    right: 30px;
-    min-width: 320px;
-    max-width: 450px;
-    padding: 20px;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    backdrop-filter: blur(10px);
-    animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	position: fixed;
+	top: 30px;
+	right: 30px;
+	min-width: 320px;
+	max-width: 450px;
+	padding: 20px;
+	border: none;
+	border-radius: 12px;
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+	z-index: 1050;
+	display: flex;
+	align-items: center;
+	gap: 15px;
+	backdrop-filter: blur(10px);
+	animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	overflow: hidden;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .alert-success {
-    background: rgba(40, 199, 111, 0.15);
-    border-left: 5px solid #28c76f;
-    color: #1c854a;
+	background: rgba(40, 199, 111, 0.15);
+	border-left: 5px solid #28c76f;
+	color: #1c854a;
 }
 
 .alert-danger {
-    background: rgba(234, 84, 85, 0.15);
-    border-left: 5px solid #ea5455;
-    color: #ce2e2f;
+	background: rgba(234, 84, 85, 0.15);
+	border-left: 5px solid #ea5455;
+	color: #ce2e2f;
+}
+
+.alert-warning {
+	background: rgba(255, 159, 67, 0.15);
+	border-left: 5px solid #ff9f43;
+	color: #b36200;
+}
+
+.alert-info {
+	background: rgba(0, 207, 232, 0.15);
+	border-left: 5px solid #00cfe8;
+	color: #0089a9;
 }
 
 .alert svg {
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
 }
 
 .alert-message {
-    font-size: 0.95rem;
-    font-weight: 500;
-    line-height: 1.4;
-    margin-right: 25px;
+	font-size: 0.95rem;
+	font-weight: 500;
+	line-height: 1.4;
+	margin-right: 25px;
+	flex-grow: 1;
 }
 
 .btn-close {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.5;
-    transition: all 0.2s ease;
-    padding: 8px;
-    border-radius: 50%;
-    background: transparent;
+	position: absolute;
+	right: 15px;
+	top: 50%;
+	transform: translateY(-50%);
+	opacity: 0.5;
+	transition: all 0.2s ease;
+	padding: 8px;
+	border-radius: 50%;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .btn-close:hover {
-    opacity: 1;
-    background: rgba(0, 0, 0, 0.05);
+	opacity: 1;
+	background: rgba(0, 0, 0, 0.05);
 }
 
 @keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+	from {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
 }
 
 .alert.hide {
-    animation: slideOut 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+	animation: slideOut 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
 @keyframes slideOut {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
+	from {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateX(100%);
+		opacity: 0;
+	}
 }
 
-/* Auto-hide animation */
-.alert.show {
-    animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
-               slideOut 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards 5s;
+/* Progress bar */
+.alert-progress {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	height: 3px;
+	width: 100%;
+	background-color: rgba(255, 255, 255, 0.5);
+	transition: width 2s linear;
+}
+
+.alert-success .alert-progress {
+	background-color: rgba(40, 199, 111, 0.5);
+}
+
+.alert-danger .alert-progress {
+	background-color: rgba(234, 84, 85, 0.5);
+}
+
+.alert-warning .alert-progress {
+	background-color: rgba(255, 159, 67, 0.5);
+}
+
+.alert-info .alert-progress {
+	background-color: rgba(0, 207, 232, 0.5);
+}
+
+/* Hover effects */
+.alert:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Multiple alerts stacking */
+.alert + .alert {
+	margin-top: 15px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+	.alert {
+		min-width: auto;
+		max-width: calc(100% - 30px);
+		width: calc(100% - 30px);
+		right: 15px;
+		left: 15px;
+		padding: 15px;
+	}
+
+	.alert-message {
+		font-size: 0.9rem;
+	}
 }

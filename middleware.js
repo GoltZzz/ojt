@@ -1,4 +1,5 @@
 // Middleware for authentication and authorization
+import User from "./models/users.js";
 export const isLoggedIn = (req, res, next) => {
 	if (!req.isAuthenticated()) {
 		req.flash("error", "You must be signed in first!");
@@ -15,23 +16,25 @@ export const isAdmin = (req, res, next) => {
 	next();
 };
 
-export const hasAccess = () => {
-	return (req, res, next) => {
-		if (req.user && req.user.role === "admin") {
-			return next();
-		}
-		const userAllowedFeatures = ["WeeklyReport", "Documentation", "TimeReport"];
-		const requestedFeature = req.path.split("/")[1];
-		if (userAllowedFeatures.includes(requestedFeature)) {
-			return next();
-		}
-		req.flash("error", "You don't have permission to access that feature!");
-		return res.redirect("/dashboard");
-	};
-};
-
 export const addCurrentUrl = (req, res, next) => {
 	const pathSegments = req.path.split("/").filter((segment) => segment);
 	res.locals.currentPath = pathSegments;
 	next();
+};
+
+export const redirectIfUsersExist = async (req, res, next) => {
+	try {
+		const userCount = await User.countDocuments({});
+		if (userCount > 0) {
+			req.flash(
+				"info",
+				"Registration is closed. Please login with an existing account."
+			);
+			return res.redirect("/login");
+		}
+		next();
+	} catch (error) {
+		console.error("Error checking user count:", error);
+		next(error);
+	}
 };

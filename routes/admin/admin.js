@@ -12,4 +12,30 @@ router
 	.route("/users/:id/toggle-role")
 	.post(isLoggedIn, isAdmin, adminController.toggleUserRole);
 
+// Routes for user management
+router
+	.route("/users/:id/delete")
+	.post(isLoggedIn, isAdmin, adminController.deleteUser);
+
+// Routes for report management
+router
+	.route("/pending-reports")
+	.get(isLoggedIn, isAdmin, adminController.renderPendingReports);
+
+router
+	.route("/reports")
+	.get(isLoggedIn, isAdmin, adminController.renderAllReports);
+
+router
+	.route("/archived-reports")
+	.get(isLoggedIn, isAdmin, adminController.renderArchivedReports);
+
+router
+	.route("/reports/:id/approve")
+	.post(isLoggedIn, isAdmin, adminController.approveReport);
+
+router
+	.route("/reports/:id/unarchive")
+	.post(isLoggedIn, isAdmin, adminController.unarchiveReport);
+
 export default router;

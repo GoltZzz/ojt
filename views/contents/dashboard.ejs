@@ -35,7 +35,13 @@
 		<div class="dashboard-card">
 			<h3>Quick Actions</h3>
 			<div class="action-buttons">
-				<a href="/WeeklyReport/new" class="btn">Create New Post</a>
+				<% if (currentUser.role !== 'admin') { %>
+				<a href="/weeklyreport/new" class="btn">Create Weekly Report</a>
+				<a href="/documentation/new" class="btn">Create Documentation</a>
+				<a href="/timereport/new" class="btn">Create Time Report</a>
+				<% } else { %>
+				<a href="/admin" class="btn">Go to Admin Dashboard</a>
+				<% } %>
 				<a href="/profile" class="btn">Edit Profile</a>
 			</div>
 		</div>

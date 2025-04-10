@@ -1,0 +1,250 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/dashboard.css" />
+
+<div class="dashboard-container">
+	<div class="welcome-section">
+		<h1>Pending Reports</h1>
+		<p>Review and approve submitted reports</p>
+	</div>
+
+	<div class="dashboard-card full-width">
+		<!-- Filter Section -->
+		<div class="filter-section mb-4">
+			<h4 class="mb-3">Filter Reports</h4>
+			<form id="filterForm" class="row g-3">
+				<div class="col-md-3">
+					<label for="reportType" class="form-label">Report Type</label>
+					<select class="form-select" id="reportType" name="reportType">
+						<option value="">All Types</option>
+						<option value="weeklyreport">Weekly Report</option>
+						<option value="documentation">Documentation</option>
+						<option value="timereport">Time Report</option>
+					</select>
+				</div>
+				<div class="col-md-3">
+					<label for="studentName" class="form-label">Student Name</label>
+					<input
+						type="text"
+						class="form-control"
+						id="studentName"
+						name="studentName"
+						placeholder="Search by name" />
+				</div>
+				<div class="col-md-3">
+					<label for="internshipSite" class="form-label">Internship Site</label>
+					<input
+						type="text"
+						class="form-control"
+						id="internshipSite"
+						name="internshipSite"
+						placeholder="Search by site" />
+				</div>
+				<div class="col-md-3">
+					<label for="weekPeriod" class="form-label">Week Period</label>
+					<input
+						type="date"
+						class="form-control"
+						id="weekPeriod"
+						name="weekPeriod" />
+				</div>
+				<div class="col-md-3">
+					<label for="sortBy" class="form-label">Sort By</label>
+					<select class="form-select" id="sortBy" name="sortBy">
+						<option value="dateSubmitted_desc">Date (Newest First)</option>
+						<option value="dateSubmitted_asc">Date (Oldest First)</option>
+						<option value="studentName_asc">Student Name (A-Z)</option>
+						<option value="studentName_desc">Student Name (Z-A)</option>
+						<option value="internshipSite_asc">Internship Site (A-Z)</option>
+					</select>
+				</div>
+				<div class="col-md-3 d-flex align-items-end">
+					<button type="submit" class="btn btn-primary me-2">
+						Apply Filters
+					</button>
+					<button type="reset" class="btn btn-secondary">Reset</button>
+				</div>
+			</form>
+		</div>
+
+		<% if (pendingReports && pendingReports.length) { %>
+		<div class="table-responsive">
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th>Student Name</th>
+						<th>Submitted By</th>
+						<th>Internship Site</th>
+						<th>Week Period</th>
+						<th>Date Submitted</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% pendingReports.forEach(report => { %>
+					<tr>
+						<td><%= report.studentName %></td>
+						<td><%= report.authorFullName || 'Unknown' %></td>
+						<td><%= report.internshipSite %></td>
+						<td>
+							<%= report.weekStartDate.toLocaleDateString() %> - <%=
+							report.weekEndDate.toLocaleDateString() %>
+						</td>
+						<td><%= report.dateSubmitted.toLocaleDateString() %></td>
+						<td>
+							<div class="btn-group" role="group">
+								<a
+									href="/weeklyreport/<%= report._id %>"
+									class="btn btn-sm btn-info text-white">
+									<i class="fas fa-eye"></i> View
+								</a>
+								<button
+									type="button"
+									class="btn btn-sm btn-success"
+									data-bs-toggle="modal"
+									data-bs-target="#approveModal<%= report._id %>">
+									<i class="fas fa-check"></i> Approve
+								</button>
+								<button
+									type="button"
+									class="btn btn-sm btn-danger"
+									data-bs-toggle="modal"
+									data-bs-target="#rejectModal<%= report._id %>">
+									<i class="fas fa-times"></i> Reject
+								</button>
+							</div>
+
+							<!-- Approve Modal -->
+							<div
+								class="modal fade"
+								id="approveModal<%= report._id %>"
+								tabindex="-1"
+								aria-labelledby="approveModalLabel<%= report._id %>"
+								aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5
+												class="modal-title"
+												id="approveModalLabel<%= report._id %>">
+												Approve Report
+											</h5>
+											<button
+												type="button"
+												class="btn-close"
+												data-bs-dismiss="modal"
+												aria-label="Close"></button>
+										</div>
+										<form
+											action="/admin/reports/<%= report._id %>/approve"
+											method="POST">
+											<div class="modal-body">
+												<input type="hidden" name="status" value="approved" />
+												<div class="mb-3">
+													<label for="adminComments" class="form-label"
+														>Comments (Optional)</label
+													>
+													<textarea
+														class="form-control"
+														id="adminComments"
+														name="adminComments"
+														rows="3"
+														placeholder="Add any comments about this report"></textarea>
+												</div>
+												<p>Are you sure you want to approve this report?</p>
+											</div>
+											<div class="modal-footer">
+												<button
+													type="button"
+													class="btn btn-secondary"
+													data-bs-dismiss="modal">
+													Cancel
+												</button>
+												<button type="submit" class="btn btn-success">
+													Approve Report
+												</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+
+							<!-- Reject Modal -->
+							<div
+								class="modal fade"
+								id="rejectModal<%= report._id %>"
+								tabindex="-1"
+								aria-labelledby="rejectModalLabel<%= report._id %>"
+								aria-hidden="true">
+								<div class="modal-dialog">
+									<div class="modal-content">
+										<div class="modal-header">
+											<h5
+												class="modal-title"
+												id="rejectModalLabel<%= report._id %>">
+												Reject Report
+											</h5>
+											<button
+												type="button"
+												class="btn-close"
+												data-bs-dismiss="modal"
+												aria-label="Close"></button>
+										</div>
+										<form
+											action="/admin/reports/<%= report._id %>/approve"
+											method="POST">
+											<div class="modal-body">
+												<input type="hidden" name="status" value="rejected" />
+												<div class="mb-3">
+													<label for="adminComments" class="form-label"
+														>Reason for Rejection (Required)</label
+													>
+													<textarea
+														class="form-control"
+														id="adminComments"
+														name="adminComments"
+														rows="3"
+														placeholder="Explain why this report is being rejected"
+														required></textarea>
+												</div>
+												<p class="text-danger">
+													Are you sure you want to reject this report?
+												</p>
+											</div>
+											<div class="modal-footer">
+												<button
+													type="button"
+													class="btn btn-secondary"
+													data-bs-dismiss="modal">
+													Cancel
+												</button>
+												<button type="submit" class="btn btn-danger">
+													Reject Report
+												</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+					<% }) %>
+				</tbody>
+			</table>
+		</div>
+		<% } else { %>
+		<div class="alert alert-info text-center">
+			<i class="fas fa-info-circle me-2"></i>
+			No pending reports found. All reports have been reviewed.
+		</div>
+		<% } %>
+	</div>
+</div>
+
+<!-- Include Bootstrap JS for modals -->
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+	crossorigin="anonymous"></script>
+
+<!-- Include the filter script -->
+<script src="/js/reportFilters.js"></script>

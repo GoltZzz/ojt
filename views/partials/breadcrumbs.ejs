@@ -4,15 +4,15 @@
         <li class="breadcrumb-item">
             <a href="/"><i class="fas fa-home"></i></a>
         </li>
-        
+
         <% if (currentPath && currentPath.length > 0) { %>
             <% let url = '' %>
             <% currentPath.forEach((segment, index) => { %>
                 <% url += '/' + segment %>
-                <% 
+                <%
                     // Format the segment display text
                     let displayText = segment;
-                    if (segment === 'WeeklyReport') {
+                    if (segment.toLowerCase() === 'weeklyreport') {
                         displayText = 'Weekly Report';
                     } else {
                         displayText = segment.charAt(0).toUpperCase() + segment.slice(1);

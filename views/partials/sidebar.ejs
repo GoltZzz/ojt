@@ -23,14 +23,14 @@
 							><i class="fa-solid fa-home"></i> Home</a
 						>
 					</li>
-					<% if (currentUser) { %>
+					<% if (currentUser) { %> <% if (currentUser.role === 'admin') { %> <%
+					} else { %>
 					<li class="nav-item">
 						<a href="/dashboard" class="nav-link"
 							><i class="fa-solid fa-info-circle"></i> Dashboard</a
 						>
 					</li>
-
-					<% if (currentUser.role === 'admin') { %>
+					<% } %> <% if (currentUser.role === 'admin') { %>
 					<li class="nav-item">
 						<a href="/admin" class="nav-link"
 							><i class="fa-solid fa-user-shield"></i> Admin Panel</a
@@ -41,32 +41,40 @@
 							><i class="fa-solid fa-users-cog"></i> User Management</a
 						>
 					</li>
-					<% } %>
-
+					<% } %> <% if (currentUser.role === 'admin') { %>
 					<li class="nav-item">
-						<a href="/WeeklyReport" class="nav-link"
+						<a href="/admin/pending-reports" class="nav-link">
+							<i class="fa-solid fa-clipboard-check"></i> Pending Reports
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/admin/reports" class="nav-link">
+							<i class="fa-solid fa-clipboard-list"></i> All Reports
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/admin/archived-reports" class="nav-link">
+							<i class="fa-solid fa-archive"></i> Archived Reports
+						</a>
+					</li>
+					<% } %> <% if (currentUser.role !== 'admin') { %>
+					<li class="nav-item">
+						<a href="/weeklyreport" class="nav-link"
 							><i class="fa-solid fa-calendar-week"></i> Weekly Report</a
 						>
 					</li>
 
-					<% if (currentUser.role === 'admin') { %>
 					<li class="nav-item">
-						<a href="/WeeklyReport" class="nav-link"
-							><i class="fa-solid fa-chart-line"></i> Weekly Progress Report</a
-						>
-					</li>
-					<% } %>
-
-					<li class="nav-item">
-						<a href="/Documentation" class="nav-link"
+						<a href="/documentation" class="nav-link"
 							><i class="fa-solid fa-file-alt"></i> Documentation</a
 						>
 					</li>
 					<li class="nav-item">
-						<a href="/TimeReport" class="nav-link"
+						<a href="/timereport" class="nav-link"
 							><i class="fa-solid fa-clock"></i> Time Report</a
 						>
 					</li>
+					<% } %>
 					<li class="nav-item">
 						<a href="https://goltzzz.github.io/GoltZzz/" class="nav-link"
 							><i class="fa-solid fa-envelope"></i> Contact</a
@@ -90,14 +98,15 @@
 			<li class="nav-item">
 				<a href="/" class="nav-link"><i class="fa-solid fa-home"></i> Home</a>
 			</li>
-			<% if (currentUser) { %>
+			<% if (currentUser) { %> <% if (currentUser.role === 'admin') { %>
+			<!-- Admin users don't need the regular dashboard -->
+			<% } else { %>
 			<li class="nav-item">
 				<a href="/dashboard" class="nav-link"
 					><i class="fa-solid fa-info-circle"></i> Dashboard</a
 				>
 			</li>
-
-			<% if (currentUser.role === 'admin') { %>
+			<% } %> <% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
 				<a href="/admin" class="nav-link"
 					><i class="fa-solid fa-user-shield"></i> Admin Panel</a
@@ -108,32 +117,40 @@
 					><i class="fa-solid fa-users-cog"></i> User Management</a
 				>
 			</li>
-			<% } %>
-
+			<% } %> <% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
-				<a href="/WeeklyReport" class="nav-link"
+				<a href="/admin/pending-reports" class="nav-link">
+					<i class="fa-solid fa-clipboard-check"></i> Pending Reports
+				</a>
+			</li>
+			<li class="nav-item">
+				<a href="/admin/reports" class="nav-link">
+					<i class="fa-solid fa-clipboard-list"></i> All Reports
+				</a>
+			</li>
+			<li class="nav-item">
+				<a href="/admin/archived-reports" class="nav-link">
+					<i class="fa-solid fa-archive"></i> Archived Reports
+				</a>
+			</li>
+			<% } %> <% if (currentUser.role !== 'admin') { %>
+			<li class="nav-item">
+				<a href="/weeklyreport" class="nav-link"
 					><i class="fa-solid fa-calendar-week"></i> Weekly Report</a
 				>
 			</li>
 
-			<% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
-				<a href="/ProgessReport" class="nav-link"
-					><i class="fa-solid fa-chart-line"></i> Progress Report</a
-				>
-			</li>
-			<% } %>
-
-			<li class="nav-item">
-				<a href="/Documentation" class="nav-link"
+				<a href="/documentation" class="nav-link"
 					><i class="fa-solid fa-file-alt"></i> Documentation</a
 				>
 			</li>
 			<li class="nav-item">
-				<a href="TimeReport" class="nav-link"
-					><i class="fa-solid fa-info-circle"></i> Time Report</a
+				<a href="/timereport" class="nav-link"
+					><i class="fa-solid fa-clock"></i> Time Report</a
 				>
 			</li>
+			<% } %>
 			<li class="nav-item">
 				<a href="https://goltzzz.github.io/GoltZzz/" class="nav-link"
 					><i class="fa-solid fa-envelope"></i> Contact</a

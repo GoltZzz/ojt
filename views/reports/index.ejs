@@ -3,9 +3,11 @@
 <div class="container mt-4">
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<h1>Weekly Reports</h1>
-		<a href="/WeeklyReport/new" class="btn btn-primary">
+		<% if (currentUser && currentUser.role !== 'admin') { %>
+		<a href="/weeklyreport/new" class="btn btn-primary">
 			<i class="fas fa-plus"></i> New Report
 		</a>
+		<% } %>
 	</div>
 
 	<% if (WeeklyReports && WeeklyReports.length) { %>
@@ -19,6 +21,9 @@
 					<th>Week End</th>
 					<th>Supervisor</th>
 					<th>Status</th>
+					<% if (currentUser.role === 'admin') { %>
+					<th>Archived</th>
+					<% } %>
 					<th>Actions</th>
 				</tr>
 			</thead>
@@ -31,27 +36,46 @@
 					<td><%= report.weekEndDate.toLocaleDateString() %></td>
 					<td><%= report.supervisorName %></td>
 					<td>
-						<% if (report.supervisorSignature) { %>
-						<span class="badge bg-success">Verified</span>
-						<% } else { %>
+						<% if (report.status === 'approved') { %>
+						<span class="badge bg-success">Approved</span>
+						<% if (report.approvedBy) { %>
+						<small class="d-block text-muted mt-1"
+							>by <%= report.approvedBy.username %></small
+						>
+						<% } %> <% } else if (report.status === 'rejected') { %>
+						<span class="badge bg-danger">Rejected</span>
+						<% if (report.approvedBy) { %>
+						<small class="d-block text-muted mt-1"
+							>by <%= report.approvedBy.username %></small
+						>
+						<% } %> <% } else { %>
 						<span class="badge bg-warning text-dark">Pending</span>
 						<% } %>
 					</td>
+					<% if (currentUser.role === 'admin') { %>
+					<td>
+						<% if (report.archived) { %>
+						<span class="badge bg-secondary">Archived</span>
+						<% } else { %>
+						<span class="badge bg-light text-dark">Active</span>
+						<% } %>
+					</td>
+					<% } %>
 					<td>
 						<div class="btn-group" role="group">
 							<a
-								href="/WeeklyReport/<%= report._id %>"
+								href="/weeklyreport/<%= report._id %>"
 								class="btn btn-sm btn-info text-white">
 								<i class="fas fa-eye"></i>
 							</a>
 							<a
-								href="/WeeklyReport/<%= report._id %>/edit"
+								href="/weeklyreport/<%= report._id %>/edit"
 								class="btn btn-sm btn-warning">
 								<i class="fas fa-edit"></i>
 							</a>
 							<form
 								class="d-inline"
-								action="/WeeklyReport/<%= report._id %>?_method=DELETE"
+								action="/weeklyreport/<%= report._id %>?_method=DELETE"
 								method="POST">
 								<button
 									type="submit"

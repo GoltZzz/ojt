@@ -43,15 +43,23 @@
 			<div class="header-content">
 				<h1>Welcome to OJT Summary Report</h1>
 				<p>Here you can make & find the summary of the OJT report</p>
-				<% if (currentUser) { %>
+				<% if (currentUser) { %> <% if (currentUser.role === 'admin') { %>
+				<a href="/admin" class="btn"
+					><i class="fa-solid fa-user-shield"></i> Go to Admin Panel</a
+				>
+				<% } else { %>
 				<a href="/dashboard" class="btn"
 					><i class="fa-solid fa-tachometer-alt"></i> Go to Dashboard</a
 				>
+				<% } %> <% } else { %> <% if (hasUsers) { %>
+				<a href="/login" class="btn"
+					><i class="fa-solid fa-sign-in-alt"></i> Login</a
+				>
 				<% } else { %>
 				<a href="/register" class="btn"
-					><i class="fa-solid fa-sign-in-alt"></i> Get Started</a
+					><i class="fa-solid fa-user-plus"></i> Get Started</a
 				>
-				<% } %>
+				<% } %> <% } %>
 			</div>
 		</header>
 

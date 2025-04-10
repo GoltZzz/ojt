@@ -7,8 +7,31 @@
 
 .report-header h1 {
 	color: #2193b0;
-	margin-bottom: 1.5rem;
+	margin-bottom: 1rem;
 	text-align: center;
+}
+
+.report-status {
+	text-align: center;
+	margin-bottom: 1.5rem;
+}
+
+.badge {
+	padding: 0.5rem 1rem;
+	font-size: 0.9rem;
+	border-radius: 50px;
+}
+
+.bg-success {
+	background-color: #28c76f !important;
+}
+
+.bg-warning {
+	background-color: #ff9f43 !important;
+}
+
+.bg-danger {
+	background-color: #ea5455 !important;
 }
 
 .report-meta {
@@ -109,6 +132,18 @@
 .signature-name {
 	font-weight: 600;
 	margin: 0;
+}
+
+/* Admin comments */
+.admin-comments h4 {
+	color: #2193b0;
+	margin-bottom: 1rem;
+}
+
+.comment-box {
+	background-color: #f8f9fa;
+	border-color: #dee2e6 !important;
+	color: #495057;
 }
 
 .signature-title {

@@ -32,6 +32,32 @@
 	border: none;
 }
 
+/* Status badge styles */
+.badge {
+	padding: 0.5em 0.75em;
+	font-size: 0.8rem;
+	font-weight: 500;
+	border-radius: 4px;
+	display: inline-block;
+}
+
+.bg-success {
+	background-image: var(--gradient-success) !important;
+}
+
+.bg-warning {
+	background-image: var(--gradient-warning) !important;
+}
+
+.bg-danger {
+	background-image: var(--gradient-danger) !important;
+}
+
+.text-muted {
+	color: #6c757d !important;
+	font-size: 0.75rem;
+}
+
 .table th {
 	font-weight: 600;
 }

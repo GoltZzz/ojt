@@ -50,6 +50,29 @@ const weeklyReportSchema = new Schema({
 		type: Date,
 		default: Date.now,
 	},
+	status: {
+		type: String,
+		enum: ["pending", "approved", "rejected"],
+		default: "pending",
+	},
+	archived: {
+		type: Boolean,
+		default: false,
+	},
+	archivedReason: {
+		type: String,
+		default: "",
+	},
+	approvedBy: {
+		type: Schema.Types.ObjectId,
+		ref: "User",
+	},
+	approvalDate: {
+		type: Date,
+	},
+	adminComments: {
+		type: String,
+	},
 });
 
 export default mongoose.model("WeeklyReport", weeklyReportSchema);

@@ -1,0 +1,232 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/dashboard.css" />
+
+<div class="dashboard-container">
+	<div class="welcome-section">
+		<h1>Archived Reports</h1>
+		<p>View all archived reports from the system</p>
+	</div>
+
+	<div class="dashboard-card full-width">
+		<!-- Filter Section -->
+		<div class="filter-section mb-4">
+			<h4 class="mb-3">Filter Reports</h4>
+			<form id="filterForm" class="row g-3">
+				<div class="col-md-3">
+					<label for="reportType" class="form-label">Report Type</label>
+					<select class="form-select" id="reportType" name="reportType">
+						<option value="">All Types</option>
+						<option value="weeklyreport">Weekly Report</option>
+						<option value="documentation">Documentation</option>
+						<option value="timereport">Time Report</option>
+					</select>
+				</div>
+				<div class="col-md-3">
+					<label for="studentName" class="form-label">Student Name</label>
+					<input
+						type="text"
+						class="form-control"
+						id="studentName"
+						name="studentName"
+						placeholder="Search by name" />
+				</div>
+				<div class="col-md-3">
+					<label for="internshipSite" class="form-label">Internship Site</label>
+					<input
+						type="text"
+						class="form-control"
+						id="internshipSite"
+						name="internshipSite"
+						placeholder="Search by site" />
+				</div>
+				<div class="col-md-3">
+					<label for="weekPeriod" class="form-label">Week Period</label>
+					<input
+						type="date"
+						class="form-control"
+						id="weekPeriod"
+						name="weekPeriod" />
+				</div>
+				<div class="col-md-3">
+					<label for="status" class="form-label">Status</label>
+					<select class="form-select" id="status" name="status">
+						<option value="">All Statuses</option>
+						<option value="pending">Pending</option>
+						<option value="approved">Approved</option>
+						<option value="rejected">Rejected</option>
+					</select>
+				</div>
+				<div class="col-md-3">
+					<label for="sortBy" class="form-label">Sort By</label>
+					<select class="form-select" id="sortBy" name="sortBy">
+						<option value="dateSubmitted_desc">Date (Newest First)</option>
+						<option value="dateSubmitted_asc">Date (Oldest First)</option>
+						<option value="studentName_asc">Student Name (A-Z)</option>
+						<option value="studentName_desc">Student Name (Z-A)</option>
+						<option value="status_asc">Status (A-Z)</option>
+					</select>
+				</div>
+				<div class="col-md-3 d-flex align-items-end">
+					<button type="submit" class="btn btn-primary me-2">
+						Apply Filters
+					</button>
+					<button type="reset" class="btn btn-secondary">Reset</button>
+				</div>
+			</form>
+		</div>
+
+		<% if (archivedReports && archivedReports.length) { %>
+		<div class="table-responsive">
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th>Student Name</th>
+						<th>Submitted By</th>
+						<th>Internship Site</th>
+						<th>Week Period</th>
+						<th>Status</th>
+						<th>Archived Reason</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% archivedReports.forEach(report => { %>
+					<tr
+						class="<%= report.status === 'approved' ? 'table-success' : (report.status === 'rejected' ? 'table-danger' : '') %>">
+						<td><%= report.studentName %></td>
+						<td><%= report.authorFullName || 'Unknown' %></td>
+						<td><%= report.internshipSite %></td>
+						<td>
+							<%= report.weekStartDate.toLocaleDateString() %> - <%=
+							report.weekEndDate.toLocaleDateString() %>
+						</td>
+						<td>
+							<% if (report.status === 'approved') { %>
+							<span class="badge bg-success">Approved</span>
+							<% } else if (report.status === 'rejected') { %>
+							<span class="badge bg-danger">Rejected</span>
+							<% } else { %>
+							<span class="badge bg-warning text-dark">Pending</span>
+							<% } %>
+						</td>
+						<td><%= report.archivedReason || 'Manually archived' %></td>
+						<td>
+							<div class="btn-group" role="group">
+								<a
+									href="/weeklyreport/<%= report._id %>"
+									class="btn btn-sm btn-info text-white">
+									<i class="fas fa-eye"></i>
+								</a>
+								<button
+									type="button"
+									class="btn btn-sm btn-success"
+									data-bs-toggle="modal"
+									data-bs-target="#unarchiveModal<%= report._id %>">
+									<i class="fas fa-box-open"></i>
+								</button>
+							</div>
+						</td>
+					</tr>
+
+					<!-- Unarchive Modal for this report -->
+					<div
+						class="modal fade"
+						id="unarchiveModal<%= report._id %>"
+						tabindex="-1"
+						aria-labelledby="unarchiveModalLabel<%= report._id %>"
+						aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header bg-success text-white">
+									<h5
+										class="modal-title"
+										id="unarchiveModalLabel<%= report._id %>">
+										<i class="fas fa-box-open me-2"></i>
+										Unarchive Report
+									</h5>
+									<button
+										type="button"
+										class="btn-close btn-close-white"
+										data-bs-dismiss="modal"
+										aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									<div class="text-center mb-4">
+										<i class="fas fa-box-open fa-4x text-success mb-3"></i>
+										<h4>Are you sure you want to unarchive this report?</h4>
+									</div>
+
+									<div class="alert alert-warning">
+										<i class="fas fa-info-circle me-2"></i>
+										<strong>Report details:</strong>
+										<ul class="mb-0 mt-2">
+											<li>
+												<strong>Student:</strong> <%= report.studentName %>
+											</li>
+											<li>
+												<strong>Internship Site:</strong> <%=
+												report.internshipSite %>
+											</li>
+											<li>
+												<strong>Week Period:</strong> <%=
+												report.weekStartDate.toLocaleDateString() %> - <%=
+												report.weekEndDate.toLocaleDateString() %>
+											</li>
+											<li>
+												<strong>Status:</strong> <%=
+												report.status.charAt(0).toUpperCase() +
+												report.status.slice(1) %>
+											</li>
+											<li>
+												<strong>Archive Reason:</strong> <%=
+												report.archivedReason || 'Manually archived' %>
+											</li>
+										</ul>
+									</div>
+
+									<div class="alert alert-info">
+										<i class="fas fa-lightbulb me-2"></i>
+										Unarchiving this report will make it visible in the regular
+										reports list again. The report will maintain its current
+										status (<strong><%= report.status %></strong>).
+									</div>
+								</div>
+								<div class="modal-footer">
+									<button
+										type="button"
+										class="btn btn-light"
+										data-bs-dismiss="modal">
+										<i class="fas fa-times me-1"></i> Cancel
+									</button>
+									<form
+										action="/admin/reports/<%= report._id %>/unarchive"
+										method="POST"
+										class="d-inline">
+										<button type="submit" class="btn btn-success">
+											<i class="fas fa-box-open me-1"></i> Unarchive Report
+										</button>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+					<% }) %>
+				</tbody>
+			</table>
+		</div>
+		<% } else { %>
+		<div class="alert alert-info">
+			<i class="fas fa-info-circle"></i> No archived reports found.
+		</div>
+		<% } %>
+	</div>
+</div>
+
+<!-- Include Bootstrap JS for any interactive elements -->
+<script
+	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+	integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+	crossorigin="anonymous"></script>
+
+<!-- Include the filter script -->
+<script src="/js/reportFilters.js"></script>

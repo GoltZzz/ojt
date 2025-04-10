@@ -1,0 +1,49 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/weeklyReportsNew.css" />
+
+<div class="container mt-4">
+    <h1 class="mb-4">Create New Time Report</h1>
+    <form action="/timereport" method="POST" novalidate class="validated-form needs-validation">
+        <div class="mb-3">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" class="form-control" id="date" name="date" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="hours" class="form-label">Hours Worked</label>
+            <input type="number" class="form-control" id="hours" name="hours" min="0" max="24" step="0.5" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">Description of Work</label>
+            <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+        </div>
+        
+        <div class="mb-3">
+            <label for="project" class="form-label">Project</label>
+            <input type="text" class="form-control" id="project" name="project" required>
+        </div>
+        
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary">Create Time Report</button>
+            <a href="/timereport" class="btn btn-secondary ms-2">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        const forms = document.querySelectorAll('.validated-form');
+        Array.from(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>

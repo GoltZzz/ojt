@@ -1,11 +1,14 @@
 import express from "express";
-import { isLoggedIn, hasAccess } from "../../middleware.js";
+import { isLoggedIn } from "../../middleware.js";
 import docsController from "../../controllers/users/documentation.js";
 
 const router = express.Router();
 
 router
 	.route("/")
-	.get(isLoggedIn, hasAccess(), docsController.renderDocumentation);
+	.get(isLoggedIn, docsController.renderDocumentation)
+	.post(isLoggedIn, docsController.createDocumentation);
+
+router.get("/new", isLoggedIn, docsController.renderNewForm);
 
 export default router;

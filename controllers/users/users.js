@@ -30,7 +30,17 @@ const renderLogin = async (_, res) => {
 
 const login = async (req, res, next) => {
 	try {
-		const redirectUrl = req.session.returnTo || "/dashboard";
+		// Check if user is admin and redirect to admin panel
+		let redirectUrl = req.session.returnTo || "/dashboard";
+
+		// If user is admin, redirect to admin panel instead of dashboard
+		if (req.user && req.user.role === "admin") {
+			// Only override if the default dashboard was going to be used
+			if (redirectUrl === "/dashboard") {
+				redirectUrl = "/admin";
+			}
+		}
+
 		delete req.session.returnTo;
 		req.flash("success", "Logged in successfully!");
 		console.log(`🔄 Redirecting to: ${redirectUrl}`);

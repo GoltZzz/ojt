@@ -2,13 +2,13 @@ import express from "express";
 import passport from "passport";
 import users from "../controllers/users/users.js";
 import catchAsync from "../utils/catchAsync.js";
-import { isLoggedIn } from "../middleware.js";
+import { isLoggedIn, redirectIfUsersExist } from "../middleware.js";
 const router = express.Router();
 
 router
 	.route("/register")
-	.get(catchAsync(users.renderRegister))
-	.post(catchAsync(users.createUser));
+	.get(catchAsync(redirectIfUsersExist), catchAsync(users.renderRegister))
+	.post(catchAsync(redirectIfUsersExist), catchAsync(users.createUser));
 router
 	.route("/login")
 	.get(users.renderLogin)
