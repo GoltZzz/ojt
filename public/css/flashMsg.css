@@ -131,18 +131,15 @@
 	background-color: rgba(0, 207, 232, 0.5);
 }
 
-/* Hover effects */
 .alert:hover {
 	transform: translateY(-2px);
 	box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
 }
 
-/* Multiple alerts stacking */
 .alert + .alert {
 	margin-top: 15px;
 }
 
-/* Mobile responsiveness */
 @media (max-width: 576px) {
 	.alert {
 		min-width: auto;

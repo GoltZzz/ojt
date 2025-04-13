@@ -98,9 +98,8 @@
 			<li class="nav-item">
 				<a href="/" class="nav-link"><i class="fa-solid fa-home"></i> Home</a>
 			</li>
-			<% if (currentUser) { %> <% if (currentUser.role === 'admin') { %>
-			<!-- Admin users don't need the regular dashboard -->
-			<% } else { %>
+			<% if (currentUser) { %> <% if (currentUser.role === 'admin') { %> <% }
+			else { %>
 			<li class="nav-item">
 				<a href="/dashboard" class="nav-link"
 					><i class="fa-solid fa-info-circle"></i> Dashboard</a

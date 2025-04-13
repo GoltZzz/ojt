@@ -103,16 +103,12 @@ export const archiveReport = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyreport");
 	}
 
-	// Only admins can archive reports
 	if (req.user.role !== "admin") {
 		req.flash("error", "You don't have permission to archive reports");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
-
-	// Set the archived flag to true and save the reason if provided
 	report.archived = true;
 
-	// Get the archive reason from the request body
 	if (req.body.archivedReason) {
 		report.archivedReason = req.body.archivedReason;
 	} else {
@@ -122,7 +118,6 @@ export const archiveReport = catchAsync(async (req, res) => {
 	await report.save();
 
 	req.flash("success", "Report has been archived successfully");
-	// Redirect admin users to the archive page
 	return res.redirect("/admin/archived-reports");
 });
 

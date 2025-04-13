@@ -121,7 +121,6 @@
 	<% } %>
 
 	<div class="action-buttons mt-4">
-		<!-- Edit button - only for regular users with pending reports -->
 		<% if (WeeklyReports.status === 'pending' && currentUser.role !== 'admin') {
 		%>
 		<a
@@ -129,19 +128,13 @@
 			class="btn btn-warning">
 			<i class="fas fa-edit"></i> Edit Report
 		</a>
-		<% } %>
-
-		<!-- Print button only for report owners -->
-		<% if (currentUser.role !== 'admin' && (currentUser._id.toString() ===
-		WeeklyReports.author?.toString() || !WeeklyReports.author)) { %>
+		<% } %> <% if (currentUser.role !== 'admin' && (currentUser._id.toString()
+		=== WeeklyReports.author?.toString() || !WeeklyReports.author)) { %>
 		<button onclick="window.print()" class="btn btn-info">
 			<i class="fas fa-print"></i> Print Report
 		</button>
-		<% } %>
-
-		<!-- Admin approval buttons - only shown for pending reports -->
-		<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') {
-		%>
+		<% } %> <% if (currentUser.role === 'admin' && WeeklyReports.status ===
+		'pending') { %>
 		<button
 			type="button"
 			class="btn btn-success"
@@ -156,10 +149,7 @@
 			data-bs-target="#rejectModal">
 			<i class="fas fa-times"></i> Reject
 		</button>
-		<% } %>
-
-		<!-- Archive button for admins -->
-		<% if (currentUser.role === 'admin') { %>
+		<% } %> <% if (currentUser.role === 'admin') { %>
 		<button
 			type="button"
 			class="btn btn-secondary"
@@ -381,5 +371,4 @@
 	</div>
 </div>
 
-<!-- Include the modal handlers script -->
 <script src="/js/modalHandlers.js"></script>

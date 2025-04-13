@@ -10,7 +10,6 @@
             <% currentPath.forEach((segment, index) => { %>
                 <% url += '/' + segment %>
                 <%
-                    // Format the segment display text
                     let displayText = segment;
                     if (segment.toLowerCase() === 'weeklyreport') {
                         displayText = 'Weekly Report';

@@ -16,7 +16,6 @@ router
 	.get(isLoggedIn, weeklyReports.showReport)
 	.delete(isLoggedIn, weeklyReports.deleteReport);
 
-// Archive route
 router.post("/:id/archive", isLoggedIn, weeklyReports.archiveReport);
 router.route("/:id/edit").get(isLoggedIn, weeklyReports.renderEditForm);
 export default router;

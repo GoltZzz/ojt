@@ -32,7 +32,6 @@
 	border: none;
 }
 
-/* Status badge styles */
 .badge {
 	padding: 0.5em 0.75em;
 	font-size: 0.8rem;
@@ -91,7 +90,7 @@
 .table {
 	margin-bottom: 0;
 	width: 100%;
-	min-width: 800px; /* Ensures table doesn't get too squeezed */
+	min-width: 800px;
 }
 
 .table thead th {
@@ -157,20 +156,17 @@
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Base styles */
 .container {
 	padding: 1rem;
 	width: 100%;
 	max-width: 1200px;
 }
 
-/* Header styles */
 .d-flex {
 	flex-wrap: wrap;
 	gap: 1rem;
 }
 
-/* Responsive text and buttons */
 @media (max-width: 768px) {
 	.container h1 {
 		font-size: 1.5rem;
@@ -197,7 +193,6 @@
 	}
 }
 
-/* Small screen optimizations */
 @media (max-width: 576px) {
 	.container {
 		padding: 0.5rem;
@@ -229,7 +224,6 @@
 		flex: 1;
 	}
 
-	/* Custom scrollbar for table */
 	.table-responsive::-webkit-scrollbar {
 		height: 6px;
 	}
@@ -248,7 +242,6 @@
 		background: #555;
 	}
 
-	/* Add horizontal scroll indicator */
 	.table-responsive::after {
 		content: "← Scroll →";
 		position: absolute;
@@ -263,7 +256,6 @@
 	}
 }
 
-/* Alert responsive styling */
 @media (max-width: 576px) {
 	.alert {
 		padding: 1rem;

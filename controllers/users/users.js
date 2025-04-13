@@ -9,7 +9,6 @@ const createUser = async (req, res, next) => {
 		const { username, password } = req.body;
 		const user = new User(req.body);
 
-		// If this is the first user, make them an admin
 		const userCount = await User.countDocuments({});
 		if (userCount === 0) {
 			user.role = "admin";
@@ -30,12 +29,9 @@ const renderLogin = async (_, res) => {
 
 const login = async (req, res, next) => {
 	try {
-		// Check if user is admin and redirect to admin panel
 		let redirectUrl = req.session.returnTo || "/dashboard";
 
-		// If user is admin, redirect to admin panel instead of dashboard
 		if (req.user && req.user.role === "admin") {
-			// Only override if the default dashboard was going to be used
 			if (redirectUrl === "/dashboard") {
 				redirectUrl = "/admin";
 			}

@@ -4,7 +4,6 @@
 	background: linear-gradient(45deg, #2193b0, #6dd5ed);
 }
 
-/* Desktop sidebar styles */
 .desktop-sidebar h2 {
 	padding: 1rem 0;
 	margin-bottom: 1.5rem;
@@ -50,7 +49,6 @@
 	color: white;
 }
 
-/* Mobile navbar styles */
 .mobile-nav {
 	padding: 1rem;
 	background: linear-gradient(45deg, #2193b0, #6dd5ed);
@@ -103,7 +101,6 @@
 	}
 }
 
-/* Responsive adjustments */
 @media (max-width: 991.98px) {
 	.sidebar {
 		width: 100%;

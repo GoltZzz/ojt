@@ -12,12 +12,10 @@ router
 	.route("/users/:id/toggle-role")
 	.post(isLoggedIn, isAdmin, adminController.toggleUserRole);
 
-// Routes for user management
 router
 	.route("/users/:id/delete")
 	.post(isLoggedIn, isAdmin, adminController.deleteUser);
 
-// Routes for report management
 router
 	.route("/pending-reports")
 	.get(isLoggedIn, isAdmin, adminController.renderPendingReports);

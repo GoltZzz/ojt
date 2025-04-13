@@ -1,4 +1,3 @@
-// Middleware for authentication and authorization
 import User from "./models/users.js";
 export const isLoggedIn = (req, res, next) => {
 	if (!req.isAuthenticated()) {

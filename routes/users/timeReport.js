@@ -8,7 +8,6 @@ router
 	.get(isLoggedIn, timeReport.renderTimeReport)
 	.post(isLoggedIn, timeReport.createTimeReport);
 
-// Add route for creating new time report
 router.get("/new", isLoggedIn, timeReport.renderNewForm);
 
 export default router;
