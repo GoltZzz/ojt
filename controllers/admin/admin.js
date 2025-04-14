@@ -145,7 +145,8 @@ const renderAllReports = catchAsync(async (req, res) => {
 		sortBy = "dateSubmitted_desc",
 	} = req.query;
 
-	const filter = {};
+	// By default, exclude archived reports
+	const filter = { archived: false };
 
 	if (reportType) {
 		filter.reportType = reportType;
@@ -170,8 +171,14 @@ const renderAllReports = catchAsync(async (req, res) => {
 		filter.status = status;
 	}
 
+	// Override the default archived filter if explicitly specified in the query
 	if (archived !== undefined && archived !== "") {
-		filter.archived = archived === "true";
+		if (archived === "all") {
+			// Remove the archived filter to show all reports
+			delete filter.archived;
+		} else {
+			filter.archived = archived === "true";
+		}
 	}
 
 	let sortOptions = {};
@@ -371,19 +378,29 @@ const deleteUser = catchAsync(async (req, res) => {
 
 const unarchiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
+	console.log(`⏳ Running unarchive for report ID: ${id}`);
 
 	const report = await WeeklyReport.findById(id);
 
 	if (!report) {
+		console.log(`❌ Report not found with ID: ${id}`);
 		req.flash("error", "Report not found");
 		return res.redirect("/admin/archived-reports");
 	}
 
+	console.log(
+		`📝 Found report: ${report._id}, current archived status: ${report.archived}`
+	);
 	report.archived = false;
 	report.archivedReason = "";
 	await report.save();
+	console.log(`✅ Report unarchived successfully: ${report._id}`);
 
-	req.flash("success", "Report has been unarchived");
+	// Set a success flash message
+	req.flash("success", "Report has been unarchived successfully");
+
+	// Redirect back to the archived reports page
+	// This will reload the page and show only the remaining archived reports
 	res.redirect("/admin/archived-reports");
 });
 

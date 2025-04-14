@@ -3,9 +3,9 @@ import WeeklyReport from "../../models/weeklyReports.js";
 import ExpressError from "../../utils/ExpressError.js";
 
 export const index = catchAsync(async (req, res) => {
-	// For admin users, show all reports including archived ones
-	// For regular users, only show non-archived reports
-	const filter = req.user.role === "admin" ? {} : { archived: false };
+	// Always exclude archived reports from the main reports page
+	// Archived reports should only be visible on the archive page
+	const filter = { archived: false };
 
 	const WeeklyReports = await WeeklyReport.find(filter)
 		.populate("author", "username")
@@ -36,6 +36,7 @@ export const showReport = catchAsync(async (req, res, next) => {
 		req.flash("error", "Cannot find that weekly report!");
 		return res.redirect("/weeklyreport");
 	}
+	// Make sure archived status is available in the template
 	WeeklyReports.weekStartDate =
 		WeeklyReports.weekStartDate.toLocaleDateString();
 	WeeklyReports.weekEndDate = WeeklyReports.weekEndDate.toLocaleDateString();
@@ -96,26 +97,40 @@ export const deleteReport = catchAsync(async (req, res) => {
 
 export const archiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
+	console.log(`⏳ Running archive for report ID: ${id}`);
+	console.log("Request body:", req.body);
+
 	const report = await WeeklyReport.findById(id);
 
 	if (!report) {
+		console.log(`❌ Report not found with ID: ${id}`);
 		req.flash("error", "Report not found");
 		return res.redirect("/weeklyreport");
 	}
 
 	if (req.user.role !== "admin") {
+		console.log(`❌ User ${req.user._id} is not an admin`);
 		req.flash("error", "You don't have permission to archive reports");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
+
+	console.log(
+		`📝 Found report: ${report._id}, current archived status: ${report.archived}`
+	);
 	report.archived = true;
 
 	if (req.body.archivedReason) {
+		console.log(`📝 Setting archive reason: ${req.body.archivedReason}`);
 		report.archivedReason = req.body.archivedReason;
 	} else {
+		console.log("📝 No archive reason provided, using default");
 		report.archivedReason = "Manually archived by admin";
 	}
 
 	await report.save();
+	console.log(
+		`✅ Report archived successfully: ${report._id} with reason: ${report.archivedReason}`
+	);
 
 	req.flash("success", "Report has been archived successfully");
 	return res.redirect("/admin/archived-reports");

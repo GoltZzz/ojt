@@ -3,17 +3,18 @@
 <div class="container mt-4">
 	<div class="report-header mb-4">
 		<h1>Weekly Report Details</h1>
-		<% if (WeeklyReports.status) { %>
 		<div class="report-status">
-			<% if (WeeklyReports.status === 'pending') { %>
+			<% if (WeeklyReports.status) { %> <% if (WeeklyReports.status ===
+			'pending') { %>
 			<span class="badge bg-warning text-dark">Pending Review</span>
 			<% } else if (WeeklyReports.status === 'approved') { %>
 			<span class="badge bg-success">Approved</span>
 			<% } else { %>
 			<span class="badge bg-danger">Rejected</span>
+			<% } %> <% } %> <% if (WeeklyReports.archived) { %>
+			<span class="badge bg-secondary ms-2">Archived</span>
 			<% } %>
 		</div>
-		<% } %>
 		<div class="report-meta">
 			<div class="report-info">
 				<span class="label">Student Name:</span>
@@ -30,6 +31,12 @@
 					%></span
 				>
 			</div>
+			<% if (WeeklyReports.archived && WeeklyReports.archivedReason) { %>
+			<div class="report-info">
+				<span class="label">Archive Reason:</span>
+				<span class="value"><%= WeeklyReports.archivedReason %></span>
+			</div>
+			<% } %>
 		</div>
 	</div>
 
@@ -149,7 +156,16 @@
 			data-bs-target="#rejectModal">
 			<i class="fas fa-times"></i> Reject
 		</button>
-		<% } %> <% if (currentUser.role === 'admin') { %>
+		<% } %> <% if (currentUser.role === 'admin') { %> <% if
+		(WeeklyReports.archived) { %>
+		<button
+			type="button"
+			class="btn btn-success"
+			data-bs-toggle="modal"
+			data-bs-target="#unarchiveReportModal">
+			<i class="fas fa-box-open"></i> Unarchive
+		</button>
+		<% } else { %>
 		<button
 			type="button"
 			class="btn btn-secondary"
@@ -157,7 +173,7 @@
 			data-bs-target="#archiveReportModal">
 			<i class="fas fa-archive"></i> Archive
 		</button>
-		<% } %>
+		<% } %> <% } %>
 
 		<!-- Delete button - only for regular users with pending reports -->
 		<% if (currentUser.role !== 'admin' && WeeklyReports.status === 'pending') {
@@ -344,7 +360,7 @@
 					<textarea
 						class="form-control"
 						id="archiveReason"
-						name="archiveReason"
+						name="archivedReason"
 						rows="3"
 						placeholder="Enter a reason for archiving this report"></textarea>
 				</div>
@@ -354,16 +370,94 @@
 					<i class="fas fa-times me-1"></i> Cancel
 				</button>
 				<form
+					id="archiveForm"
 					action="/weeklyreport/<%= WeeklyReports._id %>/archive"
 					method="POST"
 					class="d-inline">
+					<!-- Hidden textarea to store the archive reason -->
 					<input
 						type="hidden"
-						id="archiveReasonInput"
+						id="hiddenArchiveReason"
 						name="archivedReason"
 						value="" />
 					<button type="submit" class="btn btn-secondary">
 						<i class="fas fa-archive me-1"></i> Archive Report
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Unarchive Report Modal -->
+<div
+	class="modal fade"
+	id="unarchiveReportModal"
+	tabindex="-1"
+	aria-labelledby="unarchiveReportModalLabel"
+	aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header bg-success text-white">
+				<h5 class="modal-title" id="unarchiveReportModalLabel">
+					<i class="fas fa-box-open me-2"></i>
+					Unarchive Report
+				</h5>
+				<button
+					type="button"
+					class="btn-close btn-close-white"
+					data-bs-dismiss="modal"
+					aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="text-center mb-4">
+					<i class="fas fa-box-open fa-4x text-success mb-3"></i>
+					<h4>Are you sure you want to unarchive this report?</h4>
+				</div>
+
+				<div class="alert alert-warning">
+					<i class="fas fa-info-circle me-2"></i>
+					<strong>Report details:</strong>
+					<ul class="mb-0 mt-2">
+						<li><strong>Student:</strong> <%= WeeklyReports.studentName %></li>
+						<li>
+							<strong>Internship Site:</strong> <%= WeeklyReports.internshipSite
+							%>
+						</li>
+						<li>
+							<strong>Week Period:</strong> <%= WeeklyReports.weekStartDate %> -
+							<%= WeeklyReports.weekEndDate %>
+						</li>
+						<li>
+							<strong>Status:</strong> <%=
+							WeeklyReports.status.charAt(0).toUpperCase() +
+							WeeklyReports.status.slice(1) %>
+						</li>
+						<li>
+							<strong>Archive Reason:</strong> <%= WeeklyReports.archivedReason
+							|| 'Not specified' %>
+						</li>
+					</ul>
+				</div>
+
+				<div class="alert alert-info">
+					<i class="fas fa-lightbulb me-2"></i>
+					Unarchiving this report will make it visible in the regular reports
+					list again. The report will maintain its current status (<strong
+						><%= WeeklyReports.status %></strong
+					>).
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-light" data-bs-dismiss="modal">
+					<i class="fas fa-times me-1"></i> Cancel
+				</button>
+				<form
+					action="/admin/reports/<%= WeeklyReports._id %>/unarchive"
+					method="POST"
+					class="d-inline unarchive-form">
+					<button type="submit" class="btn btn-success">
+						<i class="fas fa-box-open me-1"></i> Unarchive Report
 					</button>
 				</form>
 			</div>

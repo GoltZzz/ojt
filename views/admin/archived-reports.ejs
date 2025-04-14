@@ -201,7 +201,7 @@
 									<form
 										action="/admin/reports/<%= report._id %>/unarchive"
 										method="POST"
-										class="d-inline">
+										class="d-inline unarchive-form">
 										<button type="submit" class="btn btn-success">
 											<i class="fas fa-box-open me-1"></i> Unarchive Report
 										</button>
@@ -230,3 +230,27 @@
 <script src="/js/reportFilters.js"></script>
 
 <script src="/js/modalHandlers.js"></script>
+
+<script>
+	// Additional script to handle unarchive form submissions
+	document.addEventListener("DOMContentLoaded", function () {
+		// Find all unarchive forms
+		const unarchiveForms = document.querySelectorAll(".unarchive-form");
+
+		// Add submit event listener to each form
+		unarchiveForms.forEach((form) => {
+			form.addEventListener("submit", function (e) {
+				console.log("Unarchive form submitted from archived-reports page");
+
+				// Find the closest modal and close it
+				const modal = form.closest(".modal");
+				if (modal) {
+					const modalInstance = bootstrap.Modal.getInstance(modal);
+					if (modalInstance) {
+						modalInstance.hide();
+					}
+				}
+			});
+		});
+	});
+</script>
