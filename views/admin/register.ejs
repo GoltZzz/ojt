@@ -1,0 +1,119 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/dashboard.css" />
+
+<div class="dashboard-container">
+	<div class="welcome-section">
+		<h1>Register New User</h1>
+		<p>Create a new user account</p>
+	</div>
+
+	<div class="dashboard-card">
+		<div class="row justify-content-center">
+			<div class="col-md-8">
+				<form
+					class="row g-3 needs-validation"
+					action="/admin/register"
+					method="POST"
+					novalidate>
+					<div class="col-md-6">
+						<label for="firstName" class="form-label">First name</label>
+						<input
+							type="text"
+							class="form-control"
+							name="firstName"
+							id="firstName"
+							required />
+						<div class="valid-feedback">Looks good!</div>
+						<div class="invalid-feedback">Please enter first name</div>
+					</div>
+					<div class="col-md-6">
+						<label for="middleName" class="form-label">Middle name</label>
+						<input
+							type="text"
+							class="form-control"
+							name="middleName"
+							id="middleName" />
+						<div class="valid-feedback">Looks good!</div>
+					</div>
+					<div class="col-12">
+						<label for="lastName" class="form-label">Last name</label>
+						<input
+							type="text"
+							class="form-control"
+							name="lastName"
+							id="lastName"
+							required />
+						<div class="valid-feedback">Looks good!</div>
+						<div class="invalid-feedback">Please enter last name</div>
+					</div>
+					<div class="col-12">
+						<label for="username" class="form-label">Username</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="fas fa-user"></i></span>
+							<input
+								type="text"
+								class="form-control"
+								name="username"
+								id="username"
+								required />
+							<div class="invalid-feedback">Please choose a username</div>
+						</div>
+					</div>
+					<div class="col-12">
+						<label for="password" class="form-label">Password</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="fas fa-lock"></i></span>
+							<input
+								type="password"
+								class="form-control"
+								name="password"
+								id="password"
+								required />
+							<div class="invalid-feedback">Please provide a password</div>
+						</div>
+					</div>
+					<div class="col-12">
+						<label for="role" class="form-label">Role</label>
+						<select class="form-select" name="role" id="role" required>
+							<option value="user" selected>Regular User</option>
+							<option value="admin">Admin</option>
+						</select>
+						<div class="invalid-feedback">Please select a role</div>
+					</div>
+					<div class="col-12 mt-4">
+						<div class="d-flex justify-content-between">
+							<a href="/admin/users" class="btn btn-secondary">
+								<i class="fas fa-arrow-left"></i> Back to Users
+							</a>
+							<button class="btn btn-primary" type="submit">
+								<i class="fas fa-user-plus"></i> Register User
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	// Form validation script
+	(function () {
+		'use strict';
+		
+		// Fetch all the forms we want to apply custom Bootstrap validation styles to
+		const forms = document.querySelectorAll('.needs-validation');
+		
+		// Loop over them and prevent submission
+		Array.from(forms).forEach(form => {
+			form.addEventListener('submit', event => {
+				if (!form.checkValidity()) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+				
+				form.classList.add('was-validated');
+			}, false);
+		});
+	})();
+</script>

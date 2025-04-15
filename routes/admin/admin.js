@@ -10,6 +10,11 @@ router.route("/").get(isLoggedIn, isAdmin, adminController.renderDashboard);
 router.route("/users").get(isLoggedIn, isAdmin, adminController.renderUsers);
 
 router
+	.route("/register")
+	.get(isLoggedIn, isAdmin, adminController.renderRegisterForm)
+	.post(isLoggedIn, isAdmin, adminController.registerUser);
+
+router
 	.route("/users/:id/toggle-role")
 	.post(isLoggedIn, isAdmin, adminController.toggleUserRole);
 

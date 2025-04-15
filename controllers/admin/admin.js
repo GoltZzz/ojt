@@ -404,6 +404,32 @@ const unarchiveReport = catchAsync(async (req, res) => {
 	res.redirect("/admin/archived-reports");
 });
 
+const renderRegisterForm = catchAsync(async (req, res) => {
+	res.render("admin/register");
+});
+
+const registerUser = catchAsync(async (req, res) => {
+	try {
+		const { username, password, firstName, middleName, lastName, role } =
+			req.body;
+		const user = new User({
+			username,
+			firstName,
+			middleName,
+			lastName,
+			role: role || "user",
+		});
+
+		const registeredUser = await User.register(user, password);
+		await registeredUser.save();
+		req.flash("success", `User ${username} has been registered successfully`);
+		return res.redirect("/admin/users");
+	} catch (error) {
+		req.flash("error", error.message);
+		return res.redirect("/admin/register");
+	}
+});
+
 export default {
 	renderDashboard,
 	renderUsers,
@@ -414,4 +440,6 @@ export default {
 	renderArchivedReports,
 	deleteUser,
 	unarchiveReport,
+	renderRegisterForm,
+	registerUser,
 };
