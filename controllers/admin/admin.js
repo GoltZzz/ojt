@@ -412,6 +412,38 @@ const registerUser = catchAsync(async (req, res) => {
 	try {
 		const { username, password, firstName, middleName, lastName, role } =
 			req.body;
+
+		// Check if username already exists
+		const existingUser = await User.findOne({ username });
+		if (existingUser) {
+			req.flash(
+				"error",
+				"Username already exists. Please choose a different username."
+			);
+			return res.redirect("/admin/register");
+		}
+
+		// Validate password
+		const isLengthValid = password.length >= 8 && password.length <= 16;
+		const hasUppercase = /[A-Z]/.test(password);
+		const hasNoSpecialChars = !/[^a-zA-Z0-9]/.test(password);
+
+		if (!isLengthValid || !hasUppercase || !hasNoSpecialChars) {
+			let errorMessage = "Password does not meet the requirements: ";
+			if (!isLengthValid) {
+				errorMessage += "must be between 8-16 characters. ";
+			}
+			if (!hasUppercase) {
+				errorMessage += "must contain at least one uppercase letter. ";
+			}
+			if (!hasNoSpecialChars) {
+				errorMessage += "must not contain special characters. ";
+			}
+
+			req.flash("error", errorMessage);
+			return res.redirect("/admin/register");
+		}
+
 		const user = new User({
 			username,
 			firstName,
@@ -425,7 +457,15 @@ const registerUser = catchAsync(async (req, res) => {
 		req.flash("success", `User ${username} has been registered successfully`);
 		return res.redirect("/admin/users");
 	} catch (error) {
-		req.flash("error", error.message);
+		// Handle passport-local-mongoose errors
+		if (error.name === "UserExistsError") {
+			req.flash(
+				"error",
+				"Username already exists. Please choose a different username."
+			);
+		} else {
+			req.flash("error", error.message);
+		}
 		return res.redirect("/admin/register");
 	}
 });

@@ -1,5 +1,141 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/dashboard.css" />
+<style>
+	.register-card {
+		background: white;
+		border-radius: 15px;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+		overflow: hidden;
+		margin-bottom: 2rem;
+	}
+
+	.register-header {
+		background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+		color: white;
+		padding: 1.5rem;
+		text-align: center;
+		position: relative;
+	}
+
+	.register-header h2 {
+		margin: 0;
+		font-size: 1.8rem;
+		font-weight: 700;
+	}
+
+	.register-header p {
+		margin: 0.5rem 0 0;
+		opacity: 0.9;
+		font-size: 1rem;
+	}
+
+	.register-icon {
+		font-size: 2.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.register-body {
+		padding: 2rem;
+	}
+
+	.form-label {
+		font-weight: 600;
+		color: #495057;
+		margin-bottom: 0.5rem;
+	}
+
+	.form-control,
+	.form-select {
+		border: 2px solid #e9ecef;
+		border-radius: 8px;
+		padding: 0.75rem;
+		font-size: 1rem;
+		transition: all 0.3s ease;
+	}
+
+	.form-control:focus,
+	.form-select:focus {
+		border-color: #2193b0;
+		box-shadow: 0 0 0 0.25rem rgba(33, 147, 176, 0.25);
+	}
+
+	.input-group-text {
+		background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+		color: white;
+		border: none;
+		border-radius: 8px 0 0 8px;
+	}
+
+	.btn-primary {
+		background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+		border: none;
+		padding: 0.75rem 1.5rem;
+		font-weight: 600;
+		border-radius: 8px;
+		transition: all 0.3s ease;
+	}
+
+	.btn-primary:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
+	}
+
+	.btn-secondary {
+		background: #6c757d;
+		border: none;
+		padding: 0.75rem 1.5rem;
+		font-weight: 600;
+		border-radius: 8px;
+		transition: all 0.3s ease;
+	}
+
+	.btn-secondary:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+	}
+
+	.form-group {
+		margin-bottom: 1.5rem;
+	}
+
+	.role-selector {
+		margin-bottom: 1rem;
+	}
+
+	.role-option {
+		padding: 1.25rem;
+		text-align: center;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		border: 2px solid #e9ecef;
+		border-radius: 12px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	}
+
+	.role-option:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	.role-option.selected {
+		background-color: rgba(33, 147, 176, 0.08);
+		border-color: #2193b0;
+		box-shadow: 0 4px 12px rgba(33, 147, 176, 0.15);
+	}
+
+	.role-icon {
+		font-size: 2.5rem;
+		color: #2193b0;
+		background-color: rgba(33, 147, 176, 0.1);
+		width: 70px;
+		height: 70px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto;
+	}
+</style>
 
 <div class="dashboard-container">
 	<div class="welcome-section">
@@ -7,90 +143,388 @@
 		<p>Create a new user account</p>
 	</div>
 
-	<div class="dashboard-card">
-		<div class="row justify-content-center">
-			<div class="col-md-8">
-				<form
-					class="row g-3 needs-validation"
-					action="/admin/register"
-					method="POST"
-					novalidate>
-					<div class="col-md-6">
-						<label for="firstName" class="form-label">First name</label>
-						<input
-							type="text"
-							class="form-control"
-							name="firstName"
-							id="firstName"
-							required />
-						<div class="valid-feedback">Looks good!</div>
-						<div class="invalid-feedback">Please enter first name</div>
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<div class="register-card">
+				<div class="register-header">
+					<div class="register-icon">
+						<i class="fas fa-user-plus"></i>
 					</div>
-					<div class="col-md-6">
-						<label for="middleName" class="form-label">Middle name</label>
-						<input
-							type="text"
-							class="form-control"
-							name="middleName"
-							id="middleName" />
-						<div class="valid-feedback">Looks good!</div>
-					</div>
-					<div class="col-12">
-						<label for="lastName" class="form-label">Last name</label>
-						<input
-							type="text"
-							class="form-control"
-							name="lastName"
-							id="lastName"
-							required />
-						<div class="valid-feedback">Looks good!</div>
-						<div class="invalid-feedback">Please enter last name</div>
-					</div>
-					<div class="col-12">
-						<label for="username" class="form-label">Username</label>
-						<div class="input-group">
-							<span class="input-group-text"><i class="fas fa-user"></i></span>
+					<h2>Create New Account</h2>
+					<p>Fill in the details below to register a new user</p>
+				</div>
+				<div class="register-body">
+					<form
+						class="needs-validation"
+						action="/admin/register"
+						method="POST"
+						novalidate>
+						<div class="row">
+							<div class="col-md-6 form-group">
+								<label for="firstName" class="form-label">First Name</label>
+								<input
+									type="text"
+									class="form-control"
+									name="firstName"
+									id="firstName"
+									placeholder="Enter first name"
+									required />
+								<div class="valid-feedback">Looks good!</div>
+								<div class="invalid-feedback">Please enter first name</div>
+							</div>
+							<div class="col-md-6 form-group">
+								<label for="middleName" class="form-label"
+									>Middle Name
+									<small class="text-muted">(Optional)</small></label
+								>
+								<input
+									type="text"
+									class="form-control"
+									name="middleName"
+									id="middleName"
+									placeholder="Enter middle name" />
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="lastName" class="form-label">Last Name</label>
 							<input
 								type="text"
 								class="form-control"
-								name="username"
-								id="username"
+								name="lastName"
+								id="lastName"
+								placeholder="Enter last name"
 								required />
+							<div class="valid-feedback">Looks good!</div>
+							<div class="invalid-feedback">Please enter last name</div>
+						</div>
+
+						<div class="form-group">
+							<div class="d-flex align-items-center mb-2">
+								<label for="username" class="form-label mb-0">Username</label>
+								<button
+									type="button"
+									class="btn btn-sm btn-outline-info rounded-circle ms-2 p-0 d-flex align-items-center justify-content-center"
+									id="usernameInfoBtn"
+									style="width: 22px; height: 22px">
+									<i class="fas fa-info-circle fa-sm"></i>
+								</button>
+							</div>
+
+							<!-- Username Info Card -->
+							<div
+								class="card mb-3 shadow border-0"
+								id="usernameInfoCard"
+								style="display: none; border-radius: 12px; overflow: hidden">
+								<div class="card-header bg-info text-white py-3">
+									<div class="d-flex align-items-center">
+										<i class="fas fa-info-circle me-2"></i>
+										<span class="fw-bold">Username Requirements</span>
+										<button
+											type="button"
+											class="btn-close btn-close-white ms-auto"
+											id="closeUsernameInfo"
+											aria-label="Close"></button>
+									</div>
+								</div>
+								<div class="card-body p-4">
+									<p class="card-text">
+										Username must be unique in the system. Each user needs their
+										own unique identifier.
+									</p>
+									<ul class="list-group list-group-flush">
+										<li class="list-group-item d-flex align-items-center">
+											<i class="fas fa-check-circle text-success me-2"></i>
+											Must be at least 3 characters long
+										</li>
+										<li class="list-group-item d-flex align-items-center">
+											<i class="fas fa-check-circle text-success me-2"></i>
+											Must not already exist in the system
+										</li>
+										<li class="list-group-item d-flex align-items-center">
+											<i class="fas fa-check-circle text-success me-2"></i>
+											Can contain letters, numbers, and underscores
+										</li>
+									</ul>
+								</div>
+							</div>
+
+							<div class="position-relative">
+								<div class="input-group">
+									<span class="input-group-text"
+										><i class="fas fa-user"></i
+									></span>
+									<input
+										type="text"
+										class="form-control"
+										name="username"
+										id="username"
+										placeholder="Choose a username"
+										required />
+								</div>
+
+								<!-- Username validation indicators -->
+								<div
+									class="position-absolute top-50 end-0 translate-middle-y me-3"
+									id="usernameCheckIndicator"
+									style="display: none; z-index: 5">
+									<div class="d-flex align-items-center">
+										<div
+											class="spinner-border spinner-border-sm text-primary"
+											role="status"
+											id="usernameSpinner">
+											<span class="visually-hidden">Loading...</span>
+										</div>
+										<i
+											class="fas fa-check-circle text-success ms-1"
+											style="font-size: 1.2rem; display: none"
+											id="usernameAvailable"
+											title="Username is available"></i>
+										<i
+											class="fas fa-times-circle text-danger ms-1"
+											style="font-size: 1.2rem; display: none"
+											id="usernameUnavailable"
+											title="Username already exists"></i>
+									</div>
+								</div>
+							</div>
+
 							<div class="invalid-feedback">Please choose a username</div>
+							<div
+								class="text-danger small mt-2"
+								id="usernameError"
+								style="display: none">
+								<i class="fas fa-exclamation-circle me-1"></i> Username already
+								exists. Please choose a different one.
+							</div>
 						</div>
-					</div>
-					<div class="col-12">
-						<label for="password" class="form-label">Password</label>
-						<div class="input-group">
-							<span class="input-group-text"><i class="fas fa-lock"></i></span>
-							<input
-								type="password"
-								class="form-control"
-								name="password"
-								id="password"
-								required />
+
+						<div class="form-group">
+							<div class="d-flex align-items-center mb-2">
+								<label for="password" class="form-label mb-0">Password</label>
+								<button
+									type="button"
+									class="btn btn-sm btn-outline-info rounded-circle ms-2 p-0 d-flex align-items-center justify-content-center"
+									id="passwordInfoBtn"
+									style="width: 22px; height: 22px">
+									<i class="fas fa-info-circle fa-sm"></i>
+								</button>
+							</div>
+
+							<!-- Password Info Card -->
+							<div
+								class="card mb-3 shadow border-0"
+								id="passwordInfoCard"
+								style="display: none; border-radius: 12px; overflow: hidden">
+								<div class="card-header bg-info text-white py-3">
+									<div class="d-flex align-items-center">
+										<i class="fas fa-info-circle me-2"></i>
+										<span class="fw-bold">Password Requirements</span>
+										<button
+											type="button"
+											class="btn-close btn-close-white ms-auto"
+											id="closePasswordInfo"
+											aria-label="Close"></button>
+									</div>
+								</div>
+								<div class="card-body p-4">
+									<p class="card-text">
+										Password must meet the following requirements:
+									</p>
+									<ul class="list-group list-group-flush">
+										<li
+											class="list-group-item d-flex align-items-center"
+											id="lengthCheck">
+											<i class="fas fa-times-circle text-danger me-2"></i>
+											Between 8 and 16 characters
+										</li>
+										<li
+											class="list-group-item d-flex align-items-center"
+											id="uppercaseCheck">
+											<i class="fas fa-times-circle text-danger me-2"></i>
+											At least one uppercase letter
+										</li>
+										<li
+											class="list-group-item d-flex align-items-center"
+											id="specialCharCheck">
+											<i class="fas fa-times-circle text-danger me-2"></i>
+											No special characters
+										</li>
+									</ul>
+								</div>
+							</div>
+
+							<div class="position-relative">
+								<div class="input-group">
+									<span class="input-group-text"
+										><i class="fas fa-lock"></i
+									></span>
+									<input
+										type="password"
+										class="form-control"
+										name="password"
+										id="password"
+										placeholder="Create a password"
+										required />
+									<button
+										class="btn btn-outline-secondary"
+										type="button"
+										id="togglePassword">
+										<i class="fas fa-eye"></i>
+									</button>
+								</div>
+
+								<!-- Password validation indicators -->
+								<div
+									class="position-absolute top-50 end-0 translate-middle-y me-12"
+									id="passwordCheckIndicator"
+									style="display: none; z-index: 5; right: 50px">
+									<i
+										class="fas fa-check-circle text-success"
+										style="font-size: 1.2rem; display: none"
+										id="passwordValid"
+										title="Password meets all requirements"></i>
+									<i
+										class="fas fa-times-circle text-danger"
+										style="font-size: 1.2rem; display: none"
+										id="passwordInvalid"
+										title="Password does not meet requirements"></i>
+								</div>
+							</div>
+
 							<div class="invalid-feedback">Please provide a password</div>
+							<div
+								class="text-danger small mt-2"
+								id="passwordError"
+								style="display: none">
+								<i class="fas fa-exclamation-circle me-1"></i> Password does not
+								meet the requirements.
+							</div>
 						</div>
-					</div>
-					<div class="col-12">
-						<label for="role" class="form-label">Role</label>
-						<select class="form-select" name="role" id="role" required>
-							<option value="user" selected>Regular User</option>
-							<option value="admin">Admin</option>
-						</select>
-						<div class="invalid-feedback">Please select a role</div>
-					</div>
-					<div class="col-12 mt-4">
-						<div class="d-flex justify-content-between">
+
+						<div class="form-group">
+							<div class="d-flex align-items-center mb-2">
+								<label class="form-label mb-0">Select Role</label>
+								<button
+									type="button"
+									class="btn btn-sm btn-outline-info rounded-circle ms-2 p-0 d-flex align-items-center justify-content-center"
+									id="roleInfoBtn"
+									style="width: 22px; height: 22px">
+									<i class="fas fa-info-circle fa-sm"></i>
+								</button>
+							</div>
+
+							<!-- Role Info Card -->
+							<div
+								class="card mb-3 shadow border-0"
+								id="roleInfoCard"
+								style="display: none; border-radius: 12px; overflow: hidden">
+								<div class="card-header bg-info text-white py-3">
+									<div class="d-flex align-items-center">
+										<i class="fas fa-info-circle me-2"></i>
+										<span class="fw-bold">Role Information</span>
+										<button
+											type="button"
+											class="btn-close btn-close-white ms-auto"
+											id="closeRoleInfo"
+											aria-label="Close"></button>
+									</div>
+								</div>
+								<div class="card-body p-4">
+									<h6 class="card-subtitle mb-3 text-muted fw-bold">
+										Understanding user roles in the system
+									</h6>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="d-flex align-items-start mb-3">
+												<div class="me-3 text-primary">
+													<i class="fas fa-user fa-lg"></i>
+												</div>
+												<div>
+													<h6 class="mb-1">Regular User</h6>
+													<ul class="small text-muted ps-3 mb-0">
+														<li>
+															Can access Weekly Report, Documentation, and Time
+															Report
+														</li>
+														<li>
+															Can create, edit, and delete their own reports
+														</li>
+														<li>
+															Cannot approve or reject other users' reports
+														</li>
+														<li>Cannot access admin features</li>
+													</ul>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="d-flex align-items-start">
+												<div class="me-3 text-danger">
+													<i class="fas fa-user-shield fa-lg"></i>
+												</div>
+												<div>
+													<h6 class="mb-1">Administrator</h6>
+													<ul class="small text-muted ps-3 mb-0">
+														<li>Can access Admin Panel and User Management</li>
+														<li>Can approve, reject, and archive reports</li>
+														<li>
+															Can manage user accounts (create, delete, change
+															roles)
+														</li>
+														<li>Can view system statistics and all reports</li>
+													</ul>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="row g-3 role-selector">
+								<div class="col-md-6">
+									<div
+										class="role-option selected h-100 d-flex flex-column"
+										id="userRole">
+										<div class="role-icon mb-2">
+											<i class="fas fa-user"></i>
+										</div>
+										<h5 class="mb-2">Regular User</h5>
+										<p class="text-muted small mb-0">
+											Standard access to reports
+										</p>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div
+										class="role-option h-100 d-flex flex-column"
+										id="adminRole">
+										<div class="role-icon mb-2">
+											<i class="fas fa-user-shield"></i>
+										</div>
+										<h5 class="mb-2">Administrator</h5>
+										<p class="text-muted small mb-0">Full system access</p>
+									</div>
+								</div>
+							</div>
+							<input
+								type="hidden"
+								name="role"
+								id="roleInput"
+								value="user"
+								required />
+						</div>
+
+						<div class="d-flex justify-content-between mt-4">
 							<a href="/admin/users" class="btn btn-secondary">
-								<i class="fas fa-arrow-left"></i> Back to Users
+								<i class="fas fa-arrow-left me-2"></i> Back to Users
 							</a>
 							<button class="btn btn-primary" type="submit">
-								<i class="fas fa-user-plus"></i> Register User
+								<i class="fas fa-user-plus me-2"></i> Register User
 							</button>
 						</div>
-					</div>
-				</form>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -99,21 +533,446 @@
 <script>
 	// Form validation script
 	(function () {
-		'use strict';
-		
+		"use strict";
+
 		// Fetch all the forms we want to apply custom Bootstrap validation styles to
-		const forms = document.querySelectorAll('.needs-validation');
-		
+		const forms = document.querySelectorAll(".needs-validation");
+
 		// Loop over them and prevent submission
-		Array.from(forms).forEach(form => {
-			form.addEventListener('submit', event => {
-				if (!form.checkValidity()) {
-					event.preventDefault();
-					event.stopPropagation();
+		Array.from(forms).forEach((form) => {
+			form.addEventListener(
+				"submit",
+				(event) => {
+					if (!form.checkValidity()) {
+						event.preventDefault();
+						event.stopPropagation();
+					}
+
+					form.classList.add("was-validated");
+				},
+				false
+			);
+		});
+
+		// Role selector functionality
+		const userRole = document.getElementById("userRole");
+		const adminRole = document.getElementById("adminRole");
+		const roleInput = document.getElementById("roleInput");
+
+		userRole.addEventListener("click", function () {
+			userRole.classList.add("selected");
+			adminRole.classList.remove("selected");
+			roleInput.value = "user";
+		});
+
+		adminRole.addEventListener("click", function () {
+			adminRole.classList.add("selected");
+			userRole.classList.remove("selected");
+			roleInput.value = "admin";
+		});
+
+		// Role info card toggle functionality
+		const roleInfoBtn = document.getElementById("roleInfoBtn");
+		const roleInfoCard = document.getElementById("roleInfoCard");
+		const closeRoleInfo = document.getElementById("closeRoleInfo");
+		let roleInfoVisible = false;
+
+		// Function to toggle role info card
+		function toggleRoleInfo() {
+			roleInfoVisible = !roleInfoVisible;
+			roleInfoCard.style.display = roleInfoVisible ? "block" : "none";
+
+			// Add active state to the button
+			if (roleInfoVisible) {
+				roleInfoBtn.classList.add("active");
+				roleInfoBtn.classList.remove("btn-outline-info");
+				roleInfoBtn.classList.add("btn-info");
+				roleInfoBtn.style.color = "white";
+			} else {
+				roleInfoBtn.classList.remove("active");
+				roleInfoBtn.classList.remove("btn-info");
+				roleInfoBtn.classList.add("btn-outline-info");
+				roleInfoBtn.style.color = "";
+			}
+		}
+
+		// Add click event to the button
+		roleInfoBtn.addEventListener("click", toggleRoleInfo);
+
+		// Add click event to the icon inside the button
+		roleInfoBtn
+			.querySelector(".fas.fa-info-circle")
+			.addEventListener("click", function (e) {
+				// Prevent the event from bubbling up to the button
+				e.stopPropagation();
+				toggleRoleInfo();
+			});
+
+		closeRoleInfo.addEventListener("click", function () {
+			roleInfoVisible = false;
+			roleInfoCard.style.display = "none";
+			roleInfoBtn.classList.remove("active");
+			roleInfoBtn.classList.remove("btn-info");
+			roleInfoBtn.classList.add("btn-outline-info");
+			roleInfoBtn.style.color = "";
+		});
+
+		// Close role info card when clicking outside
+		document.addEventListener("click", function (event) {
+			if (
+				roleInfoVisible &&
+				!roleInfoCard.contains(event.target) &&
+				event.target !== roleInfoBtn
+			) {
+				roleInfoVisible = false;
+				roleInfoCard.style.display = "none";
+				roleInfoBtn.classList.remove("active");
+				roleInfoBtn.classList.remove("btn-info");
+				roleInfoBtn.classList.add("btn-outline-info");
+				roleInfoBtn.style.color = "";
+			}
+		});
+
+		// Password info card toggle functionality
+		const passwordInfoBtn = document.getElementById("passwordInfoBtn");
+		const passwordInfoCard = document.getElementById("passwordInfoCard");
+		const closePasswordInfo = document.getElementById("closePasswordInfo");
+		let passwordInfoVisible = false;
+
+		// Function to toggle password info card
+		function togglePasswordInfo() {
+			passwordInfoVisible = !passwordInfoVisible;
+			passwordInfoCard.style.display = passwordInfoVisible ? "block" : "none";
+
+			// Add active state to the button
+			if (passwordInfoVisible) {
+				passwordInfoBtn.classList.add("active");
+				passwordInfoBtn.classList.remove("btn-outline-info");
+				passwordInfoBtn.classList.add("btn-info");
+				passwordInfoBtn.style.color = "white";
+			} else {
+				passwordInfoBtn.classList.remove("active");
+				passwordInfoBtn.classList.remove("btn-info");
+				passwordInfoBtn.classList.add("btn-outline-info");
+				passwordInfoBtn.style.color = "";
+			}
+		}
+
+		// Add click event to the button
+		passwordInfoBtn.addEventListener("click", togglePasswordInfo);
+
+		// Add click event to the icon inside the button
+		passwordInfoBtn
+			.querySelector(".fas.fa-info-circle")
+			.addEventListener("click", function (e) {
+				// Prevent the event from bubbling up to the button
+				e.stopPropagation();
+				togglePasswordInfo();
+			});
+
+		closePasswordInfo.addEventListener("click", function () {
+			passwordInfoVisible = false;
+			passwordInfoCard.style.display = "none";
+			passwordInfoBtn.classList.remove("active");
+			passwordInfoBtn.classList.remove("btn-info");
+			passwordInfoBtn.classList.add("btn-outline-info");
+			passwordInfoBtn.style.color = "";
+		});
+
+		// Close password info card when clicking outside
+		document.addEventListener("click", function (event) {
+			if (
+				passwordInfoVisible &&
+				!passwordInfoCard.contains(event.target) &&
+				event.target !== passwordInfoBtn
+			) {
+				passwordInfoVisible = false;
+				passwordInfoCard.style.display = "none";
+				passwordInfoBtn.classList.remove("active");
+				passwordInfoBtn.classList.remove("btn-info");
+				passwordInfoBtn.classList.add("btn-outline-info");
+				passwordInfoBtn.style.color = "";
+			}
+		});
+
+		// Password toggle visibility
+		const togglePassword = document.getElementById("togglePassword");
+		const passwordInput = document.getElementById("password");
+
+		togglePassword.addEventListener("click", function () {
+			const type =
+				passwordInput.getAttribute("type") === "password" ? "text" : "password";
+			passwordInput.setAttribute("type", type);
+
+			// Toggle eye icon
+			this.querySelector("i").classList.toggle("fa-eye");
+			this.querySelector("i").classList.toggle("fa-eye-slash");
+		});
+
+		// Password validation
+		const passwordValid = document.getElementById("passwordValid");
+		const passwordInvalid = document.getElementById("passwordInvalid");
+		const passwordCheckIndicator = document.getElementById(
+			"passwordCheckIndicator"
+		);
+		const passwordError = document.getElementById("passwordError");
+		const lengthCheck = document.getElementById("lengthCheck");
+		const uppercaseCheck = document.getElementById("uppercaseCheck");
+		const specialCharCheck = document.getElementById("specialCharCheck");
+		let isPasswordValid = false;
+		let passwordTimeout;
+
+		// Show password info when clicking on validation icons
+		passwordValid.addEventListener("click", function () {
+			passwordInfoVisible = true;
+			passwordInfoCard.style.display = "block";
+			passwordInfoBtn.classList.add("active");
+			passwordInfoBtn.classList.remove("btn-outline-info");
+			passwordInfoBtn.classList.add("btn-info");
+			passwordInfoBtn.style.color = "white";
+		});
+
+		passwordInvalid.addEventListener("click", function () {
+			passwordInfoVisible = true;
+			passwordInfoCard.style.display = "block";
+			passwordInfoBtn.classList.add("active");
+			passwordInfoBtn.classList.remove("btn-outline-info");
+			passwordInfoBtn.classList.add("btn-info");
+			passwordInfoBtn.style.color = "white";
+		});
+
+		passwordInput.addEventListener("input", function () {
+			const password = this.value;
+
+			// Clear any existing timeout
+			clearTimeout(passwordTimeout);
+
+			// Set a timeout to validate password after user stops typing
+			passwordTimeout = setTimeout(function () {
+				validatePassword(password);
+			}, 300);
+		});
+
+		function validatePassword(password) {
+			// Check length (8-16 characters)
+			const isLengthValid = password.length >= 8 && password.length <= 16;
+
+			// Check for at least one uppercase letter
+			const hasUppercase = /[A-Z]/.test(password);
+
+			// Check for no special characters
+			const hasNoSpecialChars = !/[^a-zA-Z0-9]/.test(password);
+
+			// Update the check indicators
+			updateCheckIndicator(lengthCheck, isLengthValid);
+			updateCheckIndicator(uppercaseCheck, hasUppercase);
+			updateCheckIndicator(specialCharCheck, hasNoSpecialChars);
+
+			// Overall password validity
+			isPasswordValid = isLengthValid && hasUppercase && hasNoSpecialChars;
+
+			// Show the appropriate indicator
+			if (password.length > 0) {
+				passwordCheckIndicator.style.display = "block";
+				passwordValid.style.display = isPasswordValid ? "inline-block" : "none";
+				passwordInvalid.style.display = isPasswordValid
+					? "none"
+					: "inline-block";
+				passwordError.style.display = isPasswordValid ? "none" : "block";
+			} else {
+				passwordCheckIndicator.style.display = "none";
+				passwordError.style.display = "none";
+			}
+		}
+
+		function updateCheckIndicator(element, isValid) {
+			const icon = element.querySelector("i");
+			if (isValid) {
+				icon.classList.remove("fa-times-circle", "text-danger");
+				icon.classList.add("fa-check-circle", "text-success");
+			} else {
+				icon.classList.remove("fa-check-circle", "text-success");
+				icon.classList.add("fa-times-circle", "text-danger");
+			}
+		}
+
+		// Username uniqueness validation
+		const usernameInput = document.getElementById("username");
+		const usernameCheckIndicator = document.getElementById(
+			"usernameCheckIndicator"
+		);
+		const usernameSpinner = document.getElementById("usernameSpinner");
+		const usernameAvailable = document.getElementById("usernameAvailable");
+		const usernameUnavailable = document.getElementById("usernameUnavailable");
+		const usernameError = document.getElementById("usernameError");
+		let usernameTimeout;
+		let isUsernameValid = true;
+
+		// Username info card toggle functionality
+		const usernameInfoBtn = document.getElementById("usernameInfoBtn");
+		const usernameInfoCard = document.getElementById("usernameInfoCard");
+		const closeUsernameInfo = document.getElementById("closeUsernameInfo");
+		let usernameInfoVisible = false;
+
+		// Function to toggle username info card
+		function toggleUsernameInfo() {
+			usernameInfoVisible = !usernameInfoVisible;
+			usernameInfoCard.style.display = usernameInfoVisible ? "block" : "none";
+
+			// Add active state to the button
+			if (usernameInfoVisible) {
+				usernameInfoBtn.classList.add("active");
+				usernameInfoBtn.classList.remove("btn-outline-info");
+				usernameInfoBtn.classList.add("btn-info");
+				usernameInfoBtn.style.color = "white";
+			} else {
+				usernameInfoBtn.classList.remove("active");
+				usernameInfoBtn.classList.remove("btn-info");
+				usernameInfoBtn.classList.add("btn-outline-info");
+				usernameInfoBtn.style.color = "";
+			}
+		}
+
+		// Add click event to the button
+		usernameInfoBtn.addEventListener("click", toggleUsernameInfo);
+
+		// Add click event to the icon inside the button
+		usernameInfoBtn
+			.querySelector(".fas.fa-info-circle")
+			.addEventListener("click", function (e) {
+				// Prevent the event from bubbling up to the button
+				e.stopPropagation();
+				toggleUsernameInfo();
+			});
+
+		closeUsernameInfo.addEventListener("click", function () {
+			usernameInfoVisible = false;
+			usernameInfoCard.style.display = "none";
+			usernameInfoBtn.classList.remove("active");
+			usernameInfoBtn.classList.remove("btn-info");
+			usernameInfoBtn.classList.add("btn-outline-info");
+			usernameInfoBtn.style.color = "";
+		});
+
+		// Close username info card when clicking outside
+		document.addEventListener("click", function (event) {
+			if (
+				usernameInfoVisible &&
+				!usernameInfoCard.contains(event.target) &&
+				event.target !== usernameInfoBtn
+			) {
+				usernameInfoVisible = false;
+				usernameInfoCard.style.display = "none";
+				usernameInfoBtn.classList.remove("active");
+				usernameInfoBtn.classList.remove("btn-info");
+				usernameInfoBtn.classList.add("btn-outline-info");
+				usernameInfoBtn.style.color = "";
+			}
+		});
+
+		// Add tooltip functionality to username validation icons
+		usernameAvailable.addEventListener("click", function () {
+			// Show the username info card when clicking on the available icon
+			usernameInfoVisible = true;
+			usernameInfoCard.style.display = "block";
+			usernameInfoBtn.classList.add("active");
+			usernameInfoBtn.classList.remove("btn-outline-info");
+			usernameInfoBtn.classList.add("btn-info");
+			usernameInfoBtn.style.color = "white";
+		});
+
+		usernameUnavailable.addEventListener("click", function () {
+			// Show the username info card when clicking on the unavailable icon
+			usernameInfoVisible = true;
+			usernameInfoCard.style.display = "block";
+			usernameInfoBtn.classList.add("active");
+			usernameInfoBtn.classList.remove("btn-outline-info");
+			usernameInfoBtn.classList.add("btn-info");
+			usernameInfoBtn.style.color = "white";
+		});
+
+		usernameInput.addEventListener("input", function () {
+			const username = this.value.trim();
+
+			// Clear any existing timeout
+			clearTimeout(usernameTimeout);
+
+			// Reset validation state
+			usernameAvailable.style.display = "none";
+			usernameUnavailable.style.display = "none";
+			usernameError.style.display = "none";
+
+			if (username.length < 3) {
+				usernameCheckIndicator.style.display = "none";
+				return;
+			}
+
+			// Show spinner
+			usernameCheckIndicator.style.display = "block";
+			usernameSpinner.style.display = "inline-block";
+
+			// Set a timeout to check username after user stops typing
+			usernameTimeout = setTimeout(function () {
+				checkUsername(username);
+			}, 500);
+		});
+
+		async function checkUsername(username) {
+			try {
+				const response = await fetch(
+					`/api/admin/check-username?username=${encodeURIComponent(username)}`
+				);
+				const data = await response.json();
+
+				// Hide spinner
+				usernameSpinner.style.display = "none";
+
+				if (data.exists) {
+					// Username exists
+					usernameUnavailable.style.display = "inline-block";
+					usernameError.style.display = "block";
+					isUsernameValid = false;
+				} else {
+					// Username is available
+					usernameAvailable.style.display = "inline-block";
+					isUsernameValid = true;
 				}
-				
-				form.classList.add('was-validated');
-			}, false);
+			} catch (error) {
+				console.error("Error checking username:", error);
+				usernameSpinner.style.display = "none";
+			}
+		}
+
+		// Add form submission validation
+		const form = document.querySelector("form");
+		const originalSubmitHandler = form.onsubmit;
+
+		form.addEventListener("submit", function (event) {
+			let isFormValid = true;
+
+			// Check username validity
+			if (!isUsernameValid && usernameInput.value.trim().length > 0) {
+				isFormValid = false;
+				usernameError.style.display = "block";
+			}
+
+			// Check password validity
+			if (!isPasswordValid && passwordInput.value.length > 0) {
+				isFormValid = false;
+				passwordError.style.display = "block";
+			}
+
+			if (!isFormValid) {
+				event.preventDefault();
+				event.stopPropagation();
+
+				// Focus on the first invalid field
+				if (!isUsernameValid && usernameInput.value.trim().length > 0) {
+					usernameInput.focus();
+				} else if (!isPasswordValid && passwordInput.value.length > 0) {
+					passwordInput.focus();
+				}
+			}
 		});
 	})();
 </script>

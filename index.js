@@ -21,6 +21,8 @@ import dashboardRoutes from "./routes/users/dashboard.js";
 import weeklyReportRoutes from "./routes/users/weeklyReports.js";
 // for admin routes
 import adminRoutes from "./routes/admin/admin.js";
+// for admin API routes
+import adminApiRoutes from "./routes/admin/api.js";
 // for documentation routes
 import documentationRoutes from "./routes/users/documentation.js";
 // for time report routes
@@ -88,6 +90,8 @@ app.use("/weeklyreport", weeklyReportRoutes);
 app.use("/dashboard", dashboardRoutes);
 // for admin routes
 app.use("/admin", adminRoutes);
+// for admin API routes
+app.use("/api/admin", adminApiRoutes);
 // for documentation routes
 app.use("/documentation", documentationRoutes);
 // for time report routes
