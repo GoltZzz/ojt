@@ -4,6 +4,7 @@ import WeeklyReport from "../../models/weeklyReports.js";
 import Documentation from "../../models/documentation.js";
 import TimeReport from "../../models/timeReport.js";
 import ExpressError from "../../utils/ExpressError.js";
+import { cloudinary } from "../../utils/cloudinary.js";
 
 const renderDashboard = catchAsync(async (req, res) => {
 	const totalUsers = await User.countDocuments({});
@@ -461,11 +462,24 @@ const registerUser = catchAsync(async (req, res) => {
 			role: role || "user",
 		});
 
+		// Handle profile image if uploaded
+		if (req.file) {
+			user.profileImage = {
+				url: req.file.path,
+				publicId: req.file.filename,
+			};
+		}
+
 		const registeredUser = await User.register(user, password);
 		await registeredUser.save();
 		req.flash("success", `User ${username} has been registered successfully`);
 		return res.redirect("/admin/users");
 	} catch (error) {
+		// If there was an error and we uploaded an image, delete it from Cloudinary
+		if (req.file && req.file.path) {
+			await cloudinary.uploader.destroy(req.file.filename);
+		}
+
 		// Handle passport-local-mongoose errors
 		if (error.name === "UserExistsError") {
 			req.flash(

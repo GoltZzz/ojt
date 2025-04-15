@@ -1,4 +1,5 @@
 import User from "../../models/users.js";
+import { cloudinary } from "../../utils/cloudinary.js";
 
 const renderRegister = async (_, res) => {
 	res.render("forms/register");
@@ -8,6 +9,14 @@ const createUser = async (req, res, next) => {
 	try {
 		const { username, password } = req.body;
 		const user = new User(req.body);
+
+		// Handle profile image if uploaded
+		if (req.file) {
+			user.profileImage = {
+				url: req.file.path,
+				publicId: req.file.filename,
+			};
+		}
 
 		const userCount = await User.countDocuments({});
 		if (userCount === 0) {
@@ -19,7 +28,12 @@ const createUser = async (req, res, next) => {
 		req.flash("success", `Welcome ${username} to OJT`);
 		return res.redirect("/login");
 	} catch (error) {
-		next(error);
+		// If there was an error and we uploaded an image, delete it from Cloudinary
+		if (req.file && req.file.path) {
+			await cloudinary.uploader.destroy(req.file.filename);
+		}
+		req.flash("error", error.message);
+		return res.redirect("/register");
 	}
 };
 

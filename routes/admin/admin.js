@@ -3,6 +3,7 @@ import { isLoggedIn, isAdmin } from "../../middleware.js";
 import adminController from "../../controllers/admin/admin.js";
 import selfDeleteController from "../../controllers/admin/selfDelete.js";
 import { validateUser, handleValidationErrors } from "../../utils/sanitize.js";
+import { upload } from "../../utils/cloudinary.js";
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router
 	.post(
 		isLoggedIn,
 		isAdmin,
+		upload.single("profileImage"),
 		validateUser,
 		handleValidationErrors,
 		adminController.registerUser

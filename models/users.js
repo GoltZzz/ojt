@@ -23,6 +23,17 @@ const userSchema = new Schema({
 		enum: ["admin", "user"],
 		default: "user",
 	},
+	profileImage: {
+		url: {
+			type: String,
+			default:
+				"https://res.cloudinary.com/dp3zv0db3/image/upload/v1715000000/ojt-profiles/default-profile_rvpzjh.png",
+		},
+		publicId: {
+			type: String,
+			default: "",
+		},
+	},
 });
 
 userSchema.plugin(passportLocalMongoose);

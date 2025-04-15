@@ -22,6 +22,7 @@
 						class="needs-validation"
 						action="/admin/register"
 						method="POST"
+						enctype="multipart/form-data"
 						novalidate>
 						<div class="row">
 							<div class="col-md-6 form-group">
@@ -406,6 +407,21 @@
 								id="roleInput"
 								value="user"
 								required />
+						</div>
+
+						<div class="form-group mt-4">
+							<label for="profileImage" class="form-label"
+								>Profile Image (Optional)</label
+							>
+							<input
+								type="file"
+								class="form-control"
+								id="profileImage"
+								name="profileImage"
+								accept="image/jpeg,image/png,image/jpg" />
+							<div class="form-text">
+								Upload a profile picture (JPG, JPEG, or PNG, max 2MB)
+							</div>
 						</div>
 
 						<div class="d-flex justify-content-between mt-4">
