@@ -145,15 +145,13 @@
 		<button
 			type="button"
 			class="btn btn-success"
-			data-bs-toggle="modal"
-			data-bs-target="#approveModal">
+			data-custom-modal-target="approveModal">
 			<i class="fas fa-check"></i> Approve
 		</button>
 		<button
 			type="button"
 			class="btn btn-danger"
-			data-bs-toggle="modal"
-			data-bs-target="#rejectModal">
+			data-custom-modal-target="rejectModal">
 			<i class="fas fa-times"></i> Reject
 		</button>
 		<% } %> <% if (currentUser.role === 'admin') { %> <% if
@@ -161,16 +159,14 @@
 		<button
 			type="button"
 			class="btn btn-success"
-			data-bs-toggle="modal"
-			data-bs-target="#unarchiveReportModal">
+			data-custom-modal-target="unarchiveReportModal">
 			<i class="fas fa-box-open"></i> Unarchive
 		</button>
 		<% } else { %>
 		<button
 			type="button"
 			class="btn btn-secondary"
-			data-bs-toggle="modal"
-			data-bs-target="#archiveReportModal">
+			data-custom-modal-target="archiveReportModal">
 			<i class="fas fa-archive"></i> Archive
 		</button>
 		<% } %> <% } %>
@@ -196,30 +192,35 @@
 	<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') {
 	%>
 	<div
-		class="modal fade"
+		class="custom-modal-overlay"
 		id="approveModal"
-		tabindex="-1"
-		aria-labelledby="approveModalLabel"
-		aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="approveModalLabel">Approve Report</h5>
-					<button
-						type="button"
-						class="btn-close"
-						data-bs-dismiss="modal"
-						aria-label="Close"></button>
-				</div>
-				<form
-					action="/admin/reports/<%= WeeklyReports._id %>/approve"
-					method="POST">
-					<div class="modal-body">
+		role="dialog"
+		aria-labelledby="approveModalLabel">
+		<div class="custom-modal">
+			<div class="custom-modal-header bg-success">
+				<h5 class="custom-modal-title" id="approveModalLabel">
+					<i class="fas fa-check"></i>
+					Approve Report
+				</h5>
+				<button type="button" class="custom-modal-close" aria-label="Close">
+					<i class="fas fa-times"></i>
+				</button>
+			</div>
+			<div class="custom-modal-body">
+				<div class="custom-modal-content">
+					<i class="fas fa-check-circle custom-modal-icon text-success"></i>
+					<h4>Approve this report?</h4>
+
+					<form
+						action="/admin/reports/<%= WeeklyReports._id %>/approve"
+						method="POST"
+						data-custom-message="Report has been approved successfully"
+						data-action-type="approve">
 						<input type="hidden" name="status" value="approved" />
-						<div class="mb-3">
-							<label for="adminComments" class="form-label"
-								>Comments (Optional)</label
-							>
+						<div class="form-group mb-3">
+							<label for="adminComments" class="form-label">
+								<strong>Comments (Optional):</strong>
+							</label>
 							<textarea
 								class="form-control"
 								id="adminComments"
@@ -227,50 +228,51 @@
 								rows="3"
 								placeholder="Add any comments about this report"></textarea>
 						</div>
-						<p>Are you sure you want to approve this report?</p>
-					</div>
-					<div class="modal-footer">
-						<button
-							type="button"
-							class="btn btn-secondary"
-							data-bs-dismiss="modal">
-							Cancel
-						</button>
-						<button type="submit" class="btn btn-success">
-							Approve Report
-						</button>
-					</div>
-				</form>
+
+						<div class="custom-modal-footer">
+							<button
+								type="submit"
+								class="custom-modal-btn custom-modal-btn-success">
+								<i class="fas fa-check me-1"></i> Approve Report
+							</button>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
 
 	<!-- Reject Modal -->
 	<div
-		class="modal fade"
+		class="custom-modal-overlay"
 		id="rejectModal"
-		tabindex="-1"
-		aria-labelledby="rejectModalLabel"
-		aria-hidden="true">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="rejectModalLabel">Reject Report</h5>
-					<button
-						type="button"
-						class="btn-close"
-						data-bs-dismiss="modal"
-						aria-label="Close"></button>
-				</div>
-				<form
-					action="/admin/reports/<%= WeeklyReports._id %>/approve"
-					method="POST">
-					<div class="modal-body">
+		role="dialog"
+		aria-labelledby="rejectModalLabel">
+		<div class="custom-modal">
+			<div class="custom-modal-header bg-danger">
+				<h5 class="custom-modal-title" id="rejectModalLabel">
+					<i class="fas fa-times"></i>
+					Reject Report
+				</h5>
+				<button type="button" class="custom-modal-close" aria-label="Close">
+					<i class="fas fa-times"></i>
+				</button>
+			</div>
+			<div class="custom-modal-body">
+				<div class="custom-modal-content">
+					<i class="fas fa-times-circle custom-modal-icon text-danger"></i>
+					<h4>Reject this report?</h4>
+
+					<form
+						action="/admin/reports/<%= WeeklyReports._id %>/approve"
+						method="POST"
+						data-custom-message="Report has been rejected"
+						data-action-type="reject">
 						<input type="hidden" name="status" value="rejected" />
-						<div class="mb-3">
-							<label for="adminComments" class="form-label"
-								>Reason for Rejection (Required)</label
-							>
+						<div class="form-group mb-3">
+							<label for="adminComments" class="form-label">
+								<strong>Reason for Rejection (Required):</strong>
+							</label>
 							<textarea
 								class="form-control"
 								id="adminComments"
@@ -279,20 +281,16 @@
 								placeholder="Explain why this report is being rejected"
 								required></textarea>
 						</div>
-						<p class="text-danger">
-							Are you sure you want to reject this report?
-						</p>
-					</div>
-					<div class="modal-footer">
-						<button
-							type="button"
-							class="btn btn-secondary"
-							data-bs-dismiss="modal">
-							Cancel
-						</button>
-						<button type="submit" class="btn btn-danger">Reject Report</button>
-					</div>
-				</form>
+
+						<div class="custom-modal-footer">
+							<button
+								type="submit"
+								class="custom-modal-btn custom-modal-btn-danger">
+								<i class="fas fa-times me-1"></i> Reject Report
+							</button>
+						</div>
+					</form>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -301,62 +299,29 @@
 
 <!-- Archive Report Modal -->
 <div
-	class="modal fade"
+	class="custom-modal-overlay"
 	id="archiveReportModal"
-	tabindex="-1"
-	aria-labelledby="archiveReportModalLabel"
-	aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header bg-secondary text-white">
-				<h5 class="modal-title" id="archiveReportModalLabel">
-					<i class="fas fa-archive me-2"></i>
-					Archive Report
-				</h5>
-				<button
-					type="button"
-					class="btn-close btn-close-white"
-					data-bs-dismiss="modal"
-					aria-label="Close"></button>
-			</div>
-			<div class="modal-body">
-				<div class="text-center mb-4">
-					<i class="fas fa-file-archive fa-4x text-secondary mb-3"></i>
-					<h4>Are you sure you want to archive this report?</h4>
-				</div>
-
-				<div class="alert alert-warning">
-					<i class="fas fa-info-circle me-2"></i>
-					<strong>Report details:</strong>
-					<ul class="mb-0 mt-2">
-						<li><strong>Student:</strong> <%= WeeklyReports.studentName %></li>
-						<li>
-							<strong>Internship Site:</strong> <%= WeeklyReports.internshipSite
-							%>
-						</li>
-						<li>
-							<strong>Week Period:</strong> <%= WeeklyReports.weekStartDate %> -
-							<%= WeeklyReports.weekEndDate %>
-						</li>
-						<li>
-							<strong>Status:</strong> <%=
-							WeeklyReports.status.charAt(0).toUpperCase() +
-							WeeklyReports.status.slice(1) %>
-						</li>
-					</ul>
-				</div>
-
-				<div class="alert alert-info">
-					<i class="fas fa-lightbulb me-2"></i>
-					Archived reports will be moved to the Archive section and will no
-					longer appear in the regular reports list. You can access archived
-					reports from the "Archived Reports" page in the admin panel.
-				</div>
+	role="dialog"
+	aria-labelledby="archiveReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-secondary">
+			<h5 class="custom-modal-title" id="archiveReportModalLabel">
+				<i class="fas fa-archive"></i>
+				Archive Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-file-archive custom-modal-icon text-secondary"></i>
+				<h4>Are you sure you want to archive this report?</h4>
 
 				<div class="form-group">
-					<label for="archiveReason" class="form-label"
-						><strong>Reason for archiving (optional):</strong></label
-					>
+					<label for="archiveReason" class="form-label">
+						<strong>Reason for archiving (optional):</strong>
+					</label>
 					<textarea
 						class="form-control"
 						id="archiveReason"
@@ -365,104 +330,66 @@
 						placeholder="Enter a reason for archiving this report"></textarea>
 				</div>
 			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-light" data-bs-dismiss="modal">
-					<i class="fas fa-times me-1"></i> Cancel
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				id="archiveForm"
+				action="/weeklyreport/<%= WeeklyReports._id %>/archive"
+				method="POST"
+				data-custom-message="Report has been archived successfully"
+				data-action-type="archive"
+				class="d-inline">
+				<!-- Hidden textarea to store the archive reason -->
+				<input
+					type="hidden"
+					id="hiddenArchiveReason"
+					name="archivedReason"
+					value="" />
+				<button
+					type="submit"
+					class="custom-modal-btn custom-modal-btn-secondary">
+					<i class="fas fa-archive me-1"></i> Archive Report
 				</button>
-				<form
-					id="archiveForm"
-					action="/weeklyreport/<%= WeeklyReports._id %>/archive"
-					method="POST"
-					class="d-inline">
-					<!-- Hidden textarea to store the archive reason -->
-					<input
-						type="hidden"
-						id="hiddenArchiveReason"
-						name="archivedReason"
-						value="" />
-					<button type="submit" class="btn btn-secondary">
-						<i class="fas fa-archive me-1"></i> Archive Report
-					</button>
-				</form>
-			</div>
+			</form>
 		</div>
 	</div>
 </div>
 
 <!-- Unarchive Report Modal -->
 <div
-	class="modal fade"
+	class="custom-modal-overlay"
 	id="unarchiveReportModal"
-	tabindex="-1"
-	aria-labelledby="unarchiveReportModalLabel"
-	aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header bg-success text-white">
-				<h5 class="modal-title" id="unarchiveReportModalLabel">
-					<i class="fas fa-box-open me-2"></i>
-					Unarchive Report
-				</h5>
-				<button
-					type="button"
-					class="btn-close btn-close-white"
-					data-bs-dismiss="modal"
-					aria-label="Close"></button>
+	role="dialog"
+	aria-labelledby="unarchiveReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-success">
+			<h5 class="custom-modal-title" id="unarchiveReportModalLabel">
+				<i class="fas fa-box-open"></i>
+				Unarchive Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-box-open custom-modal-icon text-success"></i>
+				<h4>Are you sure you want to unarchive this report?</h4>
 			</div>
-			<div class="modal-body">
-				<div class="text-center mb-4">
-					<i class="fas fa-box-open fa-4x text-success mb-3"></i>
-					<h4>Are you sure you want to unarchive this report?</h4>
-				</div>
-
-				<div class="alert alert-warning">
-					<i class="fas fa-info-circle me-2"></i>
-					<strong>Report details:</strong>
-					<ul class="mb-0 mt-2">
-						<li><strong>Student:</strong> <%= WeeklyReports.studentName %></li>
-						<li>
-							<strong>Internship Site:</strong> <%= WeeklyReports.internshipSite
-							%>
-						</li>
-						<li>
-							<strong>Week Period:</strong> <%= WeeklyReports.weekStartDate %> -
-							<%= WeeklyReports.weekEndDate %>
-						</li>
-						<li>
-							<strong>Status:</strong> <%=
-							WeeklyReports.status.charAt(0).toUpperCase() +
-							WeeklyReports.status.slice(1) %>
-						</li>
-						<li>
-							<strong>Archive Reason:</strong> <%= WeeklyReports.archivedReason
-							|| 'Not specified' %>
-						</li>
-					</ul>
-				</div>
-
-				<div class="alert alert-info">
-					<i class="fas fa-lightbulb me-2"></i>
-					Unarchiving this report will make it visible in the regular reports
-					list again. The report will maintain its current status (<strong
-						><%= WeeklyReports.status %></strong
-					>).
-				</div>
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-light" data-bs-dismiss="modal">
-					<i class="fas fa-times me-1"></i> Cancel
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				action="/admin/reports/<%= WeeklyReports._id %>/unarchive"
+				method="POST"
+				data-custom-message="Report has been unarchived successfully"
+				data-action-type="unarchive"
+				class="d-inline unarchive-form">
+				<button type="submit" class="custom-modal-btn custom-modal-btn-success">
+					<i class="fas fa-box-open me-1"></i> Unarchive Report
 				</button>
-				<form
-					action="/admin/reports/<%= WeeklyReports._id %>/unarchive"
-					method="POST"
-					class="d-inline unarchive-form">
-					<button type="submit" class="btn btn-success">
-						<i class="fas fa-box-open me-1"></i> Unarchive Report
-					</button>
-				</form>
-			</div>
+			</form>
 		</div>
 	</div>
 </div>
 
-<script src="/js/modalHandlers.js"></script>
+<!-- Custom modal script is loaded in boilerplate.ejs -->
