@@ -1,7 +1,7 @@
 import express from "express";
 import { isLoggedIn, isAdmin } from "../../middleware.js";
 import adminController from "../../controllers/admin/admin.js";
-import selfDeleteController from "../../controllers/admin/selfDelete.js";
+import userRegistrationController from "../../controllers/admin/userRegistration.js";
 
 const router = express.Router();
 
@@ -16,10 +16,6 @@ router
 router
 	.route("/users/:id/delete")
 	.post(isLoggedIn, isAdmin, adminController.deleteUser);
-
-router
-	.route("/users/:id/self-delete")
-	.post(isLoggedIn, selfDeleteController.verifySelfDelete);
 
 router
 	.route("/pending-reports")
@@ -40,5 +36,11 @@ router
 router
 	.route("/reports/:id/unarchive")
 	.post(isLoggedIn, isAdmin, adminController.unarchiveReport);
+
+// User registration routes
+router
+	.route("/register-user")
+	.get(isLoggedIn, isAdmin, userRegistrationController.renderRegisterForm)
+	.post(isLoggedIn, isAdmin, userRegistrationController.registerUser);
 
 export default router;
