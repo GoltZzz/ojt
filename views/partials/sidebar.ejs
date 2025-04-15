@@ -69,8 +69,8 @@
 					<% } %> <% if (currentUser.role === 'admin') { %>
 					<li class="nav-item">
 						<a href="/admin" class="nav-link"
-							><i class="fa-solid fa-user-shield"></i> Admin Panel</a
-						>
+							><i class="fa-solid fa-user-shield"></i> Admin Panel
+						</a>
 					</li>
 					<li class="nav-item">
 						<a href="/admin/users" class="nav-link"
@@ -80,7 +80,12 @@
 					<% } %> <% if (currentUser.role === 'admin') { %>
 					<li class="nav-item">
 						<a href="/admin/pending-reports" class="nav-link">
-							<i class="fa-solid fa-clipboard-check"></i> Pending Reports
+							<i class="fa-solid fa-clipboard-check"></i> Pending Reports <% if
+							(pendingReportsCount > 0) { %>
+							<span class="badge bg-danger notification-badge"
+								><%= pendingReportsCount %></span
+							>
+							<% } %>
 						</a>
 					</li>
 					<li class="nav-item">
@@ -111,11 +116,6 @@
 						>
 					</li>
 					<% } %>
-					<li class="nav-item">
-						<a href="https://goltzzz.github.io/GoltZzz/" class="nav-link"
-							><i class="fa-solid fa-envelope"></i> Contact</a
-						>
-					</li>
 					<li class="nav-item">
 						<a href="/logout" class="nav-link"
 							><i class="fa-solid fa-right-from-bracket"></i> Logout</a
@@ -180,8 +180,8 @@
 			<% } %> <% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
 				<a href="/admin" class="nav-link"
-					><i class="fa-solid fa-user-shield"></i> Admin Panel</a
-				>
+					><i class="fa-solid fa-user-shield"></i> Admin Panel
+				</a>
 			</li>
 			<li class="nav-item">
 				<a href="/admin/users" class="nav-link"
@@ -191,7 +191,12 @@
 			<% } %> <% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
 				<a href="/admin/pending-reports" class="nav-link">
-					<i class="fa-solid fa-clipboard-check"></i> Pending Reports
+					<i class="fa-solid fa-clipboard-check"></i> Pending Reports <% if
+					(pendingReportsCount > 0) { %>
+					<span class="badge bg-danger notification-badge"
+						><%= pendingReportsCount %></span
+					>
+					<% } %>
 				</a>
 			</li>
 			<li class="nav-item">
@@ -222,11 +227,6 @@
 				>
 			</li>
 			<% } %>
-			<li class="nav-item">
-				<a href="https://goltzzz.github.io/GoltZzz/" class="nav-link"
-					><i class="fa-solid fa-envelope"></i> Contact</a
-				>
-			</li>
 			<li class="nav-item">
 				<a href="/logout" class="nav-link"
 					><i class="fa-solid fa-right-from-bracket"></i> Logout</a

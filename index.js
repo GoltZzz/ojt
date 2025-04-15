@@ -12,6 +12,7 @@ import flash from "connect-flash";
 import ExpressError from "./utils/ExpressError.js";
 import { sanitizeBody } from "./utils/sanitize.js";
 import { body, validationResult } from "express-validator";
+import pendingReportsCount from "./middleware/pendingReportsCount.js";
 
 const app = express();
 
@@ -90,6 +91,9 @@ app.use((req, res, next) => {
 	res.locals.currentPath = req.path.split("/").filter((segment) => segment);
 	next();
 });
+
+// Add pending reports count middleware
+app.use(pendingReportsCount);
 
 // for weeklyReports routes
 app.use("/weeklyreport", weeklyReportRoutes);

@@ -1,5 +1,6 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/weeklyReportsShow.css" />
+<link rel="stylesheet" href="/css/reportModals.css" />
 <div class="container mt-4">
 	<div class="report-header mb-4">
 		<h1>Weekly Report Details</h1>
@@ -192,12 +193,12 @@
 	<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') {
 	%>
 	<div
-		class="custom-modal-overlay"
+		class="custom-modal-overlay report-modal"
 		id="approveModal"
 		role="dialog"
 		aria-labelledby="approveModalLabel">
 		<div class="custom-modal">
-			<div class="custom-modal-header bg-success">
+			<div class="custom-modal-header approve-header">
 				<h5 class="custom-modal-title" id="approveModalLabel">
 					<i class="fas fa-check"></i>
 					Approve Report
@@ -210,30 +211,38 @@
 				<div class="custom-modal-content">
 					<i class="fas fa-check-circle custom-modal-icon text-success"></i>
 					<h4>Approve this report?</h4>
+					<p class="text-muted mb-4">
+						This action will mark the report as approved and notify the student.
+					</p>
 
 					<form
 						action="/admin/reports/<%= WeeklyReports._id %>/approve"
 						method="POST"
 						data-custom-message="Report has been approved successfully"
-						data-action-type="approve">
+						data-action-type="approve"
+						id="approveForm">
 						<input type="hidden" name="status" value="approved" />
-						<div class="form-group mb-3">
-							<label for="adminComments" class="form-label">
-								<strong>Comments (Optional):</strong>
+						<div class="form-group">
+							<label for="approveComments" class="form-label">
+								Comments (Optional):
 							</label>
 							<textarea
 								class="form-control"
-								id="adminComments"
+								id="approveComments"
 								name="adminComments"
-								rows="3"
-								placeholder="Add any comments about this report"></textarea>
+								rows="4"
+								placeholder="Add any feedback or comments about this report"
+								maxlength="500"></textarea>
+							<span class="char-counter" id="approveCharCounter"
+								>0/500 characters</span
+							>
 						</div>
 
 						<div class="custom-modal-footer">
 							<button
 								type="submit"
 								class="custom-modal-btn custom-modal-btn-success">
-								<i class="fas fa-check me-1"></i> Approve Report
+								<i class="fas fa-check me-2"></i> Approve Report
 							</button>
 						</div>
 					</form>
@@ -244,12 +253,12 @@
 
 	<!-- Reject Modal -->
 	<div
-		class="custom-modal-overlay"
+		class="custom-modal-overlay report-modal"
 		id="rejectModal"
 		role="dialog"
 		aria-labelledby="rejectModalLabel">
 		<div class="custom-modal">
-			<div class="custom-modal-header bg-danger">
+			<div class="custom-modal-header reject-header">
 				<h5 class="custom-modal-title" id="rejectModalLabel">
 					<i class="fas fa-times"></i>
 					Reject Report
@@ -262,31 +271,39 @@
 				<div class="custom-modal-content">
 					<i class="fas fa-times-circle custom-modal-icon text-danger"></i>
 					<h4>Reject this report?</h4>
+					<p class="text-muted mb-4">
+						This action will mark the report as rejected and notify the student.
+					</p>
 
 					<form
 						action="/admin/reports/<%= WeeklyReports._id %>/approve"
 						method="POST"
 						data-custom-message="Report has been rejected"
-						data-action-type="reject">
+						data-action-type="reject"
+						id="rejectForm">
 						<input type="hidden" name="status" value="rejected" />
-						<div class="form-group mb-3">
-							<label for="adminComments" class="form-label">
-								<strong>Reason for Rejection (Required):</strong>
+						<div class="form-group">
+							<label for="rejectComments" class="form-label required-field">
+								Reason for Rejection
 							</label>
 							<textarea
 								class="form-control"
-								id="adminComments"
+								id="rejectComments"
 								name="adminComments"
-								rows="3"
-								placeholder="Explain why this report is being rejected"
-								required></textarea>
+								rows="4"
+								placeholder="Please provide a detailed explanation of why this report is being rejected"
+								required
+								maxlength="500"></textarea>
+							<span class="char-counter" id="rejectCharCounter"
+								>0/500 characters</span
+							>
 						</div>
 
 						<div class="custom-modal-footer">
 							<button
 								type="submit"
 								class="custom-modal-btn custom-modal-btn-danger">
-								<i class="fas fa-times me-1"></i> Reject Report
+								<i class="fas fa-times me-2"></i> Reject Report
 							</button>
 						</div>
 					</form>
@@ -393,3 +410,4 @@
 </div>
 
 <!-- Custom modal script is loaded in boilerplate.ejs -->
+<script src="/js/reportModals.js"></script>

@@ -203,3 +203,33 @@
 		margin-left: 0 !important;
 	}
 }
+
+/* Notification badge */
+.notification-badge {
+	margin-left: 5px;
+	font-size: 0.7rem;
+	padding: 0.25em 0.5em;
+	border-radius: 10px;
+	position: relative;
+	top: -1px;
+	display: inline-block;
+	line-height: 1;
+	vertical-align: middle;
+	white-space: nowrap;
+	text-align: center;
+}
+
+@keyframes pulse {
+	0% {
+		transform: scale(1);
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+	}
+	50% {
+		transform: scale(1.1);
+		box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+	}
+	100% {
+		transform: scale(1);
+		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+	}
+}
