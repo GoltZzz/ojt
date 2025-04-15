@@ -120,8 +120,8 @@
 								<button
 									type="button"
 									class="btn btn-sm btn-success"
-									data-bs-toggle="modal"
-									data-bs-target="#unarchiveModal<%= report._id %>">
+									data-toggle="custom-modal"
+									data-target="#unarchiveModal<%= report._id %>">
 									<i class="fas fa-box-open"></i>
 								</button>
 							</div>
@@ -130,34 +130,37 @@
 
 					<!-- Unarchive Modal for this report -->
 					<div
-						class="modal fade"
+						class="custom-modal"
 						id="unarchiveModal<%= report._id %>"
 						tabindex="-1"
+						role="dialog"
 						aria-labelledby="unarchiveModalLabel<%= report._id %>"
 						aria-hidden="true">
-						<div class="modal-dialog">
-							<div class="modal-content">
-								<div class="modal-header bg-success text-white">
-									<h5
-										class="modal-title"
-										id="unarchiveModalLabel<%= report._id %>">
-										<i class="fas fa-box-open me-2"></i>
-										Unarchive Report
-									</h5>
-									<button
-										type="button"
-										class="btn-close btn-close-white"
-										data-bs-dismiss="modal"
-										aria-label="Close"></button>
+						<div class="custom-modal-dialog">
+							<div class="custom-modal-header custom-modal-header-success">
+								<h5
+									class="custom-modal-title"
+									id="unarchiveModalLabel<%= report._id %>">
+									<i class="fas fa-box-open me-2"></i>
+									Unarchive Report
+								</h5>
+								<button
+									type="button"
+									class="custom-modal-close"
+									data-dismiss="custom-modal"
+									aria-label="Close">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+							<div class="custom-modal-body">
+								<div class="custom-modal-centered">
+									<i class="fas fa-box-open custom-modal-icon text-success"></i>
+									<h4>Are you sure you want to unarchive this report?</h4>
 								</div>
-								<div class="modal-body">
-									<div class="text-center mb-4">
-										<i class="fas fa-box-open fa-4x text-success mb-3"></i>
-										<h4>Are you sure you want to unarchive this report?</h4>
-									</div>
 
-									<div class="alert alert-warning">
-										<i class="fas fa-info-circle me-2"></i>
+								<div class="custom-modal-alert custom-modal-alert-warning">
+									<i class="fas fa-info-circle me-2"></i>
+									<div>
 										<strong>Report details:</strong>
 										<ul class="mb-0 mt-2">
 											<li>
@@ -183,30 +186,34 @@
 											</li>
 										</ul>
 									</div>
+								</div>
 
-									<div class="alert alert-info">
-										<i class="fas fa-lightbulb me-2"></i>
+								<div class="custom-modal-alert custom-modal-alert-info">
+									<i class="fas fa-lightbulb me-2"></i>
+									<div>
 										Unarchiving this report will make it visible in the regular
 										reports list again. The report will maintain its current
 										status (<strong><%= report.status %></strong>).
 									</div>
 								</div>
-								<div class="modal-footer">
+							</div>
+							<div class="custom-modal-footer">
+								<button
+									type="button"
+									class="custom-modal-btn custom-modal-btn-light"
+									data-dismiss="custom-modal">
+									<i class="fas fa-times me-1"></i> Cancel
+								</button>
+								<form
+									action="/admin/reports/<%= report._id %>/unarchive"
+									method="POST"
+									class="d-inline unarchive-form">
 									<button
-										type="button"
-										class="btn btn-light"
-										data-bs-dismiss="modal">
-										<i class="fas fa-times me-1"></i> Cancel
+										type="submit"
+										class="custom-modal-btn custom-modal-btn-success">
+										<i class="fas fa-box-open me-1"></i> Unarchive Report
 									</button>
-									<form
-										action="/admin/reports/<%= report._id %>/unarchive"
-										method="POST"
-										class="d-inline unarchive-form">
-										<button type="submit" class="btn btn-success">
-											<i class="fas fa-box-open me-1"></i> Unarchive Report
-										</button>
-									</form>
-								</div>
+								</form>
 							</div>
 						</div>
 					</div>
@@ -221,11 +228,6 @@
 		<% } %>
 	</div>
 </div>
-
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-	integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-	crossorigin="anonymous"></script>
 
 <script src="/js/reportFilters.js"></script>
 
@@ -243,9 +245,9 @@
 				console.log("Unarchive form submitted from archived-reports page");
 
 				// Find the closest modal and close it
-				const modal = form.closest(".modal");
+				const modal = form.closest(".custom-modal");
 				if (modal) {
-					const modalInstance = bootstrap.Modal.getInstance(modal);
+					const modalInstance = CustomModal.getInstance(modal.id);
 					if (modalInstance) {
 						modalInstance.hide();
 					}

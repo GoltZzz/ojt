@@ -1,7 +1,6 @@
 import express from "express";
 import { isLoggedIn, isAdmin } from "../../middleware.js";
 import adminController from "../../controllers/admin/admin.js";
-import userRegistrationController from "../../controllers/admin/userRegistration.js";
 
 const router = express.Router();
 
@@ -36,11 +35,5 @@ router
 router
 	.route("/reports/:id/unarchive")
 	.post(isLoggedIn, isAdmin, adminController.unarchiveReport);
-
-// User registration routes
-router
-	.route("/register-user")
-	.get(isLoggedIn, isAdmin, userRegistrationController.renderRegisterForm)
-	.post(isLoggedIn, isAdmin, userRegistrationController.registerUser);
 
 export default router;

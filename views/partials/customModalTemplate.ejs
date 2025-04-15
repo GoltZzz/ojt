@@ -1,0 +1,231 @@
+<!-- 
+  Custom Modal Template
+  
+  Usage:
+  1. Copy this template and replace the ID, classes, and content as needed
+  2. Use data-toggle="custom-modal" and data-target="#modalId" for trigger buttons
+  3. Use data-dismiss="custom-modal" for close buttons inside the modal
+  
+  Modal Types:
+  - Add appropriate header class for different types:
+    - custom-modal-header-primary
+    - custom-modal-header-success
+    - custom-modal-header-danger
+    - custom-modal-header-info
+    - custom-modal-header-warning
+    - custom-modal-header-secondary
+-->
+
+<!-- Delete User Modal Example -->
+<div class="custom-modal" id="exampleDeleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleDeleteModalLabel" aria-hidden="true">
+  <div class="custom-modal-dialog">
+    <div class="custom-modal-header custom-modal-header-danger">
+      <h5 class="custom-modal-title" id="exampleDeleteModalLabel">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Delete User
+      </h5>
+      <button type="button" class="custom-modal-close" data-dismiss="custom-modal" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="custom-modal-body">
+      <div class="custom-modal-centered">
+        <i class="fas fa-user-slash custom-modal-icon text-danger"></i>
+        <h4>Are you sure you want to delete this user?</h4>
+      </div>
+      <p>This will permanently delete the user account and all associated data.</p>
+      <p class="text-danger">
+        <strong>This action cannot be undone.</strong>
+      </p>
+    </div>
+    <div class="custom-modal-footer">
+      <button type="button" class="custom-modal-btn custom-modal-btn-light" data-dismiss="custom-modal">
+        <i class="fas fa-times me-1"></i> Cancel
+      </button>
+      <form action="/admin/users/123/delete" method="POST" class="d-inline">
+        <button type="submit" class="custom-modal-btn custom-modal-btn-danger">
+          <i class="fas fa-trash me-1"></i> Delete User
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Archive Report Modal Example -->
+<div class="custom-modal" id="exampleArchiveModal" tabindex="-1" role="dialog" aria-labelledby="exampleArchiveModalLabel" aria-hidden="true">
+  <div class="custom-modal-dialog">
+    <div class="custom-modal-header custom-modal-header-secondary">
+      <h5 class="custom-modal-title" id="exampleArchiveModalLabel">
+        <i class="fas fa-archive me-2"></i>
+        Archive Report
+      </h5>
+      <button type="button" class="custom-modal-close" data-dismiss="custom-modal" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="custom-modal-body">
+      <div class="custom-modal-centered">
+        <i class="fas fa-file-archive custom-modal-icon text-secondary"></i>
+        <h4>Are you sure you want to archive this report?</h4>
+      </div>
+      <p>Archiving this report will move it to the archive section.</p>
+      
+      <div class="form-group">
+        <label for="archiveReason" class="form-label">Reason for Archiving (Optional)</label>
+        <textarea class="form-control" id="archiveReason" rows="3" placeholder="Enter reason for archiving..."></textarea>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <button type="button" class="custom-modal-btn custom-modal-btn-light" data-dismiss="custom-modal">
+        <i class="fas fa-times me-1"></i> Cancel
+      </button>
+      <form id="archiveForm" action="/admin/reports/123/archive" method="POST" class="d-inline">
+        <input type="hidden" id="hiddenArchiveReason" name="archiveReason" value="">
+        <button type="submit" class="custom-modal-btn custom-modal-btn-secondary">
+          <i class="fas fa-archive me-1"></i> Archive Report
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Approve Report Modal Example -->
+<div class="custom-modal" id="exampleApproveModal" tabindex="-1" role="dialog" aria-labelledby="exampleApproveModalLabel" aria-hidden="true">
+  <div class="custom-modal-dialog">
+    <div class="custom-modal-header custom-modal-header-success">
+      <h5 class="custom-modal-title" id="exampleApproveModalLabel">
+        <i class="fas fa-check-circle me-2"></i>
+        Approve Report
+      </h5>
+      <button type="button" class="custom-modal-close" data-dismiss="custom-modal" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="custom-modal-body">
+      <form action="/admin/reports/123/approve" method="POST">
+        <input type="hidden" name="status" value="approved">
+        <div class="form-group">
+          <label for="adminComments" class="form-label">Comments (Optional)</label>
+          <textarea class="form-control" id="adminComments" name="adminComments" rows="3" placeholder="Enter any comments..."></textarea>
+        </div>
+        <div class="custom-modal-footer">
+          <button type="button" class="custom-modal-btn custom-modal-btn-light" data-dismiss="custom-modal">
+            <i class="fas fa-times me-1"></i> Cancel
+          </button>
+          <button type="submit" class="custom-modal-btn custom-modal-btn-success">
+            <i class="fas fa-check me-1"></i> Approve Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Report Modal Example -->
+<div class="custom-modal" id="exampleRejectModal" tabindex="-1" role="dialog" aria-labelledby="exampleRejectModalLabel" aria-hidden="true">
+  <div class="custom-modal-dialog">
+    <div class="custom-modal-header custom-modal-header-danger">
+      <h5 class="custom-modal-title" id="exampleRejectModalLabel">
+        <i class="fas fa-times-circle me-2"></i>
+        Reject Report
+      </h5>
+      <button type="button" class="custom-modal-close" data-dismiss="custom-modal" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="custom-modal-body">
+      <form action="/admin/reports/123/approve" method="POST">
+        <input type="hidden" name="status" value="rejected">
+        <div class="form-group">
+          <label for="adminComments" class="form-label">Reason for Rejection (Required)</label>
+          <textarea class="form-control" id="adminComments" name="adminComments" rows="3" placeholder="Enter reason for rejection..." required></textarea>
+        </div>
+        <div class="custom-modal-footer">
+          <button type="button" class="custom-modal-btn custom-modal-btn-light" data-dismiss="custom-modal">
+            <i class="fas fa-times me-1"></i> Cancel
+          </button>
+          <button type="submit" class="custom-modal-btn custom-modal-btn-danger">
+            <i class="fas fa-times me-1"></i> Reject Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Unarchive Report Modal Example -->
+<div class="custom-modal" id="exampleUnarchiveModal" tabindex="-1" role="dialog" aria-labelledby="exampleUnarchiveModalLabel" aria-hidden="true">
+  <div class="custom-modal-dialog">
+    <div class="custom-modal-header custom-modal-header-success">
+      <h5 class="custom-modal-title" id="exampleUnarchiveModalLabel">
+        <i class="fas fa-box-open me-2"></i>
+        Unarchive Report
+      </h5>
+      <button type="button" class="custom-modal-close" data-dismiss="custom-modal" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="custom-modal-body">
+      <div class="custom-modal-centered">
+        <i class="fas fa-box-open custom-modal-icon text-success"></i>
+        <h4>Are you sure you want to unarchive this report?</h4>
+      </div>
+      
+      <div class="custom-modal-alert custom-modal-alert-info">
+        <i class="fas fa-lightbulb me-2"></i>
+        <div>
+          Unarchiving this report will make it visible in the regular reports list again. The report will maintain its current status.
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <button type="button" class="custom-modal-btn custom-modal-btn-light" data-dismiss="custom-modal">
+        <i class="fas fa-times me-1"></i> Cancel
+      </button>
+      <form action="/admin/reports/123/unarchive" method="POST" class="d-inline unarchive-form">
+        <button type="submit" class="custom-modal-btn custom-modal-btn-success">
+          <i class="fas fa-box-open me-1"></i> Unarchive Report
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Change User Role Modal Example -->
+<div class="custom-modal" id="exampleChangeRoleModal" tabindex="-1" role="dialog" aria-labelledby="exampleChangeRoleModalLabel" aria-hidden="true">
+  <div class="custom-modal-dialog">
+    <div class="custom-modal-header custom-modal-header-primary">
+      <h5 class="custom-modal-title" id="exampleChangeRoleModalLabel">
+        <i class="fas fa-user-shield me-2"></i>
+        Change User Role
+      </h5>
+      <button type="button" class="custom-modal-close" data-dismiss="custom-modal" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="custom-modal-body">
+      <div class="custom-modal-centered">
+        <i class="fas fa-user-shield custom-modal-icon text-primary"></i>
+        <h4>Are you sure you want to change this user's role?</h4>
+      </div>
+      
+      <div class="custom-modal-alert custom-modal-alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        <div>
+          Changing a user's role will modify their permissions and access to features in the system.
+        </div>
+      </div>
+    </div>
+    <div class="custom-modal-footer">
+      <button type="button" class="custom-modal-btn custom-modal-btn-light" data-dismiss="custom-modal">
+        <i class="fas fa-times me-1"></i> Cancel
+      </button>
+      <form action="/admin/users/123/role" method="POST" class="d-inline">
+        <input type="hidden" name="role" value="admin">
+        <button type="submit" class="custom-modal-btn custom-modal-btn-primary">
+          <i class="fas fa-user-shield me-1"></i> Change Role
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

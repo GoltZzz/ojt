@@ -1,0 +1,322 @@
+/* Custom Modal Styles */
+:root {
+  --modal-success-color: #28c76f;
+  --modal-danger-color: #ea5455;
+  --modal-info-color: #00cfe8;
+  --modal-warning-color: #ff9f43;
+  --modal-secondary-color: #6c757d;
+  --modal-primary-color: #2193b0;
+  --modal-light-color: #f8f9fa;
+  --modal-dark-color: #343a40;
+  --modal-backdrop-color: rgba(0, 0, 0, 0.5);
+  --modal-animation-duration: 0.3s;
+  --modal-border-radius: 12px;
+  --modal-box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal Backdrop */
+.custom-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--modal-backdrop-color);
+  z-index: 1040;
+  opacity: 0;
+  transition: opacity var(--modal-animation-duration) ease;
+}
+
+.custom-modal-backdrop.show {
+  opacity: 1;
+}
+
+/* Modal Container */
+.custom-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--modal-animation-duration) ease, visibility var(--modal-animation-duration) ease;
+  padding: 1rem;
+}
+
+.custom-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Modal Dialog */
+.custom-modal-dialog {
+  background-color: white;
+  border-radius: var(--modal-border-radius);
+  box-shadow: var(--modal-box-shadow);
+  width: 100%;
+  max-width: 500px;
+  transform: translateY(-20px);
+  transition: transform var(--modal-animation-duration) ease;
+  overflow: hidden;
+}
+
+.custom-modal.show .custom-modal-dialog {
+  transform: translateY(0);
+}
+
+/* Modal Header */
+.custom-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.custom-modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.custom-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0.25rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+
+.custom-modal-close:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Modal Body */
+.custom-modal-body {
+  padding: 1.5rem;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+/* Modal Footer */
+.custom-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Modal Icon */
+.custom-modal-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+/* Modal Content Centered */
+.custom-modal-centered {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Modal Buttons */
+.custom-modal-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.custom-modal-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.custom-modal-btn-primary {
+  background-color: var(--modal-primary-color);
+  color: white;
+}
+
+.custom-modal-btn-success {
+  background-color: var(--modal-success-color);
+  color: white;
+}
+
+.custom-modal-btn-danger {
+  background-color: var(--modal-danger-color);
+  color: white;
+}
+
+.custom-modal-btn-info {
+  background-color: var(--modal-info-color);
+  color: white;
+}
+
+.custom-modal-btn-warning {
+  background-color: var(--modal-warning-color);
+  color: white;
+}
+
+.custom-modal-btn-secondary {
+  background-color: var(--modal-secondary-color);
+  color: white;
+}
+
+.custom-modal-btn-light {
+  background-color: var(--modal-light-color);
+  color: var(--modal-dark-color);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Modal Header Colors */
+.custom-modal-header-primary {
+  background-color: var(--modal-primary-color);
+  color: white;
+}
+
+.custom-modal-header-success {
+  background-color: var(--modal-success-color);
+  color: white;
+}
+
+.custom-modal-header-danger {
+  background-color: var(--modal-danger-color);
+  color: white;
+}
+
+.custom-modal-header-info {
+  background-color: var(--modal-info-color);
+  color: white;
+}
+
+.custom-modal-header-warning {
+  background-color: var(--modal-warning-color);
+  color: white;
+}
+
+.custom-modal-header-secondary {
+  background-color: var(--modal-secondary-color);
+  color: white;
+}
+
+/* Modal Alert */
+.custom-modal-alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.custom-modal-alert-info {
+  background-color: rgba(0, 207, 232, 0.15);
+  border-left: 4px solid var(--modal-info-color);
+  color: #0089a9;
+}
+
+.custom-modal-alert-warning {
+  background-color: rgba(255, 159, 67, 0.15);
+  border-left: 4px solid var(--modal-warning-color);
+  color: #b36200;
+}
+
+.custom-modal-alert-danger {
+  background-color: rgba(234, 84, 85, 0.15);
+  border-left: 4px solid var(--modal-danger-color);
+  color: #ce2e2f;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+  .custom-modal-dialog {
+    max-width: 100%;
+    margin: 0.5rem;
+  }
+  
+  .custom-modal-body {
+    max-height: calc(100vh - 150px);
+    padding: 1rem;
+  }
+  
+  .custom-modal-header,
+  .custom-modal-footer {
+    padding: 1rem;
+  }
+  
+  .custom-modal-icon {
+    font-size: 3rem;
+  }
+}
+
+/* Animation for modal content */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.custom-modal-dialog {
+  animation: modalFadeIn var(--modal-animation-duration) ease forwards;
+}
+
+/* Form elements inside modal */
+.custom-modal .form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-modal .form-control:focus {
+  border-color: var(--modal-primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(33, 147, 176, 0.25);
+  outline: none;
+}
+
+.custom-modal .form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.custom-modal .form-group {
+  margin-bottom: 1.25rem;
+}
+
+/* Textarea inside modal */
+.custom-modal textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}

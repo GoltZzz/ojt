@@ -8,12 +8,7 @@
 	</div>
 
 	<div class="dashboard-card">
-		<div class="d-flex justify-content-between align-items-center mb-4">
-			<h3>All Users</h3>
-			<a href="/admin/register-user" class="btn btn-primary">
-				<i class="fas fa-user-plus"></i> Register New User
-			</a>
-		</div>
+		<h3>All Users</h3>
 		<div class="table-responsive">
 			<table class="table table-striped">
 				<thead>
@@ -50,8 +45,8 @@
 								<button
 									type="button"
 									class="btn btn-sm btn-danger"
-									data-bs-toggle="modal"
-									data-bs-target="#deleteUserModal<%= user._id %>">
+									data-toggle="custom-modal"
+									data-target="#deleteUserModal<%= user._id %>">
 									<i class="fas fa-trash"></i> Delete
 								</button>
 							</div>
@@ -60,34 +55,38 @@
 
 					<!-- Delete User Modal -->
 					<div
-						class="modal fade"
+						class="custom-modal"
 						id="deleteUserModal<%= user._id %>"
 						tabindex="-1"
+						role="dialog"
 						aria-labelledby="deleteUserModalLabel<%= user._id %>"
 						aria-hidden="true">
-						<div class="modal-dialog">
-							<div class="modal-content">
-								<div class="modal-header bg-danger text-white">
-									<h5
-										class="modal-title"
-										id="deleteUserModalLabel<%= user._id %>">
-										<i class="fas fa-exclamation-triangle me-2"></i>
-										Delete User
-									</h5>
-									<button
-										type="button"
-										class="btn-close btn-close-white"
-										data-bs-dismiss="modal"
-										aria-label="Close"></button>
+						<div class="custom-modal-dialog">
+							<div class="custom-modal-header custom-modal-header-danger">
+								<h5
+									class="custom-modal-title"
+									id="deleteUserModalLabel<%= user._id %>">
+									<i class="fas fa-exclamation-triangle me-2"></i>
+									Delete User
+								</h5>
+								<button
+									type="button"
+									class="custom-modal-close"
+									data-dismiss="custom-modal"
+									aria-label="Close">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+							<div class="custom-modal-body">
+								<div class="custom-modal-centered">
+									<i
+										class="fas fa-user-slash custom-modal-icon text-danger"></i>
+									<h4>Are you sure you want to delete this user?</h4>
 								</div>
-								<div class="modal-body">
-									<div class="text-center mb-4">
-										<i class="fas fa-user-slash fa-4x text-danger mb-3"></i>
-										<h4>Are you sure you want to delete this user?</h4>
-									</div>
 
-									<div class="alert alert-warning">
-										<i class="fas fa-info-circle me-2"></i>
+								<div class="custom-modal-alert custom-modal-alert-warning">
+									<i class="fas fa-info-circle me-2"></i>
+									<div>
 										<strong>User details:</strong>
 										<ul class="mb-0 mt-2">
 											<li><strong>Username:</strong> <%= user.username %></li>
@@ -98,33 +97,37 @@
 											<li><strong>Role:</strong> <%= user.role %></li>
 										</ul>
 									</div>
+								</div>
 
-									<div class="alert alert-info">
-										<i class="fas fa-archive me-2"></i>
+								<div class="custom-modal-alert custom-modal-alert-info">
+									<i class="fas fa-archive me-2"></i>
+									<div>
 										All reports created by this user will be automatically
 										archived and accessible in the Archived Reports section.
 									</div>
+								</div>
 
-									<p class="text-danger">
-										<strong>This action cannot be undone.</strong>
-									</p>
-								</div>
-								<div class="modal-footer">
+								<p class="text-danger">
+									<strong>This action cannot be undone.</strong>
+								</p>
+							</div>
+							<div class="custom-modal-footer">
+								<button
+									type="button"
+									class="custom-modal-btn custom-modal-btn-light"
+									data-dismiss="custom-modal">
+									<i class="fas fa-times me-1"></i> Cancel
+								</button>
+								<form
+									action="/admin/users/<%= user._id %>/delete"
+									method="POST"
+									class="d-inline">
 									<button
-										type="button"
-										class="btn btn-secondary"
-										data-bs-dismiss="modal">
-										<i class="fas fa-times me-1"></i> Cancel
+										type="submit"
+										class="custom-modal-btn custom-modal-btn-danger">
+										<i class="fas fa-trash me-1"></i> Delete User
 									</button>
-									<form
-										action="/admin/users/<%= user._id %>/delete"
-										method="POST"
-										class="d-inline">
-										<button type="submit" class="btn btn-danger">
-											<i class="fas fa-trash me-1"></i> Delete User
-										</button>
-									</form>
-								</div>
+								</form>
 							</div>
 						</div>
 					</div>
@@ -134,10 +137,5 @@
 		</div>
 	</div>
 </div>
-
-<script
-	src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-	integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-	crossorigin="anonymous"></script>
 
 <script src="/js/modalHandlers.js"></script>
