@@ -86,6 +86,8 @@ if (typeof window.CustomModal === "undefined") {
 							notificationType = "danger";
 						} else if (actionType === "archive" || actionType === "unarchive") {
 							notificationType = "info";
+						} else if (actionType === "role") {
+							notificationType = "success";
 						}
 
 						// Show the notification after a short delay

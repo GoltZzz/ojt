@@ -64,10 +64,19 @@ const toggleUserRole = catchAsync(async (req, res) => {
 		req.flash("error", "User not found");
 		return res.redirect("/admin/users");
 	}
+
+	// Get the old role for the message
+	const oldRole = user.role;
+
+	// Toggle the role
 	user.role = user.role === "admin" ? "user" : "admin";
 	await user.save();
 
-	req.flash("success", `${user.username}'s role updated to ${user.role}`);
+	// Create a more descriptive success message
+	req.flash(
+		"success",
+		`${user.username}'s role has been changed from ${oldRole} to ${user.role}`
+	);
 	res.redirect("/admin/users");
 });
 

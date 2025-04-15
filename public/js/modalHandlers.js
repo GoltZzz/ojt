@@ -88,7 +88,10 @@ document.addEventListener("DOMContentLoaded", function () {
 								}
 							} else if (formAction.includes("/toggle-role")) {
 								actionType = "role";
-								customMessage = "User role has been updated successfully";
+								// Get custom message from the form's data attribute if available
+								customMessage =
+									newForm.getAttribute("data-custom-message") ||
+									"User role has been updated successfully";
 							}
 						}
 

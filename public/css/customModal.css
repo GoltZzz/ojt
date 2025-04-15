@@ -219,6 +219,12 @@
 	box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
 }
 
+.custom-modal-btn-primary {
+	background: linear-gradient(135deg, #3498db, #2980b9);
+	color: white;
+	box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
 /* Form styles inside modal */
 .custom-modal .form-group {
 	margin-bottom: 1rem;

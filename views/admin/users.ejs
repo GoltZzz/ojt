@@ -37,16 +37,12 @@
 						</td>
 						<td>
 							<div class="btn-group" role="group">
-								<form
-									action="/admin/users/<%= user._id %>/toggle-role"
-									method="POST"
-									class="d-inline me-2">
-									<button
-										type="submit"
-										class="btn btn-sm <%= user.role === 'admin' ? 'btn-outline-primary' : 'btn-outline-danger' %>">
-										Make <%= user.role === 'admin' ? 'User' : 'Admin' %>
-									</button>
-								</form>
+								<button
+									type="button"
+									class="btn btn-sm <%= user.role === 'admin' ? 'btn-outline-primary' : 'btn-outline-danger' %>"
+									data-custom-modal-target="toggleRoleModal<%= user._id %>">
+									Make <%= user.role === 'admin' ? 'User' : 'Admin' %>
+								</button>
 								<% if (currentUser._id.toString() === user._id.toString()) { %>
 								<button
 									type="button"
@@ -108,6 +104,70 @@
 										type="submit"
 										class="custom-modal-btn custom-modal-btn-danger">
 										<i class="fas fa-trash me-1"></i> Delete User
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+
+					<!-- Toggle Role Modal -->
+					<div
+						class="custom-modal-overlay"
+						id="toggleRoleModal<%= user._id %>"
+						role="dialog"
+						aria-labelledby="toggleRoleModalLabel<%= user._id %>">
+						<div class="custom-modal">
+							<div
+								class="custom-modal-header <%= user.role === 'admin' ? 'bg-primary' : 'bg-danger' %>">
+								<h5
+									class="custom-modal-title"
+									id="toggleRoleModalLabel<%= user._id %>">
+									<i class="fas fa-user-shield"></i>
+									Change User Role
+								</h5>
+								<button
+									type="button"
+									class="custom-modal-close"
+									aria-label="Close">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+							<div class="custom-modal-body">
+								<div class="custom-modal-content">
+									<i
+										class="fas fa-user-shield custom-modal-icon <%= user.role === 'admin' ? 'text-primary' : 'text-danger' %>"></i>
+									<h4>Change role for <%= user.username %>?</h4>
+									<p class="mt-3">
+										You are about to change this user's role from
+										<strong><%= user.role %></strong> to
+										<strong
+											><%= user.role === 'admin' ? 'user' : 'admin' %></strong
+										>.
+									</p>
+									<% if (user.role === 'user') { %>
+									<p class="text-danger">
+										<strong>Warning:</strong> Admin users have full access to
+										the system, including user management and report approval.
+									</p>
+									<% } else { %>
+									<p class="text-primary">
+										<strong>Note:</strong> Regular users can only create and
+										manage their own reports.
+									</p>
+									<% } %>
+								</div>
+							</div>
+							<div class="custom-modal-footer">
+								<form
+									action="/admin/users/<%= user._id %>/toggle-role"
+									method="POST"
+									data-custom-message="User role has been updated successfully"
+									data-action-type="role"
+									class="d-inline">
+									<button
+										type="submit"
+										class="custom-modal-btn <%= user.role === 'admin' ? 'custom-modal-btn-primary' : 'custom-modal-btn-danger' %>">
+										<i class="fas fa-user-shield me-1"></i> Confirm Role Change
 									</button>
 								</form>
 							</div>
