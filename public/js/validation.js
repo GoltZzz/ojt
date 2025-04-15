@@ -41,7 +41,14 @@ document.addEventListener("DOMContentLoaded", function () {
 		// Sanitize all inputs before validation
 		if (typeof sanitizeInput === "function") {
 			textInputs.forEach((input) => {
-				input.value = sanitizeInput(input.value);
+				// For textareas, preserve spaces but sanitize
+				const preserveSpaces =
+					input.tagName.toLowerCase() === "textarea" ||
+					input.name.includes("accomplishments") ||
+					input.name.includes("description") ||
+					input.name.includes("content") ||
+					input.name.includes("reason");
+				input.value = sanitizeInput(input.value, preserveSpaces);
 			});
 		}
 
