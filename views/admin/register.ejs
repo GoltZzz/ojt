@@ -254,13 +254,40 @@
 									<span class="input-group-text"
 										><i class="fas fa-user"></i
 									></span>
-									<input
-										type="text"
-										class="form-control"
-										name="username"
-										id="username"
-										placeholder="Choose a username"
-										required />
+									<div class="position-relative flex-grow-1">
+										<input
+											type="text"
+											class="form-control"
+											name="username"
+											id="username"
+											placeholder="Choose a username"
+											required />
+
+										<!-- Username validation indicators -->
+										<div
+											class="position-absolute top-50 end-0 translate-middle-y me-3"
+											id="usernameCheckIndicator"
+											style="display: none; z-index: 5">
+											<div class="d-flex align-items-center">
+												<div
+													class="spinner-border spinner-border-sm text-primary"
+													role="status"
+													id="usernameSpinner">
+													<span class="visually-hidden">Loading...</span>
+												</div>
+												<i
+													class="fas fa-check-circle text-success ms-1"
+													style="font-size: 1.2rem; display: none"
+													id="usernameAvailable"
+													title="Username is available"></i>
+												<i
+													class="fas fa-times-circle text-danger ms-1"
+													style="font-size: 1.2rem; display: none"
+													id="usernameUnavailable"
+													title="Username already exists"></i>
+											</div>
+										</div>
+									</div>
 								</div>
 
 								<!-- Username validation indicators -->
@@ -359,36 +386,38 @@
 									<span class="input-group-text"
 										><i class="fas fa-lock"></i
 									></span>
-									<input
-										type="password"
-										class="form-control"
-										name="password"
-										id="password"
-										placeholder="Create a password"
-										required />
+									<div class="position-relative flex-grow-1">
+										<input
+											type="password"
+											class="form-control"
+											name="password"
+											id="password"
+											placeholder="Create a password"
+											required />
+
+										<!-- Password validation indicators -->
+										<div
+											class="position-absolute top-50 end-0 translate-middle-y me-3"
+											id="passwordCheckIndicator"
+											style="display: none; z-index: 5">
+											<i
+												class="fas fa-check-circle text-success"
+												style="font-size: 1.2rem; display: none"
+												id="passwordValid"
+												title="Password meets all requirements"></i>
+											<i
+												class="fas fa-times-circle text-danger"
+												style="font-size: 1.2rem; display: none"
+												id="passwordInvalid"
+												title="Password does not meet requirements"></i>
+										</div>
+									</div>
 									<button
 										class="btn btn-outline-secondary"
 										type="button"
 										id="togglePassword">
 										<i class="fas fa-eye"></i>
 									</button>
-								</div>
-
-								<!-- Password validation indicators -->
-								<div
-									class="position-absolute top-50 end-0 translate-middle-y me-12"
-									id="passwordCheckIndicator"
-									style="display: none; z-index: 5; right: 50px">
-									<i
-										class="fas fa-check-circle text-success"
-										style="font-size: 1.2rem; display: none"
-										id="passwordValid"
-										title="Password meets all requirements"></i>
-									<i
-										class="fas fa-times-circle text-danger"
-										style="font-size: 1.2rem; display: none"
-										id="passwordInvalid"
-										title="Password does not meet requirements"></i>
 								</div>
 							</div>
 
