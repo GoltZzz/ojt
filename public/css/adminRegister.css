@@ -1,0 +1,134 @@
+.register-card {
+	background: white;
+	border-radius: 15px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+	margin-bottom: 2rem;
+}
+
+.register-header {
+	background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+	color: white;
+	padding: 1.5rem;
+	text-align: center;
+	position: relative;
+}
+
+.register-header h2 {
+	margin: 0;
+	font-size: 1.8rem;
+	font-weight: 700;
+}
+
+.register-header p {
+	margin: 0.5rem 0 0;
+	opacity: 0.9;
+	font-size: 1rem;
+}
+
+.register-icon {
+	font-size: 2.5rem;
+	margin-bottom: 1rem;
+}
+
+.register-body {
+	padding: 2rem;
+}
+
+.form-label {
+	font-weight: 600;
+	color: #495057;
+	margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+	border: 2px solid #e9ecef;
+	border-radius: 8px;
+	padding: 0.75rem;
+	font-size: 1rem;
+	transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+	border-color: #2193b0;
+	box-shadow: 0 0 0 0.25rem rgba(33, 147, 176, 0.25);
+}
+
+.input-group-text {
+	background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+	color: white;
+	border: none;
+	border-radius: 8px 0 0 8px;
+}
+
+.btn-primary {
+	background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+	border: none;
+	padding: 0.75rem 1.5rem;
+	font-weight: 600;
+	border-radius: 8px;
+	transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
+}
+
+.btn-secondary {
+	background: #6c757d;
+	border: none;
+	padding: 0.75rem 1.5rem;
+	font-weight: 600;
+	border-radius: 8px;
+	transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+}
+
+.form-group {
+	margin-bottom: 1.5rem;
+}
+
+.role-selector {
+	margin-bottom: 1rem;
+}
+
+.role-option {
+	padding: 1.25rem;
+	text-align: center;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	border: 2px solid #e9ecef;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.role-option:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.role-option.selected {
+	background-color: rgba(33, 147, 176, 0.08);
+	border-color: #2193b0;
+	box-shadow: 0 4px 12px rgba(33, 147, 176, 0.15);
+}
+
+.role-icon {
+	font-size: 2.5rem;
+	color: #2193b0;
+	background-color: rgba(33, 147, 176, 0.1);
+	width: 70px;
+	height: 70px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto;
+}
