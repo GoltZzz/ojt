@@ -17,14 +17,43 @@
 				<span class="navbar-toggler-icon"></span>
 			</button>
 			<div class="collapse navbar-collapse" id="mobileNav">
+				<% if (currentUser) { %>
+				<a href="/profile" class="text-decoration-none">
+					<div class="mobile-user-profile mb-3">
+						<div class="user-avatar">
+							<i class="fas fa-user-circle"></i>
+						</div>
+						<div class="user-info">
+							<h5 class="user-name">
+								<% let mobileFullName = currentUser.firstName; if
+								(currentUser.middleName && currentUser.middleName.length > 0) {
+								const mobileMiddleInitial =
+								currentUser.middleName.charAt(0).toUpperCase(); mobileFullName +=
+								` ${mobileMiddleInitial}.`; } mobileFullName += `
+								${currentUser.lastName}`; %> <%= mobileFullName %>
+							</h5>
+							<span
+								class="user-role badge <%= currentUser.role === 'admin' ? 'bg-danger' : 'bg-primary' %>">
+								<%= currentUser.role %>
+							</span>
+						</div>
+					</div>
+				</a>
+				<% } %>
 				<ul class="navbar-nav ms-auto">
 					<li class="nav-item">
 						<a href="/" class="nav-link"
 							><i class="fa-solid fa-home"></i> Home</a
 						>
 					</li>
-					<% if (currentUser) { %> <% if (currentUser.role === 'admin') { %> <%
-					} else { %>
+					<% if (currentUser) { %> 
+					<li class="nav-item">
+						<a href="/profile" class="nav-link"
+							><i class="fa-solid fa-user"></i> My Profile</a
+						>
+					</li>
+					<% if (currentUser.role === 'admin') { %> <% }
+					else { %>
 					<li class="nav-item">
 						<a href="/dashboard" class="nav-link"
 							><i class="fa-solid fa-info-circle"></i> Dashboard</a
@@ -94,11 +123,41 @@
 	<!-- Desktop sidebar -->
 	<div class="desktop-sidebar d-none d-lg-block p-3">
 		<h2><i class="fa-solid fa-file-alt"></i> OJT Summary Report</h2>
+
+		<% if (currentUser) { %>
+		<a href="/profile" class="text-decoration-none">
+			<div class="user-profile mb-3">
+				<div class="user-avatar">
+					<i class="fas fa-user-circle"></i>
+				</div>
+				<div class="user-info">
+					<h5 class="user-name">
+						<% let fullName = currentUser.firstName; if (currentUser.middleName &&
+						currentUser.middleName.length > 0) { const middleInitial =
+						currentUser.middleName.charAt(0).toUpperCase(); fullName += `
+						${middleInitial}.`; } fullName += ` ${currentUser.lastName}`; %> <%=
+						fullName %>
+					</h5>
+					<span
+						class="user-role badge <%= currentUser.role === 'admin' ? 'bg-danger' : 'bg-primary' %>">
+						<%= currentUser.role %>
+					</span>
+				</div>
+			</div>
+		</a>
+		<% } %>
+
 		<ul class="nav flex-column">
 			<li class="nav-item">
 				<a href="/" class="nav-link"><i class="fa-solid fa-home"></i> Home</a>
 			</li>
-			<% if (currentUser) { %> <% if (currentUser.role === 'admin') { %> <% }
+			<% if (currentUser) { %> 
+			<li class="nav-item">
+				<a href="/profile" class="nav-link"
+					><i class="fa-solid fa-user"></i> My Profile</a
+				>
+			</li>
+			<% if (currentUser.role === 'admin') { %> <% }
 			else { %>
 			<li class="nav-item">
 				<a href="/dashboard" class="nav-link"

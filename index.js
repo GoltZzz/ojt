@@ -29,6 +29,8 @@ import adminApiRoutes from "./routes/admin/api.js";
 import documentationRoutes from "./routes/users/documentation.js";
 // for time report routes
 import timeReportRoutes from "./routes/users/timeReport.js";
+// for profile routes
+import profileRoutes from "./routes/users/profile.js";
 
 // for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -101,6 +103,8 @@ app.use("/api/admin", adminApiRoutes);
 app.use("/documentation", documentationRoutes);
 // for time report routes
 app.use("/timereport", timeReportRoutes);
+// for profile routes
+app.use("/profile", profileRoutes);
 
 app.use("/", userRoutes);
 // for homepage
