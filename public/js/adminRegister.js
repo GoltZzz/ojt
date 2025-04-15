@@ -5,11 +5,44 @@
 	// Fetch all the forms we want to apply custom Bootstrap validation styles to
 	const forms = document.querySelectorAll(".needs-validation");
 
+	// Add sanitization to all text inputs
+	forms.forEach((form) => {
+		const textInputs = form.querySelectorAll(
+			'input[type="text"], input[type="email"], textarea'
+		);
+		textInputs.forEach((input) => {
+			// Skip username field as it has special validation
+			if (input.id === "username") return;
+
+			// Sanitize on input
+			input.addEventListener("input", function () {
+				if (typeof sanitizeInput === "function") {
+					const sanitizedValue = sanitizeInput(this.value);
+					if (this.value !== sanitizedValue) {
+						this.value = sanitizedValue;
+					}
+				}
+			});
+		});
+	});
+
 	// Loop over them and prevent submission
 	Array.from(forms).forEach((form) => {
 		form.addEventListener(
 			"submit",
 			(event) => {
+				// Sanitize all inputs before validation
+				if (typeof sanitizeInput === "function") {
+					const textInputs = form.querySelectorAll(
+						'input[type="text"], input[type="email"], textarea'
+					);
+					textInputs.forEach((input) => {
+						// Skip username field as it has special validation
+						if (input.id === "username") return;
+						input.value = sanitizeInput(input.value);
+					});
+				}
+
 				if (!form.checkValidity()) {
 					event.preventDefault();
 					event.stopPropagation();
@@ -357,7 +390,17 @@
 	});
 
 	usernameInput.addEventListener("input", function () {
-		const username = this.value.trim();
+		// Get the value and sanitize it
+		let username = this.value.trim();
+
+		// Sanitize the username if the sanitizeInput function is available
+		if (typeof sanitizeInput === "function") {
+			const sanitizedUsername = sanitizeInput(username);
+			if (username !== sanitizedUsername) {
+				username = sanitizedUsername;
+				this.value = username;
+			}
+		}
 
 		// Clear any existing timeout
 		clearTimeout(usernameTimeout);

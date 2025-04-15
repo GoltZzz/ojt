@@ -1,13 +1,22 @@
 import express from "express";
 import { isLoggedIn } from "../../middleware.js";
 import * as weeklyReports from "../../controllers/users/weeklyReports.js";
+import {
+	validateWeeklyReport,
+	handleValidationErrors,
+} from "../../utils/sanitize.js";
 
 const router = express.Router();
 
 router
 	.route("/")
 	.get(isLoggedIn, weeklyReports.index)
-	.post(isLoggedIn, weeklyReports.createReport);
+	.post(
+		isLoggedIn,
+		validateWeeklyReport,
+		handleValidationErrors,
+		weeklyReports.createReport
+	);
 
 router.get("/new", isLoggedIn, weeklyReports.renderNewForm);
 

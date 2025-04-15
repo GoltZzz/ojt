@@ -23,7 +23,28 @@ document.addEventListener("DOMContentLoaded", function () {
 		"dailyRecords[][timeOut][afternoon]": "Enter afternoon time out",
 	};
 
+	// Add input event listeners for sanitization
+	const textInputs = form.querySelectorAll('input[type="text"], textarea');
+	textInputs.forEach((input) => {
+		// Sanitize on input
+		input.addEventListener("input", function () {
+			if (typeof sanitizeInput === "function") {
+				const sanitizedValue = sanitizeInput(this.value);
+				if (this.value !== sanitizedValue) {
+					this.value = sanitizedValue;
+				}
+			}
+		});
+	});
+
 	form.addEventListener("submit", (event) => {
+		// Sanitize all inputs before validation
+		if (typeof sanitizeInput === "function") {
+			textInputs.forEach((input) => {
+				input.value = sanitizeInput(input.value);
+			});
+		}
+
 		const isValid = validateForm(form, validationRules, validationMessages);
 		if (!isValid) {
 			event.preventDefault();

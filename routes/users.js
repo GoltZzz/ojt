@@ -3,12 +3,18 @@ import passport from "passport";
 import users from "../controllers/users/users.js";
 import catchAsync from "../utils/catchAsync.js";
 import { isLoggedIn, redirectIfUsersExist } from "../middleware.js";
+import { validateUser, handleValidationErrors } from "../utils/sanitize.js";
 const router = express.Router();
 
 router
 	.route("/register")
 	.get(catchAsync(redirectIfUsersExist), catchAsync(users.renderRegister))
-	.post(catchAsync(redirectIfUsersExist), catchAsync(users.createUser));
+	.post(
+		catchAsync(redirectIfUsersExist),
+		validateUser,
+		handleValidationErrors,
+		catchAsync(users.createUser)
+	);
 router
 	.route("/login")
 	.get(users.renderLogin)

@@ -2,6 +2,7 @@ import express from "express";
 import { isLoggedIn, isAdmin } from "../../middleware.js";
 import adminController from "../../controllers/admin/admin.js";
 import selfDeleteController from "../../controllers/admin/selfDelete.js";
+import { validateUser, handleValidationErrors } from "../../utils/sanitize.js";
 
 const router = express.Router();
 
@@ -12,7 +13,13 @@ router.route("/users").get(isLoggedIn, isAdmin, adminController.renderUsers);
 router
 	.route("/register")
 	.get(isLoggedIn, isAdmin, adminController.renderRegisterForm)
-	.post(isLoggedIn, isAdmin, adminController.registerUser);
+	.post(
+		isLoggedIn,
+		isAdmin,
+		validateUser,
+		handleValidationErrors,
+		adminController.registerUser
+	);
 
 router
 	.route("/users/:id/toggle-role")
