@@ -1,171 +1,176 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/dashboard.css" />
+<script src="/js/dashboardClock.js" defer></script>
+
 <div class="dashboard-container">
-	<% if(currentUser) { %>
-	<div class="welcome-section">
-		<h1>Welcome, <%= currentUser.username %></h1>
-		<p>Here's what's happening today</p>
-	</div>
+  <% if(currentUser) { %>
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+      <div class="welcome-content">
+        <h1>Welcome, <%= currentUser.firstName || currentUser.username %></h1>
+        <p>Here's your activity summary and quick actions</p>
+      </div>
+      <div class="date-display">
+        <div class="current-date">
+          <i class="far fa-calendar-alt"></i>
+          <span id="current-date"></span>
+        </div>
+        <div class="current-time">
+          <i class="far fa-clock"></i>
+          <span id="current-time"></span>
+        </div>
+      </div>
+    </div>
 
-	<div class="dashboard-grid">
-		<!-- Quick Stats -->
-		<div class="dashboard-card">
-			<h3><i class="fas fa-chart-line me-2"></i>Your Reports</h3>
-			<div class="stats-grid">
-				<div class="stat-item">
-					<div class="stat-icon bg-primary">
-						<i class="fas fa-file-alt"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.weeklyReports : 0 %></span
-					>
-					<span class="stat-label">Weekly Reports</span>
-				</div>
-				<div class="stat-item">
-					<div class="stat-icon bg-success">
-						<i class="fas fa-book"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.documentation : 0 %></span
-					>
-					<span class="stat-label">Documentation</span>
-				</div>
-				<div class="stat-item">
-					<div class="stat-icon bg-info">
-						<i class="fas fa-clock"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.timeReports : 0 %></span
-					>
-					<span class="stat-label">Time Reports</span>
-				</div>
-				<div class="stat-item">
-					<div class="stat-icon bg-warning">
-						<i class="fas fa-hourglass-half"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.pendingReports : 0 %></span
-					>
-					<span class="stat-label">Pending</span>
-				</div>
-			</div>
-		</div>
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+      <!-- Quick Stats -->
+      <div class="dashboard-card full-width">
+        <h3><i class="fas fa-chart-line me-2"></i>Your Reports</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-icon bg-primary">
+              <i class="fas fa-file-alt"></i>
+            </div>
+            <span class="stat-number"><%= userStats ? userStats.weeklyReports : 0 %></span>
+            <span class="stat-label">Weekly Reports</span>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon bg-success">
+              <i class="fas fa-book"></i>
+            </div>
+            <span class="stat-number"><%= userStats ? userStats.documentation : 0 %></span>
+            <span class="stat-label">Documentation</span>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon bg-info">
+              <i class="fas fa-clock"></i>
+            </div>
+            <span class="stat-number"><%= userStats ? userStats.timeReports : 0 %></span>
+            <span class="stat-label">Time Reports</span>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon bg-warning">
+              <i class="fas fa-hourglass-half"></i>
+            </div>
+            <span class="stat-number"><%= userStats ? userStats.pendingReports : 0 %></span>
+            <span class="stat-label">Pending</span>
+          </div>
+        </div>
+      </div>
 
-		<!-- Recent Activity -->
-		<div class="dashboard-card">
-			<h3><i class="fas fa-history me-2"></i>Recent Reports</h3>
-			<div class="activity-list">
-				<% if (latestReports && latestReports.length > 0) { %>
-				<div class="recent-reports">
-					<% latestReports.forEach(report => { %>
-					<div class="report-item">
-						<div class="report-icon">
-							<% if (report.status === 'approved') { %>
-							<i class="fas fa-check-circle text-success"></i>
-							<% } else if (report.status === 'rejected') { %>
-							<i class="fas fa-times-circle text-danger"></i>
-							<% } else { %>
-							<i class="fas fa-clock text-warning"></i>
-							<% } %>
-						</div>
-						<div class="report-details">
-							<h4><%= report.studentName %></h4>
-							<p><%= report.internshipSite %></p>
-							<div class="report-meta">
-								<span class="report-date">
-									<i class="far fa-calendar-alt"></i>
-									<%= report.weekStartDate.toLocaleDateString() %> - <%=
-									report.weekEndDate.toLocaleDateString() %>
-								</span>
-								<span class="report-status <%= report.status %>">
-									<%= report.status.charAt(0).toUpperCase() +
-									report.status.slice(1) %>
-								</span>
-							</div>
-						</div>
-						<a href="/weeklyreport/<%= report._id %>" class="report-link">
-							<i class="fas fa-arrow-right"></i>
-						</a>
-					</div>
-					<% }); %>
-				</div>
-				<div class="text-center mt-3">
-					<a href="/weeklyreport" class="btn btn-sm">View All Reports</a>
-				</div>
-				<% } else { %>
-				<div class="no-activity">
-					<i class="fas fa-info-circle"></i>
-					<p>No recent reports found</p>
-					<a href="/weeklyreport/new" class="btn btn-sm mt-2"
-						>Create Your First Report</a
-					>
-				</div>
-				<% } %>
-			</div>
-		</div>
+      <!-- Recent Activity -->
+      <div class="dashboard-card full-width">
+        <div class="card-header-with-actions">
+          <h3><i class="fas fa-history me-2"></i>Recent Reports</h3>
+          <a href="/weeklyreport" class="view-all-link">View All <i class="fas fa-chevron-right"></i></a>
+        </div>
+        <div class="activity-list">
+          <% if (latestReports && latestReports.length > 0) { %>
+            <div class="recent-reports">
+              <% latestReports.forEach(report => { %>
+                <div class="report-item">
+                  <div class="report-status-indicator <%= report.status %>"></div>
+                  <div class="report-icon">
+                    <% if (report.status === 'approved') { %>
+                      <i class="fas fa-check-circle text-success"></i>
+                    <% } else if (report.status === 'rejected') { %>
+                      <i class="fas fa-times-circle text-danger"></i>
+                    <% } else { %>
+                      <i class="fas fa-clock text-warning"></i>
+                    <% } %>
+                  </div>
+                  <div class="report-details">
+                    <h4><%= report.studentName %></h4>
+                    <p><%= report.internshipSite %></p>
+                    <div class="report-meta">
+                      <span class="report-date">
+                        <i class="far fa-calendar-alt"></i>
+                        <%= report.weekStartDate.toLocaleDateString() %> - <%= report.weekEndDate.toLocaleDateString() %>
+                      </span>
+                      <span class="report-status <%= report.status %>">
+                        <%= report.status.charAt(0).toUpperCase() + report.status.slice(1) %>
+                      </span>
+                    </div>
+                  </div>
+                  <a href="/weeklyreport/<%= report._id %>" class="report-link">
+                    <i class="fas fa-arrow-right"></i>
+                  </a>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="no-activity">
+              <i class="fas fa-info-circle"></i>
+              <p>No recent reports found</p>
+              <a href="/weeklyreport/new" class="btn btn-sm mt-2">Create Your First Report</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
 
-		<!-- Quick Actions -->
-		<div class="dashboard-card">
-			<h3><i class="fas fa-bolt me-2"></i>Quick Actions</h3>
-			<div class="action-buttons">
-				<% if (currentUser.role !== 'admin') { %>
-				<a href="/weeklyreport/new" class="action-btn weekly-report">
-					<div class="action-icon">
-						<i class="fas fa-file-alt"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Weekly Report</span>
-						<span class="action-desc">Create a new weekly report</span>
-					</div>
-				</a>
-				<a href="/documentation/new" class="action-btn documentation">
-					<div class="action-icon">
-						<i class="fas fa-book"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Documentation</span>
-						<span class="action-desc">Create new documentation</span>
-					</div>
-				</a>
-				<a href="/timereport/new" class="action-btn time-report">
-					<div class="action-icon">
-						<i class="fas fa-clock"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Time Report</span>
-						<span class="action-desc">Log your work hours</span>
-					</div>
-				</a>
-				<% } else { %>
-				<a href="/admin" class="action-btn admin">
-					<div class="action-icon">
-						<i class="fas fa-user-shield"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Admin Dashboard</span>
-						<span class="action-desc">Manage system and users</span>
-					</div>
-				</a>
-				<% } %>
-				<a href="/profile" class="action-btn profile">
-					<div class="action-icon">
-						<i class="fas fa-user-edit"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Profile</span>
-						<span class="action-desc">Update your information</span>
-					</div>
-				</a>
-			</div>
-		</div>
-	</div>
-	<% } else { %>
-	<div class="auth-options">
-		<h2>Please login to access your dashboard</h2>
-		<div class="auth-buttons">
-			<a href="/login" class="btn">Login</a>
-			<a href="/register" class="btn">Register</a>
-		</div>
-	</div>
-	<% } %>
+      <!-- Quick Actions -->
+      <div class="dashboard-card full-width">
+        <h3><i class="fas fa-bolt me-2"></i>Quick Actions</h3>
+        <div class="action-buttons">
+          <% if (currentUser.role !== 'admin') { %>
+            <a href="/weeklyreport/new" class="action-btn weekly-report">
+              <div class="action-icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <div class="action-text">
+                <span class="action-title">Weekly Report</span>
+                <span class="action-desc">Create a new weekly report</span>
+              </div>
+            </a>
+            <a href="/documentation/new" class="action-btn documentation">
+              <div class="action-icon">
+                <i class="fas fa-book"></i>
+              </div>
+              <div class="action-text">
+                <span class="action-title">Documentation</span>
+                <span class="action-desc">Create new documentation</span>
+              </div>
+            </a>
+            <a href="/timereport/new" class="action-btn time-report">
+              <div class="action-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="action-text">
+                <span class="action-title">Time Report</span>
+                <span class="action-desc">Log your work hours</span>
+              </div>
+            </a>
+          <% } else { %>
+            <a href="/admin" class="action-btn admin">
+              <div class="action-icon">
+                <i class="fas fa-user-shield"></i>
+              </div>
+              <div class="action-text">
+                <span class="action-title">Admin Dashboard</span>
+                <span class="action-desc">Manage system and users</span>
+              </div>
+            </a>
+          <% } %>
+          <a href="/profile" class="action-btn profile">
+            <div class="action-icon">
+              <i class="fas fa-user-edit"></i>
+            </div>
+            <div class="action-text">
+              <span class="action-title">Profile</span>
+              <span class="action-desc">Update your information</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="auth-options">
+      <h2>Please login to access your dashboard</h2>
+      <div class="auth-buttons">
+        <a href="/login" class="btn">Login</a>
+        <a href="/register" class="btn">Register</a>
+      </div>
+    </div>
+  <% } %>
 </div>

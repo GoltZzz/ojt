@@ -1,5 +1,6 @@
 import express from "express";
 import { isLoggedIn } from "../../middleware.js";
+import isAuthor from "../../middleware/isAuthor.js";
 import * as weeklyReports from "../../controllers/users/weeklyReports.js";
 import {
 	validateWeeklyReport,
@@ -23,8 +24,19 @@ router.get("/new", isLoggedIn, weeklyReports.renderNewForm);
 router
 	.route("/:id")
 	.get(isLoggedIn, weeklyReports.showReport)
-	.delete(isLoggedIn, weeklyReports.deleteReport);
+	.delete(isLoggedIn, isAuthor, weeklyReports.deleteReport);
 
 router.post("/:id/archive", isLoggedIn, weeklyReports.archiveReport);
-router.route("/:id/edit").get(isLoggedIn, weeklyReports.renderEditForm);
+router
+	.route("/:id/edit")
+	.get(isLoggedIn, isAuthor, weeklyReports.renderEditForm);
+router
+	.route("/:id/update")
+	.post(
+		isLoggedIn,
+		isAuthor,
+		validateWeeklyReport,
+		handleValidationErrors,
+		weeklyReports.updateReport
+	);
 export default router;

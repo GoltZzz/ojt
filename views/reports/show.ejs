@@ -129,20 +129,24 @@
 	<% } %>
 
 	<div class="action-buttons mt-4">
-		<% if (WeeklyReports.status === 'pending' && currentUser.role !== 'admin') {
-		%>
+		<!-- Edit button - only for authors of pending reports -->
+		<% if (WeeklyReports.canEdit) { %>
 		<a
 			href="/weeklyreport/<%= WeeklyReports._id %>/edit"
 			class="btn btn-warning">
 			<i class="fas fa-edit"></i> Edit Report
 		</a>
-		<% } %> <% if (currentUser.role !== 'admin' && (currentUser._id.toString()
-		=== WeeklyReports.author?.toString() || !WeeklyReports.author)) { %>
+		<% } %>
+		
+		<!-- Print button - only for report authors -->
+		<% if (WeeklyReports.isAuthor) { %>
 		<button onclick="window.print()" class="btn btn-info">
 			<i class="fas fa-print"></i> Print Report
 		</button>
-		<% } %> <% if (currentUser.role === 'admin' && WeeklyReports.status ===
-		'pending') { %>
+		<% } %>
+		
+		<!-- Admin approval buttons - only for admins with pending reports -->
+		<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') { %>
 		<button
 			type="button"
 			class="btn btn-success"
@@ -155,26 +159,29 @@
 			data-custom-modal-target="rejectModal">
 			<i class="fas fa-times"></i> Reject
 		</button>
-		<% } %> <% if (currentUser.role === 'admin') { %> <% if
-		(WeeklyReports.archived) { %>
-		<button
-			type="button"
-			class="btn btn-success"
-			data-custom-modal-target="unarchiveReportModal">
-			<i class="fas fa-box-open"></i> Unarchive
-		</button>
-		<% } else { %>
-		<button
-			type="button"
-			class="btn btn-secondary"
-			data-custom-modal-target="archiveReportModal">
-			<i class="fas fa-archive"></i> Archive
-		</button>
-		<% } %> <% } %>
+		<% } %>
+		
+		<!-- Archive/Unarchive buttons - only for admins -->
+		<% if (currentUser.role === 'admin') { %>
+			<% if (WeeklyReports.archived) { %>
+			<button
+				type="button"
+				class="btn btn-success"
+				data-custom-modal-target="unarchiveReportModal">
+				<i class="fas fa-box-open"></i> Unarchive
+			</button>
+			<% } else { %>
+			<button
+				type="button"
+				class="btn btn-secondary"
+				data-custom-modal-target="archiveReportModal">
+				<i class="fas fa-archive"></i> Archive
+			</button>
+			<% } %>
+		<% } %>
 
-		<!-- Delete button - only for regular users with pending reports -->
-		<% if (currentUser.role !== 'admin' && WeeklyReports.status === 'pending') {
-		%>
+		<!-- Delete button - only for authors of pending reports -->
+		<% if (WeeklyReports.canEdit) { %>
 		<form
 			class="d-inline"
 			action="/weeklyreport/<%= WeeklyReports._id %>?_method=DELETE"

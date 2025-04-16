@@ -49,6 +49,7 @@ export const showReport = catchAsync(async (req, res, next) => {
 	const { id } = req.params;
 	const WeeklyReports = await WeeklyReport.findById(id)
 		.populate("approvedBy", "username")
+		.populate("author", "username")
 		.lean();
 	if (!WeeklyReports) {
 		req.flash("error", "Cannot find that weekly report!");
@@ -76,6 +77,17 @@ export const showReport = catchAsync(async (req, res, next) => {
 			})
 		);
 	}
+
+	// Add a flag to indicate if the current user is the author of the report
+	WeeklyReports.isAuthor =
+		WeeklyReports.author &&
+		req.user &&
+		WeeklyReports.author._id.toString() === req.user._id.toString();
+
+	// Add a flag to indicate if the report can be edited (is pending and user is author)
+	WeeklyReports.canEdit =
+		WeeklyReports.isAuthor && WeeklyReports.status === "pending";
+
 	res.render("reports/show", { WeeklyReports });
 });
 
@@ -88,19 +100,49 @@ export const renderEditForm = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyreport");
 	}
 
+	// Double-check that the current user is the author (middleware should have caught this already)
+	if (!WeeklyReports.author || !WeeklyReports.author.equals(req.user._id)) {
+		req.flash("error", "You don't have permission to edit this report");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Check if the report is already approved or rejected
+	if (WeeklyReports.status !== "pending") {
+		req.flash("error", "You cannot edit a report that has been processed");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
 	res.render("reports/edit", { WeeklyReports });
 });
 
 export const updateReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
+
+	// First find the report to check permissions
+	const report = await WeeklyReport.findById(id);
+
+	if (!report) {
+		req.flash("error", "Weekly Report not found");
+		return res.redirect("/weeklyreport");
+	}
+
+	// Double-check that the current user is the author
+	if (!report.author || !report.author.equals(req.user._id)) {
+		req.flash("error", "You don't have permission to update this report");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Check if the report is already approved or rejected
+	if (report.status !== "pending") {
+		req.flash("error", "You cannot update a report that has been processed");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Now update the report
 	const WeeklyReports = await WeeklyReport.findByIdAndUpdate(id, req.body, {
 		new: true,
 		runValidators: true,
 	});
-
-	if (!WeeklyReports) {
-		throw new ExpressError("Weekly Report not found", 404);
-	}
 
 	req.flash("success", "Successfully updated weekly report!");
 	res.redirect(`/weeklyreport/${WeeklyReports._id}`);
@@ -108,6 +150,28 @@ export const updateReport = catchAsync(async (req, res) => {
 
 export const deleteReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
+
+	// First find the report to check permissions
+	const report = await WeeklyReport.findById(id);
+
+	if (!report) {
+		req.flash("error", "Weekly Report not found");
+		return res.redirect("/weeklyreport");
+	}
+
+	// Double-check that the current user is the author
+	if (!report.author || !report.author.equals(req.user._id)) {
+		req.flash("error", "You don't have permission to delete this report");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Check if the report is already approved or rejected
+	if (report.status !== "pending") {
+		req.flash("error", "You cannot delete a report that has been processed");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Now delete the report
 	await WeeklyReport.findByIdAndDelete(id);
 	req.flash("success", "Successfully deleted weekly report!");
 	res.redirect("/weeklyreport");
