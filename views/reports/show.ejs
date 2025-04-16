@@ -137,16 +137,24 @@
 			<i class="fas fa-edit"></i> Edit Report
 		</a>
 		<% } %>
-		
+
 		<!-- Print button - only for report authors -->
 		<% if (WeeklyReports.isAuthor) { %>
 		<button onclick="window.print()" class="btn btn-info">
 			<i class="fas fa-print"></i> Print Report
 		</button>
+
+		<!-- Export to DOCX button - only for report authors -->
+		<a
+			href="/weeklyreport/<%= WeeklyReports._id %>/export"
+			class="btn btn-primary">
+			<i class="fas fa-file-word"></i> Export to DOCX
+		</a>
 		<% } %>
-		
+
 		<!-- Admin approval buttons - only for admins with pending reports -->
-		<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') { %>
+		<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') {
+		%>
 		<button
 			type="button"
 			class="btn btn-success"
@@ -160,25 +168,24 @@
 			<i class="fas fa-times"></i> Reject
 		</button>
 		<% } %>
-		
+
 		<!-- Archive/Unarchive buttons - only for admins -->
-		<% if (currentUser.role === 'admin') { %>
-			<% if (WeeklyReports.archived) { %>
-			<button
-				type="button"
-				class="btn btn-success"
-				data-custom-modal-target="unarchiveReportModal">
-				<i class="fas fa-box-open"></i> Unarchive
-			</button>
-			<% } else { %>
-			<button
-				type="button"
-				class="btn btn-secondary"
-				data-custom-modal-target="archiveReportModal">
-				<i class="fas fa-archive"></i> Archive
-			</button>
-			<% } %>
-		<% } %>
+		<% if (currentUser.role === 'admin') { %> <% if (WeeklyReports.archived) {
+		%>
+		<button
+			type="button"
+			class="btn btn-success"
+			data-custom-modal-target="unarchiveReportModal">
+			<i class="fas fa-box-open"></i> Unarchive
+		</button>
+		<% } else { %>
+		<button
+			type="button"
+			class="btn btn-secondary"
+			data-custom-modal-target="archiveReportModal">
+			<i class="fas fa-archive"></i> Archive
+		</button>
+		<% } %> <% } %>
 
 		<!-- Delete button - only for authors of pending reports -->
 		<% if (WeeklyReports.canEdit) { %>

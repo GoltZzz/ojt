@@ -1,2 +1,173 @@
-<%- layout('layouts/boilerplate')%>
-<h1>HEllo World!</h1>
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/flashMsg.css" />
+<link rel="stylesheet" href="/css/sidebar.css" />
+<link rel="stylesheet" href="/css/footer.css" />
+<link rel="stylesheet" href="/css/breadcrumbs.css" />
+<link rel="stylesheet" href="/css/weeklyReportsNew.css" />
+<div class="container mt-4">
+	<h1 class="mb-4">Edit Weekly Report</h1>
+	<form
+		action="/weeklyreport/<%= WeeklyReports._id %>/update"
+		method="POST"
+		novalidate
+		class="validated-form needs-validation">
+		<div class="mb-3">
+			<label for="studentName" class="form-label"
+				>Student Name
+				<small class="text-muted">(cannot be changed)</small></label
+			>
+			<div class="input-group">
+				<span class="input-group-text"><i class="fas fa-user"></i></span>
+				<input
+					type="text"
+					class="form-control bg-light"
+					id="studentName"
+					name="studentName"
+					value="<%= fullName %>"
+					readonly
+					required />
+				<span
+					class="input-group-text"
+					data-bs-toggle="tooltip"
+					title="This field cannot be changed">
+					<i class="fas fa-lock"></i>
+				</span>
+			</div>
+			<small class="form-text text-muted"
+				>This field is automatically filled with your full name and cannot be
+				changed.</small
+			>
+		</div>
+		<div class="mb-3">
+			<label for="internshipSite" class="form-label">Internship Site</label>
+			<input
+				type="text"
+				class="form-control"
+				id="internshipSite"
+				name="internshipSite"
+				value="<%= WeeklyReports.internshipSite %>"
+				required />
+		</div>
+		<div class="row">
+			<div class="col-md-6 mb-3">
+				<label for="weekStartDate" class="form-label">Week Start Date</label>
+				<input
+					type="date"
+					class="form-control"
+					id="weekStartDate"
+					name="weekStartDate"
+					value="<%= WeeklyReports.weekStartDate.split('T')[0] %>"
+					required />
+			</div>
+			<div class="col-md-6 mb-3">
+				<label for="weekEndDate" class="form-label">Week End Date</label>
+				<input
+					type="date"
+					class="form-control"
+					id="weekEndDate"
+					name="weekEndDate"
+					value="<%= WeeklyReports.weekEndDate.split('T')[0] %>"
+					required />
+			</div>
+		</div>
+
+		<!-- Daily Records -->
+		<div id="dailyRecords" novalidate>
+			<% ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day,
+			index) => { %>
+			<div class="card mb-3">
+				<div class="card-header"><%= day %></div>
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-3">
+							<label>Morning Time In</label>
+							<input
+								type="time"
+								class="form-control"
+								name="dailyRecords[<%= index %>][timeIn][morning]"
+								value="<%= WeeklyReports.dailyRecords && WeeklyReports.dailyRecords[index] && WeeklyReports.dailyRecords[index].timeIn && WeeklyReports.dailyRecords[index].timeIn.morning !== 'N/A' ? WeeklyReports.dailyRecords[index].timeIn.morning : '' %>" />
+						</div>
+						<div class="col-md-3">
+							<label>Morning Time Out</label>
+							<input
+								type="time"
+								class="form-control"
+								name="dailyRecords[<%= index %>][timeOut][morning]"
+								value="12:00"
+								readonly
+								style="background-color: #e9ecef" />
+						</div>
+						<div class="col-md-3">
+							<label>Afternoon Time In</label>
+							<input
+								type="time"
+								class="form-control"
+								name="dailyRecords[<%= index %>][timeIn][afternoon]"
+								value="01:00"
+								readonly
+								style="background-color: #e9ecef" />
+						</div>
+						<div class="col-md-3">
+							<label>Afternoon Time Out</label>
+							<input
+								type="time"
+								class="form-control"
+								name="dailyRecords[<%= index %>][timeOut][afternoon]"
+								value="<%= WeeklyReports.dailyRecords && WeeklyReports.dailyRecords[index] && WeeklyReports.dailyRecords[index].timeOut && WeeklyReports.dailyRecords[index].timeOut.afternoon !== 'N/A' ? WeeklyReports.dailyRecords[index].timeOut.afternoon : '' %>" />
+						</div>
+						<div class="col-12 mt-2">
+							<label>Accomplishments</label>
+							<textarea
+								class="form-control"
+								name="dailyRecords[<%= index %>][accomplishments]"
+								placeholder="Enter your accomplishments for the day (optional)">
+<%= WeeklyReports.dailyRecords && WeeklyReports.dailyRecords[index] && WeeklyReports.dailyRecords[index].accomplishments && WeeklyReports.dailyRecords[index].accomplishments !== 'No accomplishments recorded' ? WeeklyReports.dailyRecords[index].accomplishments : '' %></textarea
+							>
+						</div>
+					</div>
+				</div>
+			</div>
+			<% }) %>
+		</div>
+
+		<div class="mb-3">
+			<label for="supervisorName" class="form-label">Supervisor Name</label>
+			<input
+				type="text"
+				class="form-control"
+				id="supervisorName"
+				name="supervisorName"
+				value="<%= WeeklyReports.supervisorName %>"
+				required />
+		</div>
+
+		<div class="mb-3">
+			<p class="text-center font-italic">
+				"I CERTIFY on my honor that the above is a true and correct report of
+				the hours of work performed, record of which was made daily at the time
+				of arrival at and departure from office."
+			</p>
+		</div>
+
+		<div class="text-center">
+			<button type="submit" class="btn btn-primary">Update Report</button>
+			<a
+				href="/weeklyreport/<%= WeeklyReports._id %>"
+				class="btn btn-secondary ms-2"
+				>Cancel</a
+			>
+		</div>
+	</form>
+</div>
+
+<script>
+	// Initialize tooltips
+	document.addEventListener("DOMContentLoaded", function () {
+		var tooltipTriggerList = [].slice.call(
+			document.querySelectorAll('[data-bs-toggle="tooltip"]')
+		);
+		var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+			return new bootstrap.Tooltip(tooltipTriggerEl);
+		});
+	});
+</script>

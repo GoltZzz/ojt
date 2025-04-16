@@ -12,14 +12,31 @@
 		novalidate
 		class="validated-form needs-validation">
 		<div class="mb-3">
-			<label for="studentName" class="form-label">Student Name</label>
-			<input
-				type="text"
-				class="form-control"
-				id="studentName"
-				name="studentName"
-				value="<%= fullName %>"
-				required />
+			<label for="studentName" class="form-label"
+				>Student Name
+				<small class="text-muted">(auto-filled from your profile)</small></label
+			>
+			<div class="input-group">
+				<span class="input-group-text"><i class="fas fa-user"></i></span>
+				<input
+					type="text"
+					class="form-control bg-light"
+					id="studentName"
+					name="studentName"
+					value="<%= fullName %>"
+					readonly
+					required />
+				<span
+					class="input-group-text"
+					data-bs-toggle="tooltip"
+					title="This field is automatically filled with your full name and cannot be changed">
+					<i class="fas fa-lock"></i>
+				</span>
+			</div>
+			<small class="form-text text-muted"
+				>This field is automatically filled with your full name and cannot be
+				changed.</small
+			>
 		</div>
 		<div class="mb-3">
 			<label for="internshipSite" class="form-label">Internship Site</label>
