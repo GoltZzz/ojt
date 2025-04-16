@@ -101,8 +101,16 @@ export const index = catchAsync(async (req, res) => {
 	});
 });
 
-export const renderNewForm = (req, res) => {
-	res.render("reports/new");
+export const renderNewForm = async (req, res) => {
+	// Format the user's full name
+	let fullName = req.user.firstName;
+	if (req.user.middleName && req.user.middleName.length > 0) {
+		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+		fullName += ` ${middleInitial}.`;
+	}
+	fullName += ` ${req.user.lastName}`;
+
+	res.render("reports/new", { fullName });
 };
 
 export const createReport = catchAsync(async (req, res) => {
