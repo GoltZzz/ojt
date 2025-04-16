@@ -8,9 +8,27 @@ export const index = catchAsync(async (req, res) => {
 	const filter = { archived: false };
 
 	const WeeklyReports = await WeeklyReport.find(filter)
-		.populate("author", "username")
+		.populate("author", "username firstName middleName lastName")
 		.populate("approvedBy", "username")
 		.sort({ dateSubmitted: -1 }); // Sort by newest first
+
+	// Format author names and add isCurrentUserReport flag
+	WeeklyReports.forEach((report) => {
+		if (report.author) {
+			// Format author full name
+			let fullName = report.author.firstName;
+			if (report.author.middleName && report.author.middleName.length > 0) {
+				const middleInitial = report.author.middleName.charAt(0).toUpperCase();
+				fullName += ` ${middleInitial}.`;
+			}
+			fullName += ` ${report.author.lastName}`;
+			report.authorFullName = fullName;
+
+			// Check if this report belongs to the current user
+			report.isCurrentUserReport =
+				req.user && report.author._id.equals(req.user._id);
+		}
+	});
 
 	res.render("reports/index", { WeeklyReports });
 });
