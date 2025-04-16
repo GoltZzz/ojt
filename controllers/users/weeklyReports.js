@@ -3,14 +3,66 @@ import WeeklyReport from "../../models/weeklyReports.js";
 import ExpressError from "../../utils/ExpressError.js";
 
 export const index = catchAsync(async (req, res) => {
+	// Get query parameters for filtering and pagination
+	const {
+		studentName,
+		internshipSite,
+		weekPeriod,
+		status,
+		sortBy = "dateSubmitted_desc",
+		page = 1,
+		limit = 10,
+	} = req.query;
+
 	// Always exclude archived reports from the main reports page
 	// Archived reports should only be visible on the archive page
 	const filter = { archived: false };
 
+	// Apply filters if provided
+	if (studentName) {
+		filter.studentName = { $regex: studentName, $options: "i" };
+	}
+
+	if (internshipSite) {
+		filter.internshipSite = { $regex: internshipSite, $options: "i" };
+	}
+
+	if (weekPeriod) {
+		const weekDate = new Date(weekPeriod);
+		filter.$or = [
+			{ weekStartDate: { $lte: weekDate }, weekEndDate: { $gte: weekDate } },
+		];
+	}
+
+	if (status) {
+		filter.status = status;
+	}
+
+	// Set up sorting
+	let sortOptions = {};
+	if (sortBy) {
+		const [field, order] = sortBy.split("_");
+		sortOptions[field] = order === "asc" ? 1 : -1;
+	} else {
+		sortOptions = { dateSubmitted: -1 }; // Default sort by newest first
+	}
+
+	// Calculate pagination values
+	const pageNum = parseInt(page, 10) || 1;
+	const limitNum = parseInt(limit, 10) || 10;
+	const skip = (pageNum - 1) * limitNum;
+
+	// Get total count for pagination
+	const totalReports = await WeeklyReport.countDocuments(filter);
+	const totalPages = Math.ceil(totalReports / limitNum);
+
+	// Get reports with pagination
 	const WeeklyReports = await WeeklyReport.find(filter)
 		.populate("author", "username firstName middleName lastName")
 		.populate("approvedBy", "username")
-		.sort({ dateSubmitted: -1 }); // Sort by newest first
+		.sort(sortOptions)
+		.skip(skip)
+		.limit(limitNum);
 
 	// Format author names and add isCurrentUserReport flag
 	WeeklyReports.forEach((report) => {
@@ -30,7 +82,23 @@ export const index = catchAsync(async (req, res) => {
 		}
 	});
 
-	res.render("reports/index", { WeeklyReports });
+	// Prepare pagination data
+	const pagination = {
+		currentPage: pageNum,
+		totalPages,
+		totalReports,
+		hasNext: pageNum < totalPages,
+		hasPrev: pageNum > 1,
+		nextPage: pageNum < totalPages ? pageNum + 1 : null,
+		prevPage: pageNum > 1 ? pageNum - 1 : null,
+		pageSize: limitNum,
+	};
+
+	res.render("reports/index", {
+		WeeklyReports,
+		pagination,
+		filters: req.query,
+	});
 });
 
 export const renderNewForm = (req, res) => {
