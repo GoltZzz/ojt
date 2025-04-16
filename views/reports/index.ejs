@@ -4,11 +4,16 @@
 <div class="container mt-4">
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<h1>Weekly Reports</h1>
-		<% if (currentUser && currentUser.role !== 'admin') { %>
-		<a href="/weeklyreport/new" class="btn btn-primary">
-			<i class="fas fa-plus"></i> New Report
-		</a>
-		<% } %>
+		<div class="d-flex gap-2">
+			<% if (currentUser && currentUser.role !== 'admin') { %>
+			<a href="/weeklyreport/daily-attendance-form" class="btn btn-info">
+				<i class="fas fa-file-word"></i> Daily Attendance Form
+			</a>
+			<a href="/weeklyreport/new" class="btn btn-primary">
+				<i class="fas fa-plus"></i> New Report
+			</a>
+			<% } %>
+		</div>
 	</div>
 
 	<!-- Filter Section -->
@@ -200,8 +205,8 @@
 	<% if (pagination && pagination.totalPages > 1) { %>
 	<div class="pagination-container mt-4">
 		<div class="pagination-info">
-			Showing <span class="fw-bold"><%= (pagination.currentPage - 1) * pagination.pageSize + 1 %></span> to 
-			<span class="fw-bold"><%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %></span> of 
+			Showing <span class="fw-bold"><%= (pagination.currentPage - 1) * pagination.pageSize + 1 %></span> to
+			<span class="fw-bold"><%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %></span> of
 			<span class="fw-bold"><%= pagination.totalReports %></span> reports
 		</div>
 		<nav aria-label="Page navigation">
@@ -220,16 +225,16 @@
 				</li>
 
 				<!-- Page Numbers -->
-				<% 
+				<%
 					let startPage = Math.max(1, pagination.currentPage - 2);
 					let endPage = Math.min(pagination.totalPages, startPage + 4);
-					
+
 					// Adjust start page if we're near the end
 					if (endPage - startPage < 4) {
 						startPage = Math.max(1, endPage - 4);
 					}
-					
-					for (let i = startPage; i <= endPage; i++) { 
+
+					for (let i = startPage; i <= endPage; i++) {
 				%>
 					<li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
 						<a class="page-link" href="/weeklyreport?<%= new URLSearchParams({...filters, page: i}).toString() %>">
@@ -271,17 +276,17 @@
 	document.addEventListener('DOMContentLoaded', function() {
 		const toggleFiltersBtn = document.getElementById('toggleFilters');
 		const filterBody = document.getElementById('filterBody');
-		
+
 		// Check if there are active filters
 		const hasActiveFilters = <%= Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit') ? 'true' : 'false' %>;
-		
+
 		// If no active filters, collapse the filter section by default
 		if (!hasActiveFilters) {
 			filterBody.style.display = 'none';
 			toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-down');
 			toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-up');
 		}
-		
+
 		toggleFiltersBtn.addEventListener('click', function(e) {
 			e.preventDefault();
 			if (filterBody.style.display === 'none') {

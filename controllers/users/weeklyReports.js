@@ -1,7 +1,10 @@
 import catchAsync from "../../utils/catchAsync.js";
 import WeeklyReport from "../../models/weeklyReports.js";
 import ExpressError from "../../utils/ExpressError.js";
-import { generateWeeklyReportDocx } from "../../utils/docxGenerator.js";
+import {
+	generateWeeklyReportDocx,
+	generateDailyAttendanceForm,
+} from "../../utils/docxGenerator.js";
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
@@ -365,6 +368,49 @@ export const exportReportAsDocx = catchAsync(async (req, res) => {
 	res.send(buffer);
 });
 
+export const exportDailyAttendanceForm = catchAsync(async (req, res) => {
+	// Only allow logged-in users to export the form
+	if (!req.user) {
+		req.flash("error", "You must be logged in to export forms");
+		return res.redirect("/login");
+	}
+
+	// Get data from query parameters if available
+	const { beginDate, endDate } = req.query;
+
+	// Prepare data for the form
+	const data = {
+		studentName:
+			req.user.firstName +
+			(req.user.middleName
+				? ` ${req.user.middleName.charAt(0).toUpperCase()}. `
+				: " ") +
+			req.user.lastName,
+		internshipSite: req.query.internshipSite || "",
+		beginDate,
+		endDate,
+		supervisorName: req.query.supervisorName || "",
+	};
+
+	// Generate the DOCX file
+	const buffer = await generateDailyAttendanceForm(data);
+
+	// Set the appropriate headers for a DOCX file download
+	res.setHeader(
+		"Content-Disposition",
+		`attachment; filename=daily-attendance-form-${
+			new Date().toISOString().split("T")[0]
+		}.docx`
+	);
+	res.setHeader(
+		"Content-Type",
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	);
+
+	// Send the buffer as the response
+	res.send(buffer);
+});
+
 export default {
 	index,
 	renderNewForm,
@@ -375,4 +421,5 @@ export default {
 	deleteReport,
 	archiveReport,
 	exportReportAsDocx,
+	exportDailyAttendanceForm,
 };
