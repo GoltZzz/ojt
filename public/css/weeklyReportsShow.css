@@ -171,17 +171,6 @@
 	gap: 0.5rem;
 }
 
-@media print {
-	.action-buttons {
-		display: none;
-	}
-
-	.container {
-		width: 100%;
-		max-width: none;
-	}
-}
-
 @media (max-width: 768px) {
 	.time-records {
 		grid-template-columns: 1fr;

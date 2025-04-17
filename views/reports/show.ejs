@@ -138,13 +138,8 @@
 		</a>
 		<% } %>
 
-		<!-- Print button - only for report authors -->
-		<% if (WeeklyReports.isAuthor) { %>
-		<button onclick="window.print()" class="btn btn-info">
-			<i class="fas fa-print"></i> Print Report
-		</button>
-
 		<!-- Export to DOCX button - only for report authors -->
+		<% if (WeeklyReports.isAuthor) { %>
 		<a
 			href="/weeklyreport/<%= WeeklyReports._id %>/export"
 			class="btn btn-primary">
