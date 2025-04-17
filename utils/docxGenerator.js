@@ -9,11 +9,9 @@ import {
 	BorderStyle,
 	WidthType,
 	HeadingLevel,
-	PageOrientation,
-	Header,
-	Footer,
 	ImageRun,
 	Underline,
+	ShadingType,
 } from "docx";
 import fs from "fs";
 import path from "path";
@@ -53,15 +51,7 @@ export const generateWeeklyReportDocx = async (report) => {
 			spacing: { after: 200 },
 		}),
 
-		// Report title
-		new Paragraph({
-			text: "Weekly Report Details",
-			heading: HeadingLevel.HEADING_1,
-			spacing: { after: 200 },
-			alignment: AlignmentType.CENTER,
-		}),
-
-		// Student info section
+		// Report header section with title and styling to match CSS
 		new Table({
 			width: { size: 100, type: WidthType.PERCENTAGE },
 			borders: {
@@ -69,59 +59,125 @@ export const generateWeeklyReportDocx = async (report) => {
 				bottom: { style: BorderStyle.SINGLE, size: 1 },
 				left: { style: BorderStyle.SINGLE, size: 1 },
 				right: { style: BorderStyle.SINGLE, size: 1 },
-				insideHorizontal: { style: BorderStyle.SINGLE, size: 1 },
-				insideVertical: { style: BorderStyle.SINGLE, size: 1 },
 			},
+			shading: { fill: "FFFFFF" }, // White background
 			rows: [
 				new TableRow({
 					children: [
 						new TableCell({
-							width: { size: 30, type: WidthType.PERCENTAGE },
-							children: [new Paragraph({ text: "Student Name:", bold: true })],
-							shading: { fill: "F2F2F2" },
-						}),
-						new TableCell({
-							width: { size: 70, type: WidthType.PERCENTAGE },
-							children: [new Paragraph(report.studentName)],
-						}),
-					],
-				}),
-				new TableRow({
-					children: [
-						new TableCell({
-							width: { size: 30, type: WidthType.PERCENTAGE },
-							children: [new Paragraph({ text: "Internship Site:", bold: true })],
-							shading: { fill: "F2F2F2" },
-						}),
-						new TableCell({
-							width: { size: 70, type: WidthType.PERCENTAGE },
-							children: [new Paragraph(report.internshipSite)],
-						}),
-					],
-				}),
-				new TableRow({
-					children: [
-						new TableCell({
-							width: { size: 30, type: WidthType.PERCENTAGE },
-							children: [new Paragraph({ text: "Week Period:", bold: true })],
-							shading: { fill: "F2F2F2" },
-						}),
-						new TableCell({
-							width: { size: 70, type: WidthType.PERCENTAGE },
-							children: [new Paragraph(`${weekStartDate} - ${weekEndDate}`)],
+							width: { size: 100, type: WidthType.PERCENTAGE },
+							children: [
+								new Paragraph({
+									children: [
+										new TextRun({
+											text: "Weekly Report Details",
+											size: 32,
+											bold: true,
+											color: "2193b0", // From CSS .report-header h1 color
+										}),
+									],
+									spacing: { after: 200 },
+									alignment: AlignmentType.CENTER,
+								}),
+							],
+							borders: {
+								top: { style: BorderStyle.NONE },
+								bottom: { style: BorderStyle.NONE },
+								left: { style: BorderStyle.NONE },
+								right: { style: BorderStyle.NONE },
+							},
 						}),
 					],
 				}),
+			],
+		}),
+
+		// Student info section with styled borders
+		new Table({
+			width: { size: 100, type: WidthType.PERCENTAGE },
+			borders: {
+				top: { style: BorderStyle.SINGLE, size: 1 },
+				bottom: { style: BorderStyle.SINGLE, size: 1 },
+				left: { style: BorderStyle.SINGLE, size: 1 },
+				right: { style: BorderStyle.SINGLE, size: 1 },
+			},
+			shading: { fill: "FFFFFF" }, // White background
+			rows: [
 				new TableRow({
 					children: [
 						new TableCell({
-							width: { size: 30, type: WidthType.PERCENTAGE },
-							children: [new Paragraph({ text: "Supervisor Name:", bold: true })],
-							shading: { fill: "F2F2F2" },
-						}),
-						new TableCell({
-							width: { size: 70, type: WidthType.PERCENTAGE },
-							children: [new Paragraph(report.supervisorName)],
+							width: { size: 100, type: WidthType.PERCENTAGE },
+							children: [
+								// Student Name
+								new Paragraph({
+									children: [
+										new TextRun({
+											text: "Student Name: ",
+											bold: true,
+											color: "495057", // From CSS .report-info .label color
+										}),
+										new TextRun({
+											text: report.studentName,
+											color: "2193b0", // From CSS .report-info .value color
+										}),
+									],
+									spacing: { after: 120 },
+								}),
+								
+								// Internship Site
+								new Paragraph({
+									children: [
+										new TextRun({
+											text: "Internship Site: ",
+											bold: true,
+											color: "495057", // From CSS .report-info .label color
+										}),
+										new TextRun({
+											text: report.internshipSite,
+											color: "2193b0", // From CSS .report-info .value color
+										}),
+									],
+									spacing: { after: 120 },
+								}),
+								
+								// Week Period
+								new Paragraph({
+									children: [
+										new TextRun({
+											text: "Week Period: ",
+											bold: true,
+											color: "495057", // From CSS .report-info .label color
+										}),
+										new TextRun({
+											text: `${weekStartDate} - ${weekEndDate}`,
+											color: "2193b0", // From CSS .report-info .value color
+										}),
+									],
+									spacing: { after: 120 },
+								}),
+								
+								// Supervisor Name
+								new Paragraph({
+									children: [
+										new TextRun({
+											text: "Supervisor Name: ",
+											bold: true,
+											color: "495057", // From CSS .report-info .label color
+										}),
+										new TextRun({
+											text: report.supervisorName,
+											color: "2193b0", // From CSS .report-info .value color
+										}),
+									],
+									spacing: { after: 120 },
+								}),
+							],
+							borders: {
+								top: { style: BorderStyle.NONE },
+								bottom: { style: BorderStyle.NONE },
+								left: { style: BorderStyle.NONE },
+								right: { style: BorderStyle.NONE },
+							},
 						}),
 					],
 				}),
@@ -130,9 +186,16 @@ export const generateWeeklyReportDocx = async (report) => {
 
 		// Daily records section header
 		new Paragraph({
-			text: "Daily Records",
-			heading: HeadingLevel.HEADING_2,
+			children: [
+				new TextRun({
+					text: "Daily Records",
+					size: 28,
+					bold: true,
+					color: "2193b0", // Match the header color
+				}),
+			],
 			spacing: { before: 300, after: 200 },
+			alignment: AlignmentType.CENTER,
 		}),
 	];
 
@@ -150,16 +213,7 @@ export const generateWeeklyReportDocx = async (report) => {
 						accomplishments: "No records for this day",
 				  };
 
-		// Day header
-		sections.push(
-			new Paragraph({
-				text: day,
-				heading: HeadingLevel.HEADING_3,
-				spacing: { before: 200, after: 100 },
-			})
-		);
-
-		// Time records table
+		// Day card
 		sections.push(
 			new Table({
 				width: { size: 100, type: WidthType.PERCENTAGE },
@@ -168,157 +222,279 @@ export const generateWeeklyReportDocx = async (report) => {
 					bottom: { style: BorderStyle.SINGLE, size: 1 },
 					left: { style: BorderStyle.SINGLE, size: 1 },
 					right: { style: BorderStyle.SINGLE, size: 1 },
-					insideHorizontal: { style: BorderStyle.SINGLE, size: 1 },
-					insideVertical: { style: BorderStyle.SINGLE, size: 1 },
 				},
 				rows: [
-					// Header row
+					// Card header with gradient-like styling
 					new TableRow({
 						children: [
 							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph({ text: "Time Period", bold: true })],
-								shading: { fill: "F2F2F2" },
-							}),
-							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph({ text: "Time In", bold: true })],
-								shading: { fill: "F2F2F2" },
-							}),
-							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph({ text: "Time Out", bold: true })],
-								shading: { fill: "F2F2F2" },
+								width: { size: 100, type: WidthType.PERCENTAGE },
+								children: [
+									new Paragraph({
+										children: [
+											new TextRun({
+												text: day,
+												bold: true,
+												color: "FFFFFF", // White text
+												size: 24,
+											}),
+										],
+									}),
+								],
+								shading: { fill: "2193b0" }, // Match the card-header background
+								borders: {
+									top: { style: BorderStyle.NONE },
+									bottom: { style: BorderStyle.NONE },
+									left: { style: BorderStyle.NONE },
+									right: { style: BorderStyle.NONE },
+								},
 							}),
 						],
 					}),
-					// Morning row
+					// Card body
 					new TableRow({
 						children: [
 							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph({ text: "Morning", bold: true })],
-							}),
-							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph(dailyRecord.timeIn.morning)],
-							}),
-							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph(dailyRecord.timeOut.morning)],
-							}),
-						],
-					}),
-					// Afternoon row
-					new TableRow({
-						children: [
-							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph({ text: "Afternoon", bold: true })],
-							}),
-							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph(dailyRecord.timeIn.afternoon)],
-							}),
-							new TableCell({
-								width: { size: 25, type: WidthType.PERCENTAGE },
-								children: [new Paragraph(dailyRecord.timeOut.afternoon)],
+								width: { size: 100, type: WidthType.PERCENTAGE },
+								children: [
+									// Time records section
+									new Paragraph({
+										children: [
+											new TextRun({
+												text: "Morning",
+												bold: true,
+												color: "495057", // From CSS .time-block h6 color
+											}),
+										],
+										spacing: { after: 80 },
+									}),
+									new Paragraph({
+										children: [
+											new TextRun({
+												text: `In: ${dailyRecord.timeIn.morning}    Out: ${dailyRecord.timeOut.morning}`,
+												color: "6c757d", // From CSS .time-detail color
+											}),
+										],
+										spacing: { after: 120 },
+									}),
+									new Paragraph({
+										children: [
+											new TextRun({
+												text: "Afternoon",
+												bold: true,
+												color: "495057", // From CSS .time-block h6 color
+											}),
+										],
+										spacing: { after: 80 },
+									}),
+									new Paragraph({
+										children: [
+											new TextRun({
+												text: `In: ${dailyRecord.timeIn.afternoon}    Out: ${dailyRecord.timeOut.afternoon}`,
+												color: "6c757d", // From CSS .time-detail color
+											}),
+										],
+										spacing: { after: 120 },
+									}),
+									
+									// Accomplishments section with border
+									new Paragraph({
+										text: "",
+										border: {
+											top: {
+												color: "dee2e6", // From CSS .accomplishments border-top
+												style: BorderStyle.SINGLE,
+												size: 1,
+											},
+										},
+										spacing: { before: 80, after: 80 },
+									}),
+									new Paragraph({
+										children: [
+											new TextRun({
+												text: "Accomplishments:",
+												bold: true,
+												color: "495057", // From CSS .accomplishments h6 color
+											}),
+										],
+										spacing: { after: 80 },
+									}),
+									new Paragraph({
+										text: dailyRecord.accomplishments || "No accomplishments recorded",
+										spacing: { after: 120 },
+									}),
+								],
+								borders: {
+									top: { style: BorderStyle.NONE },
+									bottom: { style: BorderStyle.NONE },
+									left: { style: BorderStyle.NONE },
+									right: { style: BorderStyle.NONE },
+								},
 							}),
 						],
 					}),
 				],
 			})
 		);
-
-		// Accomplishments
+		
+		// Add spacing between cards
 		sections.push(
 			new Paragraph({
-				text: "Accomplishments:",
-				bold: true,
-				spacing: { before: 100, after: 50 },
-			}),
-			new Paragraph({
-				text: dailyRecord.accomplishments || "No accomplishments recorded",
-				spacing: { after: 200 },
+				text: "",
+				spacing: { before: 120, after: 120 },
 			})
 		);
 	}
 
-	// Add certification section
+	// Add certification section with styling to match CSS
 	sections.push(
-		new Paragraph({
-			text: "CERTIFICATION",
-			heading: HeadingLevel.HEADING_2,
-			spacing: { before: 300, after: 100 },
-			alignment: AlignmentType.CENTER,
-		}),
-
-		new Paragraph({
-			text: '"I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival at and departure from office."',
-			spacing: { before: 50, after: 200 },
-			italics: true,
-			alignment: AlignmentType.CENTER,
-		}),
-
-		// Signature table
 		new Table({
 			width: { size: 100, type: WidthType.PERCENTAGE },
 			borders: {
-				top: { style: BorderStyle.NONE },
-				bottom: { style: BorderStyle.NONE },
-				left: { style: BorderStyle.NONE },
-				right: { style: BorderStyle.NONE },
-				insideHorizontal: { style: BorderStyle.NONE },
-				insideVertical: { style: BorderStyle.NONE },
+				top: { style: BorderStyle.SINGLE, size: 1 },
+				bottom: { style: BorderStyle.SINGLE, size: 1 },
+				left: { style: BorderStyle.SINGLE, size: 1 },
+				right: { style: BorderStyle.SINGLE, size: 1 },
 			},
+			shading: { fill: "F8F9FA" }, // From CSS .certification-section background
 			rows: [
 				new TableRow({
 					children: [
 						new TableCell({
-							width: { size: 50, type: WidthType.PERCENTAGE },
+							width: { size: 100, type: WidthType.PERCENTAGE },
 							children: [
 								new Paragraph({
-									text: "_______________________________",
+									children: [
+										new TextRun({
+											text: "CERTIFICATION",
+											bold: true,
+											size: 28,
+											color: "2193b0", // Match the header color
+										}),
+									],
+									spacing: { before: 120, after: 120 },
 									alignment: AlignmentType.CENTER,
 								}),
 								new Paragraph({
-									text: report.supervisorName,
+									children: [
+										new TextRun({
+											text: '"I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival at and departure from office."',
+											italics: true,
+											color: "495057", // From CSS .certification-text color
+										}),
+									],
+									spacing: { before: 80, after: 200 },
 									alignment: AlignmentType.CENTER,
 								}),
-								new Paragraph({
-									text: "Company Supervisor's Signature",
-									alignment: AlignmentType.CENTER,
-								}),
-								new Paragraph({
-									text: `Date: ${currentDate}`,
-									alignment: AlignmentType.CENTER,
-								}),
-							],
-							borders: {
-								top: { style: BorderStyle.NONE },
-								bottom: { style: BorderStyle.NONE },
-								left: { style: BorderStyle.NONE },
-								right: { style: BorderStyle.NONE },
-							},
-						}),
-						new TableCell({
-							width: { size: 50, type: WidthType.PERCENTAGE },
-							children: [
-								new Paragraph({
-									text: "_______________________________",
-									alignment: AlignmentType.CENTER,
-								}),
-								new Paragraph({
-									text: report.studentName,
-									alignment: AlignmentType.CENTER,
-								}),
-								new Paragraph({
-									text: "Student Intern's Signature",
-									alignment: AlignmentType.CENTER,
-								}),
-								new Paragraph({
-									text: `Date: ${currentDate}`,
-									alignment: AlignmentType.CENTER,
+								
+								// Signature table
+								new Table({
+									width: { size: 100, type: WidthType.PERCENTAGE },
+									borders: {
+										top: { style: BorderStyle.NONE },
+										bottom: { style: BorderStyle.NONE },
+										left: { style: BorderStyle.NONE },
+										right: { style: BorderStyle.NONE },
+										insideHorizontal: { style: BorderStyle.NONE },
+										insideVertical: { style: BorderStyle.NONE },
+									},
+									rows: [
+										new TableRow({
+											children: [
+												// Supervisor signature
+												new TableCell({
+													width: { size: 50, type: WidthType.PERCENTAGE },
+													children: [
+														new Paragraph({
+															text: "_______________________________",
+															alignment: AlignmentType.CENTER,
+														}),
+														new Paragraph({
+															children: [
+																new TextRun({
+																	text: report.supervisorName,
+																	bold: true, // From CSS .signature-name font-weight
+																}),
+															],
+															alignment: AlignmentType.CENTER,
+														}),
+														new Paragraph({
+															children: [
+																new TextRun({
+																	text: "Company Supervisor's Signature",
+																	color: "6c757d", // From CSS .signature-title color
+																	size: 18, // Smaller font size
+																}),
+															],
+															alignment: AlignmentType.CENTER,
+														}),
+														new Paragraph({
+															children: [
+																new TextRun({
+																	text: `Date: ${currentDate}`,
+																	color: "6c757d", // From CSS .signature-date color
+																	size: 18, // Smaller font size
+																}),
+															],
+															alignment: AlignmentType.CENTER,
+														}),
+													],
+													borders: {
+														top: { style: BorderStyle.NONE },
+														bottom: { style: BorderStyle.NONE },
+														left: { style: BorderStyle.NONE },
+														right: { style: BorderStyle.NONE },
+													},
+												}),
+												
+												// Student signature
+												new TableCell({
+													width: { size: 50, type: WidthType.PERCENTAGE },
+													children: [
+														new Paragraph({
+															text: "_______________________________",
+															alignment: AlignmentType.CENTER,
+														}),
+														new Paragraph({
+															children: [
+																new TextRun({
+																	text: report.studentName,
+																	bold: true, // From CSS .signature-name font-weight
+																}),
+															],
+															alignment: AlignmentType.CENTER,
+														}),
+														new Paragraph({
+															children: [
+																new TextRun({
+																	text: "Student Intern's Signature",
+																	color: "6c757d", // From CSS .signature-title color
+																	size: 18, // Smaller font size
+																}),
+															],
+															alignment: AlignmentType.CENTER,
+														}),
+														new Paragraph({
+															children: [
+																new TextRun({
+																	text: `Date: ${currentDate}`,
+																	color: "6c757d", // From CSS .signature-date color
+																	size: 18, // Smaller font size
+																}),
+															],
+															alignment: AlignmentType.CENTER,
+														}),
+													],
+													borders: {
+														top: { style: BorderStyle.NONE },
+														bottom: { style: BorderStyle.NONE },
+														left: { style: BorderStyle.NONE },
+														right: { style: BorderStyle.NONE },
+													},
+												}),
+											],
+										}),
+									],
 								}),
 							],
 							borders: {
@@ -338,14 +514,50 @@ export const generateWeeklyReportDocx = async (report) => {
 	if (report.adminComments) {
 		sections.push(
 			new Paragraph({
-				text: "ADMIN COMMENTS",
-				heading: HeadingLevel.HEADING_2,
-				spacing: { before: 300, after: 100 },
+				text: "",
+				spacing: { before: 200, after: 80 },
 			}),
-
-			new Paragraph({
-				text: report.adminComments,
-				spacing: { before: 50, after: 200 },
+			new Table({
+				width: { size: 100, type: WidthType.PERCENTAGE },
+				borders: {
+					top: { style: BorderStyle.SINGLE, size: 1 },
+					bottom: { style: BorderStyle.SINGLE, size: 1 },
+					left: { style: BorderStyle.SINGLE, size: 1 },
+					right: { style: BorderStyle.SINGLE, size: 1 },
+				},
+				rows: [
+					new TableRow({
+						children: [
+							new TableCell({
+								width: { size: 100, type: WidthType.PERCENTAGE },
+								children: [
+									new Paragraph({
+										children: [
+											new TextRun({
+												text: "ADMIN COMMENTS",
+												bold: true,
+												size: 24,
+												color: "2193b0", // From CSS .admin-comments h4 color
+											}),
+										],
+										spacing: { before: 120, after: 120 },
+									}),
+									new Paragraph({
+										text: report.adminComments,
+										spacing: { before: 80, after: 120 },
+									}),
+								],
+								borders: {
+									top: { style: BorderStyle.NONE },
+									bottom: { style: BorderStyle.NONE },
+									left: { style: BorderStyle.NONE },
+									right: { style: BorderStyle.NONE },
+								},
+								shading: { fill: "F8F9FA" }, // From CSS .comment-box background-color
+							}),
+						],
+					}),
+				],
 			})
 		);
 	}
