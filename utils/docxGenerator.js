@@ -36,28 +36,32 @@ export const generateWeeklyReportDocx = async (report) => {
 	);
 	const headerImageData = fs.readFileSync(headerImagePath);
 
-	// Create header with image
-	const header = new Header({
-		children: [
-			new Paragraph({
-				children: [
-					new ImageRun({
-						data: headerImageData,
-						transformation: {
-							width: 600,
-							height: 100,
-						},
-					}),
-				],
-				alignment: AlignmentType.CENTER,
-				spacing: { after: 200 },
-			}),
-		],
-	});
-
-	// Create document sections with more compact layout
+	// Create document sections to match the show page layout
 	const sections = [
-		// Student info table - more compact
+		// Header image
+		new Paragraph({
+			children: [
+				new ImageRun({
+					data: headerImageData,
+					transformation: {
+						width: 600,
+						height: 100,
+					},
+				}),
+			],
+			alignment: AlignmentType.CENTER,
+			spacing: { after: 200 },
+		}),
+
+		// Report title
+		new Paragraph({
+			text: "Weekly Report Details",
+			heading: HeadingLevel.HEADING_1,
+			spacing: { after: 200 },
+			alignment: AlignmentType.CENTER,
+		}),
+
+		// Student info section
 		new Table({
 			width: { size: 100, type: WidthType.PERCENTAGE },
 			borders: {
@@ -73,7 +77,7 @@ export const generateWeeklyReportDocx = async (report) => {
 					children: [
 						new TableCell({
 							width: { size: 30, type: WidthType.PERCENTAGE },
-							children: [new Paragraph("Student Name:")],
+							children: [new Paragraph({ text: "Student Name:", bold: true })],
 							shading: { fill: "F2F2F2" },
 						}),
 						new TableCell({
@@ -86,7 +90,7 @@ export const generateWeeklyReportDocx = async (report) => {
 					children: [
 						new TableCell({
 							width: { size: 30, type: WidthType.PERCENTAGE },
-							children: [new Paragraph("Internship Site:")],
+							children: [new Paragraph({ text: "Internship Site:", bold: true })],
 							shading: { fill: "F2F2F2" },
 						}),
 						new TableCell({
@@ -99,7 +103,7 @@ export const generateWeeklyReportDocx = async (report) => {
 					children: [
 						new TableCell({
 							width: { size: 30, type: WidthType.PERCENTAGE },
-							children: [new Paragraph("Week Period:")],
+							children: [new Paragraph({ text: "Week Period:", bold: true })],
 							shading: { fill: "F2F2F2" },
 						}),
 						new TableCell({
@@ -112,7 +116,7 @@ export const generateWeeklyReportDocx = async (report) => {
 					children: [
 						new TableCell({
 							width: { size: 30, type: WidthType.PERCENTAGE },
-							children: [new Paragraph("Supervisor Name:")],
+							children: [new Paragraph({ text: "Supervisor Name:", bold: true })],
 							shading: { fill: "F2F2F2" },
 						}),
 						new TableCell({
@@ -124,59 +128,17 @@ export const generateWeeklyReportDocx = async (report) => {
 			],
 		}),
 
-		// Daily records section - more compact
+		// Daily records section header
 		new Paragraph({
-			text: "DAILY RECORDS",
-			heading: HeadingLevel.HEADING_3,
-			spacing: { before: 200, after: 100 },
+			text: "Daily Records",
+			heading: HeadingLevel.HEADING_2,
+			spacing: { before: 300, after: 200 },
 		}),
 	];
 
-	// Add daily records in a more compact format
+	// Add daily records in a card-like format similar to the show page
 	const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
-	// Create a single table for all days to save space
-	const dailyRecordsRows = [];
-
-	// Add header row
-	dailyRecordsRows.push(
-		new TableRow({
-			children: [
-				new TableCell({
-					width: { size: 15, type: WidthType.PERCENTAGE },
-					children: [new Paragraph({ text: "Day", bold: true })],
-					shading: { fill: "F2F2F2" },
-				}),
-				new TableCell({
-					width: { size: 15, type: WidthType.PERCENTAGE },
-					children: [new Paragraph({ text: "Morning In", bold: true })],
-					shading: { fill: "F2F2F2" },
-				}),
-				new TableCell({
-					width: { size: 15, type: WidthType.PERCENTAGE },
-					children: [new Paragraph({ text: "Morning Out", bold: true })],
-					shading: { fill: "F2F2F2" },
-				}),
-				new TableCell({
-					width: { size: 15, type: WidthType.PERCENTAGE },
-					children: [new Paragraph({ text: "Afternoon In", bold: true })],
-					shading: { fill: "F2F2F2" },
-				}),
-				new TableCell({
-					width: { size: 15, type: WidthType.PERCENTAGE },
-					children: [new Paragraph({ text: "Afternoon Out", bold: true })],
-					shading: { fill: "F2F2F2" },
-				}),
-				new TableCell({
-					width: { size: 25, type: WidthType.PERCENTAGE },
-					children: [new Paragraph({ text: "Accomplishments", bold: true })],
-					shading: { fill: "F2F2F2" },
-				}),
-			],
-		})
-	);
-
-	// Add a row for each day
 	for (let i = 0; i < days.length; i++) {
 		const day = days[i];
 		const dailyRecord =
@@ -188,70 +150,114 @@ export const generateWeeklyReportDocx = async (report) => {
 						accomplishments: "No records for this day",
 				  };
 
-		dailyRecordsRows.push(
-			new TableRow({
-				children: [
-					new TableCell({
-						width: { size: 15, type: WidthType.PERCENTAGE },
-						children: [new Paragraph(day)],
-					}),
-					new TableCell({
-						width: { size: 15, type: WidthType.PERCENTAGE },
-						children: [new Paragraph(dailyRecord.timeIn.morning)],
-					}),
-					new TableCell({
-						width: { size: 15, type: WidthType.PERCENTAGE },
-						children: [new Paragraph(dailyRecord.timeOut.morning)],
-					}),
-					new TableCell({
-						width: { size: 15, type: WidthType.PERCENTAGE },
-						children: [new Paragraph(dailyRecord.timeIn.afternoon)],
-					}),
-					new TableCell({
-						width: { size: 15, type: WidthType.PERCENTAGE },
-						children: [new Paragraph(dailyRecord.timeOut.afternoon)],
-					}),
-					new TableCell({
-						width: { size: 25, type: WidthType.PERCENTAGE },
+		// Day header
+		sections.push(
+			new Paragraph({
+				text: day,
+				heading: HeadingLevel.HEADING_3,
+				spacing: { before: 200, after: 100 },
+			})
+		);
+
+		// Time records table
+		sections.push(
+			new Table({
+				width: { size: 100, type: WidthType.PERCENTAGE },
+				borders: {
+					top: { style: BorderStyle.SINGLE, size: 1 },
+					bottom: { style: BorderStyle.SINGLE, size: 1 },
+					left: { style: BorderStyle.SINGLE, size: 1 },
+					right: { style: BorderStyle.SINGLE, size: 1 },
+					insideHorizontal: { style: BorderStyle.SINGLE, size: 1 },
+					insideVertical: { style: BorderStyle.SINGLE, size: 1 },
+				},
+				rows: [
+					// Header row
+					new TableRow({
 						children: [
-							new Paragraph(
-								dailyRecord.accomplishments || "No accomplishments recorded"
-							),
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph({ text: "Time Period", bold: true })],
+								shading: { fill: "F2F2F2" },
+							}),
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph({ text: "Time In", bold: true })],
+								shading: { fill: "F2F2F2" },
+							}),
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph({ text: "Time Out", bold: true })],
+								shading: { fill: "F2F2F2" },
+							}),
+						],
+					}),
+					// Morning row
+					new TableRow({
+						children: [
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph({ text: "Morning", bold: true })],
+							}),
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph(dailyRecord.timeIn.morning)],
+							}),
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph(dailyRecord.timeOut.morning)],
+							}),
+						],
+					}),
+					// Afternoon row
+					new TableRow({
+						children: [
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph({ text: "Afternoon", bold: true })],
+							}),
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph(dailyRecord.timeIn.afternoon)],
+							}),
+							new TableCell({
+								width: { size: 25, type: WidthType.PERCENTAGE },
+								children: [new Paragraph(dailyRecord.timeOut.afternoon)],
+							}),
 						],
 					}),
 				],
 			})
 		);
-	}
 
-	// Add the daily records table
-	sections.push(
-		new Table({
-			width: { size: 100, type: WidthType.PERCENTAGE },
-			borders: {
-				top: { style: BorderStyle.SINGLE, size: 1 },
-				bottom: { style: BorderStyle.SINGLE, size: 1 },
-				left: { style: BorderStyle.SINGLE, size: 1 },
-				right: { style: BorderStyle.SINGLE, size: 1 },
-				insideHorizontal: { style: BorderStyle.SINGLE, size: 1 },
-				insideVertical: { style: BorderStyle.SINGLE, size: 1 },
-			},
-			rows: dailyRecordsRows,
-		})
-	);
+		// Accomplishments
+		sections.push(
+			new Paragraph({
+				text: "Accomplishments:",
+				bold: true,
+				spacing: { before: 100, after: 50 },
+			}),
+			new Paragraph({
+				text: dailyRecord.accomplishments || "No accomplishments recorded",
+				spacing: { after: 200 },
+			})
+		);
+	}
 
 	// Add certification section
 	sections.push(
 		new Paragraph({
 			text: "CERTIFICATION",
-			heading: HeadingLevel.HEADING_3,
-			spacing: { before: 200, after: 100 },
+			heading: HeadingLevel.HEADING_2,
+			spacing: { before: 300, after: 100 },
+			alignment: AlignmentType.CENTER,
 		}),
 
 		new Paragraph({
 			text: '"I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival at and departure from office."',
-			spacing: { before: 50, after: 150 },
+			spacing: { before: 50, after: 200 },
 			italics: true,
+			alignment: AlignmentType.CENTER,
 		}),
 
 		// Signature table
@@ -328,6 +334,22 @@ export const generateWeeklyReportDocx = async (report) => {
 		})
 	);
 
+	// Add admin comments if they exist
+	if (report.adminComments) {
+		sections.push(
+			new Paragraph({
+				text: "ADMIN COMMENTS",
+				heading: HeadingLevel.HEADING_2,
+				spacing: { before: 300, after: 100 },
+			}),
+
+			new Paragraph({
+				text: report.adminComments,
+				spacing: { before: 50, after: 200 },
+			})
+		);
+	}
+
 	// Create the document with smaller margins to fit on one page
 	const doc = new Document({
 		sections: [
@@ -341,9 +363,6 @@ export const generateWeeklyReportDocx = async (report) => {
 							left: 600, // Reduced side margins
 						},
 					},
-				},
-				headers: {
-					default: header,
 				},
 				children: sections,
 			},
