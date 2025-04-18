@@ -1,10 +1,6 @@
 import catchAsync from "../../utils/catchAsync.js";
 import WeeklyReport from "../../models/weeklyReports.js";
 import ExpressError from "../../utils/ExpressError.js";
-import {
-	generateWeeklyReportDocx,
-	generateDailyAttendanceForm,
-} from "../../utils/docxGenerator.js";
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
@@ -335,93 +331,6 @@ export const archiveReport = catchAsync(async (req, res) => {
 	return res.redirect("/admin/archived-reports");
 });
 
-export const exportReportAsDocx = catchAsync(async (req, res) => {
-	const { id } = req.params;
-	const report = await WeeklyReport.findById(id)
-		.populate("approvedBy", "username firstName middleName lastName")
-		.populate("author", "username firstName middleName lastName");
-
-	if (!report) {
-		req.flash("error", "Cannot find that weekly report!");
-		return res.redirect("/weeklyreport");
-	}
-
-	// Check if the current user is authorized to export this report
-	// Only the author can export the report
-	const isAuthor =
-		report.author && req.user && report.author._id.equals(req.user._id);
-
-	if (!isAuthor) {
-		req.flash("error", "Only the report owner can export to DOCX");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	// Check if the report status is rejected
-	if (report.status === "rejected") {
-		req.flash("error", "Rejected reports cannot be exported to DOCX");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	// Generate the DOCX file
-	const buffer = await generateWeeklyReportDocx(report);
-
-	// Set the appropriate headers for a DOCX file download
-	res.setHeader(
-		"Content-Disposition",
-		`attachment; filename=weekly-report-${id}.docx`
-	);
-	res.setHeader(
-		"Content-Type",
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-	);
-
-	// Send the buffer as the response
-	res.send(buffer);
-});
-
-export const exportDailyAttendanceForm = catchAsync(async (req, res) => {
-	// Only allow logged-in users to export the form
-	if (!req.user) {
-		req.flash("error", "You must be logged in to export forms");
-		return res.redirect("/login");
-	}
-
-	// Get data from query parameters if available
-	const { beginDate, endDate } = req.query;
-
-	// Prepare data for the form
-	const data = {
-		studentName:
-			req.user.firstName +
-			(req.user.middleName
-				? ` ${req.user.middleName.charAt(0).toUpperCase()}. `
-				: " ") +
-			req.user.lastName,
-		internshipSite: req.query.internshipSite || "",
-		beginDate,
-		endDate,
-		supervisorName: req.query.supervisorName || "",
-	};
-
-	// Generate the DOCX file
-	const buffer = await generateDailyAttendanceForm(data);
-
-	// Set the appropriate headers for a DOCX file download
-	res.setHeader(
-		"Content-Disposition",
-		`attachment; filename=daily-attendance-form-${
-			new Date().toISOString().split("T")[0]
-		}.docx`
-	);
-	res.setHeader(
-		"Content-Type",
-		"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-	);
-
-	// Send the buffer as the response
-	res.send(buffer);
-});
-
 export default {
 	index,
 	renderNewForm,
@@ -431,6 +340,4 @@ export default {
 	updateReport,
 	deleteReport,
 	archiveReport,
-	exportReportAsDocx,
-	exportDailyAttendanceForm,
 };

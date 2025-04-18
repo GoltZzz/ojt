@@ -138,15 +138,6 @@
 		</a>
 		<% } %>
 
-		<!-- Export to DOCX button - only for report authors and non-rejected reports -->
-		<% if (WeeklyReports.isAuthor && WeeklyReports.status !== 'rejected') { %>
-		<a
-			href="/weeklyreport/<%= WeeklyReports._id %>/export"
-			class="btn btn-primary">
-			<i class="fas fa-file-word"></i> Export to DOCX
-		</a>
-		<% } %>
-
 		<!-- Admin approval buttons - only for admins with pending reports -->
 		<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') {
 		%>

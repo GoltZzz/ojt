@@ -27,12 +27,6 @@ router
 	.delete(isLoggedIn, isAuthor, weeklyReports.deleteReport);
 
 router.post("/:id/archive", isLoggedIn, weeklyReports.archiveReport);
-router.get("/:id/export", isLoggedIn, weeklyReports.exportReportAsDocx);
-router.get(
-	"/daily-attendance-form",
-	isLoggedIn,
-	weeklyReports.exportDailyAttendanceForm
-);
 router
 	.route("/:id/edit")
 	.get(isLoggedIn, isAuthor, weeklyReports.renderEditForm);
