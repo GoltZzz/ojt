@@ -334,34 +334,58 @@ export const archiveReport = catchAsync(async (req, res) => {
 
 export const exportReportAsPdf = catchAsync(async (req, res) => {
 	const { id } = req.params;
-	const report = await WeeklyReport.findById(id)
-		.populate("approvedBy", "username firstName middleName lastName")
-		.populate("author", "username firstName middleName lastName");
-
-	if (!report) {
-		req.flash("error", "Cannot find that weekly report!");
-		return res.redirect("/weeklyreport");
-	}
-
-	// Check if the current user is authorized to export this report
-	// Only the author can export the report
-	const isAuthor =
-		report.author && req.user && report.author._id.equals(req.user._id);
-
-	if (!isAuthor) {
-		req.flash("error", "Only the report owner can export to PDF");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	// Check if the report status is rejected
-	if (report.status === "rejected") {
-		req.flash("error", "Rejected reports cannot be exported to PDF");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
+	console.log(`Starting PDF export for report ID: ${id}`);
 
 	try {
+		// Find the report with populated fields
+		const report = await WeeklyReport.findById(id)
+			.populate("approvedBy", "username firstName middleName lastName")
+			.populate("author", "username firstName middleName lastName");
+
+		if (!report) {
+			console.log(`Report not found with ID: ${id}`);
+			req.flash("error", "Cannot find that weekly report!");
+			return res.redirect("/weeklyreport");
+		}
+
+		console.log(`Found report: ${report._id}, status: ${report.status}`);
+
+		// Check if the current user is authorized to export this report
+		// Only the author can export the report
+		const isAuthor =
+			report.author && req.user && report.author._id.equals(req.user._id);
+
+		if (!isAuthor) {
+			console.log(
+				`User ${req.user._id} is not the author of report ${report._id}`
+			);
+			req.flash("error", "Only the report owner can export to PDF");
+			return res.redirect(`/weeklyreport/${id}`);
+		}
+
+		// Check if the report status is rejected
+		if (report.status === "rejected") {
+			console.log(`Report ${report._id} is rejected, cannot export to PDF`);
+			req.flash("error", "Rejected reports cannot be exported to PDF");
+			return res.redirect(`/weeklyreport/${id}`);
+		}
+
+		// Validate report data before generating PDF
+		if (!report.studentName || !report.internshipSite) {
+			console.error(`Report ${report._id} is missing required fields`);
+			req.flash(
+				"error",
+				"Report is missing required information for PDF export"
+			);
+			return res.redirect(`/weeklyreport/${id}`);
+		}
+
+		console.log(`Generating PDF for report ${report._id}`);
+
 		// Generate the PDF file
 		const buffer = await generateWeeklyReportPdf(report);
+
+		console.log(`PDF generated successfully for report ${report._id}`);
 
 		// Set the appropriate headers for a PDF file download
 		res.setHeader(
@@ -373,8 +397,11 @@ export const exportReportAsPdf = catchAsync(async (req, res) => {
 		// Send the buffer as the response
 		res.send(buffer);
 	} catch (error) {
-		console.error("PDF generation error:", error);
-		req.flash("error", "Error generating PDF. Please try again.");
+		console.error(`PDF generation error for report ${id}:`, error);
+		req.flash(
+			"error",
+			`Error generating PDF: ${error.message}. Please try again.`
+		);
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 });
