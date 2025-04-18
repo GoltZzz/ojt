@@ -11,6 +11,7 @@
 		<div class="dashboard-card system-stats-card">
 			<h3><i class="fas fa-chart-bar me-2"></i>System Stats</h3>
 			<div class="admin-stats-grid">
+				<!-- User Stats -->
 				<div class="stat-item">
 					<div class="stat-icon bg-primary">
 						<i class="fas fa-users"></i>
@@ -18,20 +19,76 @@
 					<span class="stat-number"><%= stats.totalUsers %></span>
 					<span class="stat-label">Total Users</span>
 				</div>
+
+				<!-- Pending Reports -->
+				<div class="stat-item">
+					<a
+						href="/admin/pending-reports"
+						style="text-decoration: none; color: inherit">
+						<div class="stat-icon bg-warning">
+							<i class="fas fa-hourglass-half"></i>
+						</div>
+						<span class="stat-number"><%= stats.pendingReports %></span>
+						<span class="stat-label">Pending Reports</span>
+					</a>
+				</div>
+
+				<!-- Weekly Reports -->
 				<div class="stat-item">
 					<div class="stat-icon bg-info">
-						<i class="fas fa-file-alt"></i>
+						<i class="fas fa-calendar-week"></i>
 					</div>
 					<span class="stat-number"><%= stats.totalWeeklyReports %></span>
 					<span class="stat-label">Weekly Reports</span>
 				</div>
+
+				<!-- Weekly Progress Reports -->
 				<div class="stat-item">
-					<div class="stat-icon bg-warning">
-						<i class="fas fa-hourglass-half"></i>
+					<div
+						class="stat-icon"
+						style="background: linear-gradient(135deg, #2193b0, #6dd5ed)">
+						<i class="fas fa-chart-line"></i>
 					</div>
-					<span class="stat-number"><%= stats.pendingReports %></span>
-					<span class="stat-label">Pending Reports</span>
+					<span class="stat-number"
+						><%= stats.totalWeeklyProgressReports %></span
+					>
+					<span class="stat-label">Weekly Progress</span>
 				</div>
+
+				<!-- Training Schedules -->
+				<div class="stat-item">
+					<div
+						class="stat-icon"
+						style="background: linear-gradient(135deg, #ff9966, #ff5e62)">
+						<i class="fas fa-calendar-alt"></i>
+					</div>
+					<span class="stat-number"><%= stats.totalTrainingSchedules %></span>
+					<span class="stat-label">Training Schedules</span>
+				</div>
+
+				<!-- Learning Outcomes -->
+				<div class="stat-item">
+					<div
+						class="stat-icon"
+						style="background: linear-gradient(135deg, #4b6cb7, #182848)">
+						<i class="fas fa-graduation-cap"></i>
+					</div>
+					<span class="stat-number"><%= stats.totalLearningOutcomes %></span>
+					<span class="stat-label">Learning Outcomes</span>
+				</div>
+
+				<!-- Daily Attendance -->
+				<div class="stat-item">
+					<div
+						class="stat-icon"
+						style="background: linear-gradient(135deg, #56ab2f, #a8e063)">
+						<i class="fas fa-clipboard-check"></i>
+					</div>
+					<span class="stat-number"><%= stats.totalDailyAttendances %></span>
+					<span class="stat-label">Daily Attendance</span>
+				</div>
+
+				<!-- Documentation -->
 				<div class="stat-item">
 					<div class="stat-icon bg-success">
 						<i class="fas fa-book"></i>
@@ -39,6 +96,8 @@
 					<span class="stat-number"><%= stats.totalDocumentation %></span>
 					<span class="stat-label">Documentation</span>
 				</div>
+
+				<!-- Time Reports -->
 				<div class="stat-item">
 					<div
 						class="stat-icon"
@@ -59,6 +118,10 @@
 						<tr>
 							<th>Name</th>
 							<th>Weekly Reports</th>
+							<th>Weekly Progress</th>
+							<th>Training Schedules</th>
+							<th>Learning Outcomes</th>
+							<th>Daily Attendance</th>
 							<th>Documentation</th>
 							<th>Time Reports</th>
 						</tr>
@@ -68,6 +131,10 @@
 						<tr>
 							<td><%= user.fullName %></td>
 							<td><%= user.weeklyReports %></td>
+							<td><%= user.weeklyProgressReports %></td>
+							<td><%= user.trainingSchedules %></td>
+							<td><%= user.learningOutcomes %></td>
+							<td><%= user.dailyAttendances %></td>
 							<td><%= user.documentation %></td>
 							<td><%= user.timeReports %></td>
 						</tr>

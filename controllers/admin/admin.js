@@ -3,22 +3,71 @@ import User from "../../models/users.js";
 import WeeklyReport from "../../models/weeklyReports.js";
 import Documentation from "../../models/documentation.js";
 import TimeReport from "../../models/timeReport.js";
+import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
+import TrainingSchedule from "../../models/trainingSchedule.js";
+import LearningOutcome from "../../models/learningOutcomes.js";
+import DailyAttendance from "../../models/dailyAttendance.js";
 import ExpressError from "../../utils/ExpressError.js";
 import { cloudinary } from "../../utils/cloudinary.js";
 
 const renderDashboard = catchAsync(async (req, res) => {
 	const totalUsers = await User.countDocuments({});
+
+	// Count reports by type
 	const totalWeeklyReports = await WeeklyReport.countDocuments({});
-	const pendingReports = await WeeklyReport.countDocuments({
+	const totalWeeklyProgressReports = await WeeklyProgressReport.countDocuments(
+		{}
+	);
+	const totalTrainingSchedules = await TrainingSchedule.countDocuments({});
+	const totalLearningOutcomes = await LearningOutcome.countDocuments({});
+	const totalDailyAttendances = await DailyAttendance.countDocuments({});
+
+	// Count pending reports by type
+	const pendingWeeklyReports = await WeeklyReport.countDocuments({
 		status: "pending",
 	});
+	const pendingWeeklyProgressReports =
+		await WeeklyProgressReport.countDocuments({
+			status: "pending",
+		});
+	const pendingTrainingSchedules = await TrainingSchedule.countDocuments({
+		status: "pending",
+	});
+	const pendingLearningOutcomes = await LearningOutcome.countDocuments({
+		status: "pending",
+	});
+	const pendingDailyAttendances = await DailyAttendance.countDocuments({
+		status: "pending",
+	});
+
+	// Calculate total pending reports
+	const pendingReports =
+		pendingWeeklyReports +
+		pendingWeeklyProgressReports +
+		pendingTrainingSchedules +
+		pendingLearningOutcomes +
+		pendingDailyAttendances;
+
 	const totalDocumentation = await Documentation.countDocuments({});
 	const totalTimeReports = await TimeReport.countDocuments({});
 	const users = await User.find({ role: "user" });
 
 	const userStats = await Promise.all(
 		users.map(async (user) => {
+			// Count reports by type for this user
 			const weeklyReports = await WeeklyReport.countDocuments({
+				author: user._id,
+			});
+			const weeklyProgressReports = await WeeklyProgressReport.countDocuments({
+				author: user._id,
+			});
+			const trainingSchedules = await TrainingSchedule.countDocuments({
+				author: user._id,
+			});
+			const learningOutcomes = await LearningOutcome.countDocuments({
+				author: user._id,
+			});
+			const dailyAttendances = await DailyAttendance.countDocuments({
 				author: user._id,
 			});
 			const documentation = await Documentation.countDocuments({
@@ -26,8 +75,8 @@ const renderDashboard = catchAsync(async (req, res) => {
 			});
 			const timeReports = await TimeReport.countDocuments({ author: user._id });
 
+			// Format user's full name
 			let fullName = user.firstName;
-
 			if (user.middleName && user.middleName.length > 0) {
 				const middleInitial = user.middleName.charAt(0).toUpperCase();
 				fullName += ` ${middleInitial}.`;
@@ -37,6 +86,10 @@ const renderDashboard = catchAsync(async (req, res) => {
 			return {
 				fullName,
 				weeklyReports,
+				weeklyProgressReports,
+				trainingSchedules,
+				learningOutcomes,
+				dailyAttendances,
 				documentation,
 				timeReports,
 			};
@@ -45,7 +98,16 @@ const renderDashboard = catchAsync(async (req, res) => {
 	const stats = {
 		totalUsers,
 		totalWeeklyReports,
+		totalWeeklyProgressReports,
+		totalTrainingSchedules,
+		totalLearningOutcomes,
+		totalDailyAttendances,
 		pendingReports,
+		pendingWeeklyReports,
+		pendingWeeklyProgressReports,
+		pendingTrainingSchedules,
+		pendingLearningOutcomes,
+		pendingDailyAttendances,
 		totalDocumentation,
 		totalTimeReports,
 	};

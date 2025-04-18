@@ -26,12 +26,22 @@ import weeklyReportRoutes from "./routes/users/weeklyReports.js";
 import adminRoutes from "./routes/admin/admin.js";
 // for admin API routes
 import adminApiRoutes from "./routes/admin/api.js";
+// for admin report monitoring routes
+import reportMonitoringRoutes from "./routes/admin/reportMonitoring.js";
 // for documentation routes
 import documentationRoutes from "./routes/users/documentation.js";
 // for time report routes
 import timeReportRoutes from "./routes/users/timeReport.js";
 // for profile routes
 import profileRoutes from "./routes/users/profile.js";
+// for weekly progress report routes
+import weeklyProgressRoutes from "./routes/users/weeklyProgressReports.js";
+// for training schedule routes
+import trainingScheduleRoutes from "./routes/users/trainingSchedule.js";
+// for learning outcomes routes
+import learningOutcomesRoutes from "./routes/users/learningOutcomes.js";
+// for daily attendance routes
+import dailyAttendanceRoutes from "./routes/users/dailyAttendance.js";
 
 // for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -103,12 +113,22 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/admin", adminRoutes);
 // for admin API routes
 app.use("/api/admin", adminApiRoutes);
+// for admin report monitoring routes
+app.use("/admin", reportMonitoringRoutes);
 // for documentation routes
 app.use("/documentation", documentationRoutes);
 // for time report routes
 app.use("/timereport", timeReportRoutes);
 // for profile routes
 app.use("/profile", profileRoutes);
+// for weekly progress report routes
+app.use("/weeklyprogress", weeklyProgressRoutes);
+// for training schedule routes
+app.use("/trainingschedule", trainingScheduleRoutes);
+// for learning outcomes routes
+app.use("/learningoutcomes", learningOutcomesRoutes);
+// for daily attendance routes
+app.use("/dailyattendance", dailyAttendanceRoutes);
 
 app.use("/", userRoutes);
 // for homepage
