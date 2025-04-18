@@ -138,8 +138,8 @@
 		</a>
 		<% } %>
 
-		<!-- Export to DOCX button - only for report authors -->
-		<% if (WeeklyReports.isAuthor) { %>
+		<!-- Export to DOCX button - only for report authors and non-rejected reports -->
+		<% if (WeeklyReports.isAuthor && WeeklyReports.status !== 'rejected') { %>
 		<a
 			href="/weeklyreport/<%= WeeklyReports._id %>/export"
 			class="btn btn-primary">
@@ -182,8 +182,8 @@
 		</button>
 		<% } %> <% } %>
 
-		<!-- Delete button - only for authors of pending reports -->
-		<% if (WeeklyReports.canEdit) { %>
+		<!-- Delete button - for authors of pending or rejected reports -->
+		<% if (WeeklyReports.canDelete) { %>
 		<form
 			class="d-inline"
 			action="/weeklyreport/<%= WeeklyReports._id %>?_method=DELETE"

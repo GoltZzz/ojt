@@ -180,6 +180,11 @@ export const showReport = catchAsync(async (req, res, next) => {
 	WeeklyReports.canEdit =
 		WeeklyReports.isAuthor && WeeklyReports.status === "pending";
 
+	// Add a flag to indicate if the report can be deleted (is pending or rejected and user is author)
+	WeeklyReports.canDelete =
+		WeeklyReports.isAuthor &&
+		(WeeklyReports.status === "pending" || WeeklyReports.status === "rejected");
+
 	res.render("reports/show", { WeeklyReports });
 });
 
@@ -277,9 +282,9 @@ export const deleteReport = catchAsync(async (req, res) => {
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	// Check if the report is already approved or rejected
-	if (report.status !== "pending") {
-		req.flash("error", "You cannot delete a report that has been processed");
+	// Check if the report is already approved (rejected reports can be deleted)
+	if (report.status === "approved") {
+		req.flash("error", "You cannot delete an approved report");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
@@ -348,6 +353,12 @@ export const exportReportAsDocx = catchAsync(async (req, res) => {
 
 	if (!isAuthor) {
 		req.flash("error", "Only the report owner can export to DOCX");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Check if the report status is rejected
+	if (report.status === "rejected") {
+		req.flash("error", "Rejected reports cannot be exported to DOCX");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
