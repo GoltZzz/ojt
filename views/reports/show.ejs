@@ -138,6 +138,15 @@
 		</a>
 		<% } %>
 
+		<!-- Export to PDF button - only for report authors and non-rejected reports -->
+		<% if (WeeklyReports.isAuthor && WeeklyReports.status !== 'rejected') { %>
+		<a
+			href="/weeklyreport/<%= WeeklyReports._id %>/export-pdf"
+			class="btn btn-primary">
+			<i class="fas fa-file-pdf"></i> Export to PDF
+		</a>
+		<% } %>
+
 		<!-- Admin approval buttons - only for admins with pending reports -->
 		<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') {
 		%>

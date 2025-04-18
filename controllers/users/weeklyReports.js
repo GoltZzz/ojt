@@ -1,6 +1,7 @@
 import catchAsync from "../../utils/catchAsync.js";
 import WeeklyReport from "../../models/weeklyReports.js";
 import ExpressError from "../../utils/ExpressError.js";
+import { generateWeeklyReportPdf } from "../../utils/pdfGenerator.js";
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
@@ -331,6 +332,53 @@ export const archiveReport = catchAsync(async (req, res) => {
 	return res.redirect("/admin/archived-reports");
 });
 
+export const exportReportAsPdf = catchAsync(async (req, res) => {
+	const { id } = req.params;
+	const report = await WeeklyReport.findById(id)
+		.populate("approvedBy", "username firstName middleName lastName")
+		.populate("author", "username firstName middleName lastName");
+
+	if (!report) {
+		req.flash("error", "Cannot find that weekly report!");
+		return res.redirect("/weeklyreport");
+	}
+
+	// Check if the current user is authorized to export this report
+	// Only the author can export the report
+	const isAuthor =
+		report.author && req.user && report.author._id.equals(req.user._id);
+
+	if (!isAuthor) {
+		req.flash("error", "Only the report owner can export to PDF");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Check if the report status is rejected
+	if (report.status === "rejected") {
+		req.flash("error", "Rejected reports cannot be exported to PDF");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	try {
+		// Generate the PDF file
+		const buffer = await generateWeeklyReportPdf(report);
+
+		// Set the appropriate headers for a PDF file download
+		res.setHeader(
+			"Content-Disposition",
+			`attachment; filename=weekly-report-${id}.pdf`
+		);
+		res.setHeader("Content-Type", "application/pdf");
+
+		// Send the buffer as the response
+		res.send(buffer);
+	} catch (error) {
+		console.error("PDF generation error:", error);
+		req.flash("error", "Error generating PDF. Please try again.");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+});
+
 export default {
 	index,
 	renderNewForm,
@@ -340,4 +388,5 @@ export default {
 	updateReport,
 	deleteReport,
 	archiveReport,
+	exportReportAsPdf,
 };
