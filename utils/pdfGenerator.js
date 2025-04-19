@@ -84,6 +84,24 @@ export const generateWeeklyReportPdf = (report) => {
 				small: 9,
 			};
 
+			// Helper function for section spacing
+			const addSectionSpacing = (doc, sectionType) => {
+				// Define custom spacing for each section (in points)
+				const spacings = {
+					header: 8, // After header image
+					title: 12, // After title
+					info: 15, // After info box
+					records: 18, // After daily records
+					certification: 15, // After certification
+					comments: 10, // After comments
+					default: 12, // Default spacing
+				};
+
+				const spacing = spacings[sectionType] || spacings.default;
+				doc.y = doc.y + spacing;
+				return doc;
+			};
+
 			// Format dates
 			let weekStartDate = "N/A";
 			let weekEndDate = "N/A";
@@ -114,7 +132,7 @@ export const generateWeeklyReportPdf = (report) => {
 			try {
 				// Add header image with optimized dimensions
 				doc.image(headerImagePath, {
-					fit: [contentWidth, 70],
+					fit: [contentWidth, 60], // Reduced height
 					align: "center",
 				});
 			} catch (imageError) {
@@ -126,7 +144,7 @@ export const generateWeeklyReportPdf = (report) => {
 			}
 
 			// Add title with modern styling
-			doc.moveDown(0.5);
+			addSectionSpacing(doc, "header"); // Custom spacing after header image
 			doc
 				.fontSize(fonts.title)
 				.fillColor(colors.primary)
@@ -142,12 +160,12 @@ export const generateWeeklyReportPdf = (report) => {
 				.stroke(colors.primary);
 
 			// ===== STUDENT INFO SECTION =====
-			doc.moveDown(0.5);
+			addSectionSpacing(doc, "title"); // Custom spacing after title
 
 			// Create a modern info box
 			const infoBoxY = doc.y;
 			doc
-				.roundedRect(30, infoBoxY, contentWidth, 80, 5)
+				.roundedRect(30, infoBoxY, contentWidth, 70, 5) // Reduced height
 				.fillAndStroke(colors.light, colors.border);
 
 			// Left column
@@ -155,28 +173,28 @@ export const generateWeeklyReportPdf = (report) => {
 
 			// Student Name
 			doc
-				.text("Student Name:", 45, infoBoxY + 15, { continued: true })
+				.text("Student Name:", 45, infoBoxY + 12, { continued: true }) // Adjusted position
 				.fillColor(colors.primary)
 				.text(` ${report.studentName}`, { align: "left" });
 
 			// Internship Site
 			doc
 				.fillColor(colors.dark)
-				.text("Internship Site:", 45, infoBoxY + 30, { continued: true })
+				.text("Internship Site:", 45, infoBoxY + 26, { continued: true }) // Adjusted position
 				.fillColor(colors.primary)
 				.text(` ${report.internshipSite}`, { align: "left" });
 
 			// Week Period
 			doc
 				.fillColor(colors.dark)
-				.text("Week Period:", 45, infoBoxY + 45, { continued: true })
+				.text("Week Period:", 45, infoBoxY + 40, { continued: true }) // Adjusted position
 				.fillColor(colors.primary)
 				.text(` ${weekStartDate} - ${weekEndDate}`, { align: "left" });
 
 			// Supervisor Name
 			doc
 				.fillColor(colors.dark)
-				.text("Supervisor Name:", 45, infoBoxY + 60, { continued: true })
+				.text("Supervisor Name:", 45, infoBoxY + 54, { continued: true }) // Adjusted position
 				.fillColor(colors.primary)
 				.text(` ${report.supervisorName}`, { align: "left" });
 
@@ -186,7 +204,7 @@ export const generateWeeklyReportPdf = (report) => {
 			// Status with colored badge
 			doc
 				.fillColor(colors.dark)
-				.text("Status:", statusX, infoBoxY + 15, { continued: true });
+				.text("Status:", statusX, infoBoxY + 12, { continued: true }); // Adjusted position
 
 			// Create a status badge with appropriate color
 			const statusColors = {
@@ -202,9 +220,9 @@ export const generateWeeklyReportPdf = (report) => {
 
 			// Draw status badge
 			const badgeWidth = 80;
-			const badgeHeight = 20;
+			const badgeHeight = 18; // Reduced height
 			const badgeX = statusX + 50;
-			const badgeY = infoBoxY + 12;
+			const badgeY = infoBoxY + 9; // Adjusted position
 
 			doc
 				.roundedRect(badgeX, badgeY, badgeWidth, badgeHeight, 10)
@@ -213,7 +231,8 @@ export const generateWeeklyReportPdf = (report) => {
 			doc
 				.fontSize(fonts.small)
 				.fillColor(colors.white)
-				.text(statusText, badgeX, badgeY + 5, {
+				.text(statusText, badgeX, badgeY + 4, {
+					// Adjusted position
 					width: badgeWidth,
 					align: "center",
 				});
@@ -223,13 +242,13 @@ export const generateWeeklyReportPdf = (report) => {
 				doc
 					.fontSize(fonts.normal)
 					.fillColor(colors.dark)
-					.text("Archive Reason:", statusX, infoBoxY + 45, { continued: true })
+					.text("Archive Reason:", statusX, infoBoxY + 40, { continued: true }) // Adjusted position
 					.fillColor(colors.primary)
 					.text(` ${report.archivedReason}`, { align: "left" });
 			}
 
 			// ===== DAILY RECORDS SECTION =====
-			doc.moveDown(1);
+			addSectionSpacing(doc, "info"); // Custom spacing after info section
 
 			// Section title
 			doc
@@ -237,7 +256,7 @@ export const generateWeeklyReportPdf = (report) => {
 				.fillColor(colors.primary)
 				.text("DAILY RECORDS", { align: "center" });
 
-			doc.moveDown(0.5);
+			addSectionSpacing(doc, "default"); // Default spacing
 
 			// Create table header
 			const tableTop = doc.y;
@@ -263,7 +282,7 @@ export const generateWeeklyReportPdf = (report) => {
 			// Days of the week
 			const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 			let currentY = tableTop + 25;
-			const rowHeight = 60;
+			const rowHeight = 50; // Reduced height
 
 			// Ensure dailyRecords exists
 			if (!report.dailyRecords || !Array.isArray(report.dailyRecords)) {
@@ -388,12 +407,12 @@ export const generateWeeklyReportPdf = (report) => {
 			doc.rect(30, currentY, tableWidth, 1).fill(colors.border);
 
 			// ===== CERTIFICATION SECTION =====
-			doc.moveDown(1);
+			addSectionSpacing(doc, "records"); // Custom spacing after records section
 
 			// Certification box
 			const certBoxY = doc.y;
 			doc
-				.roundedRect(30, certBoxY, contentWidth, 120, 5)
+				.roundedRect(30, certBoxY, contentWidth, 110, 5) // Reduced height
 				.fillAndStroke(colors.light, colors.border);
 
 			// Certification text
@@ -403,7 +422,7 @@ export const generateWeeklyReportPdf = (report) => {
 				.text(
 					'"I CERTIFY on my honor that the above is a true and correct report of the hours of work performed, record of which was made daily at the time of arrival at and departure from office."',
 					40,
-					certBoxY + 15,
+					certBoxY + 12, // Adjusted position
 					{
 						width: contentWidth - 20,
 						align: "center",
@@ -412,7 +431,7 @@ export const generateWeeklyReportPdf = (report) => {
 				);
 
 			// Signature lines
-			const signatureY = certBoxY + 50;
+			const signatureY = certBoxY + 45; // Adjusted position
 			const signatureWidth = 200;
 
 			// Supervisor signature
@@ -497,7 +516,7 @@ export const generateWeeklyReportPdf = (report) => {
 					// Add header to new page
 					try {
 						doc.image(headerImagePath, {
-							fit: [contentWidth, 70],
+							fit: [contentWidth, 60], // Reduced height
 							align: "center",
 						});
 					} catch (imageError) {
@@ -511,9 +530,9 @@ export const generateWeeklyReportPdf = (report) => {
 							.text("[Header image could not be loaded]", { align: "center" });
 					}
 
-					doc.moveDown(0.5);
+					addSectionSpacing(doc, "comments"); // Custom spacing after comments title
 				} else {
-					doc.moveDown(1);
+					addSectionSpacing(doc, "certification"); // Custom spacing after certification
 				}
 
 				// Admin comments title
@@ -529,7 +548,7 @@ export const generateWeeklyReportPdf = (report) => {
 					.lineTo(commentLineX + 200, doc.y + 5)
 					.stroke(colors.primary);
 
-				doc.moveDown(0.5);
+				addSectionSpacing(doc, "default"); // Default spacing
 
 				// Comments box
 				const commentsBoxY = doc.y;
