@@ -113,52 +113,290 @@ export const renderNewForm = async (req, res) => {
 };
 
 export const createReport = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
-	req.flash("success", "Successfully created a new weekly progress report!");
-	res.redirect("/weeklyprogress");
+	try {
+		// Extract data from the request body
+		const {
+			studentName,
+			internshipSite,
+			weekNumber,
+			weekStartDate,
+			weekEndDate,
+			dutiesPerformed,
+			newTrainings,
+			accomplishments,
+			problemsEncountered,
+			problemSolutions,
+			goalsForNextWeek,
+			supervisorName,
+			supervisorRole,
+		} = req.body;
+
+		// Format accomplishments array if it's not already an array
+		let formattedAccomplishments = [];
+		if (accomplishments) {
+			if (Array.isArray(accomplishments)) {
+				formattedAccomplishments = accomplishments;
+			} else {
+				// Handle single accomplishment case
+				formattedAccomplishments = [
+					{
+						proposedActivity: accomplishments.proposedActivity,
+						accomplishmentDetails: accomplishments.accomplishmentDetails,
+					},
+				];
+			}
+		}
+
+		// Create a new weekly progress report
+		const newReport = new WeeklyProgressReport({
+			studentName,
+			internshipSite,
+			weekNumber: parseInt(weekNumber),
+			weekStartDate,
+			weekEndDate,
+			dutiesPerformed,
+			newTrainings,
+			accomplishments: formattedAccomplishments,
+			problemsEncountered,
+			problemSolutions,
+			goalsForNextWeek,
+			supervisorName,
+			supervisorRole,
+			author: req.user._id,
+			dateSubmitted: new Date(),
+		});
+
+		// Save the report
+		await newReport.save();
+
+		req.flash("success", "Successfully created a new weekly progress report!");
+		res.redirect("/weeklyprogress");
+	} catch (error) {
+		console.error("Error creating weekly progress report:", error);
+		req.flash(
+			"error",
+			"Failed to create weekly progress report. Please try again."
+		);
+		res.redirect("/weeklyprogress/new");
+	}
 });
 
-export const showReport = catchAsync(async (req, res, next) => {
-	// This is just a placeholder for now
+export const showReport = catchAsync(async (req, res) => {
+	const { id } = req.params;
+
+	// Find the report by ID
+	const report = await WeeklyProgressReport.findById(id).populate(
+		"author",
+		"username firstName middleName lastName"
+	);
+
+	// If report not found, flash error and redirect
+	if (!report) {
+		req.flash("error", "Weekly Progress Report not found");
+		return res.redirect("/weeklyprogress");
+	}
+
+	// Check if the current user is the author of the report
+	const isAuthor =
+		req.user && report.author && report.author._id.equals(req.user._id);
+
+	// Check if the user can edit or delete the report
+	// Only the author can edit/delete, and only if the report is pending and not archived
+	const canEdit = isAuthor && report.status === "pending" && !report.archived;
+	const canDelete = canEdit;
+
+	// Add these properties to the report object
+	report.isAuthor = isAuthor;
+	report.canEdit = canEdit;
+	report.canDelete = canDelete;
+
 	res.render("reports/weeklyProgress/show", {
-		WeeklyProgressReport: {
-			_id: req.params.id,
-			studentName: "Sample Student",
-			internshipSite: "Sample Site",
-			weekStartDate: new Date().toLocaleDateString(),
-			weekEndDate: new Date().toLocaleDateString(),
-			status: "pending",
-			isAuthor: true,
-			canEdit: true,
-			canDelete: true,
-		},
+		WeeklyProgressReport: report,
 	});
 });
 
 export const renderEditForm = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
+	const { id } = req.params;
+
+	// Find the report by ID
+	const report = await WeeklyProgressReport.findById(id);
+
+	// If report not found, flash error and redirect
+	if (!report) {
+		req.flash("error", "Weekly Progress Report not found");
+		return res.redirect("/weeklyprogress");
+	}
+
+	// Check if the current user is the author of the report
+	const isAuthor =
+		req.user && report.author && report.author.equals(req.user._id);
+
+	// If not the author, flash error and redirect
+	if (!isAuthor) {
+		req.flash("error", "You do not have permission to edit this report");
+		return res.redirect("/weeklyprogress");
+	}
+
+	// If report is not pending or is archived, flash error and redirect
+	if (report.status !== "pending" || report.archived) {
+		req.flash(
+			"error",
+			"You cannot edit a report that has been approved, rejected, or archived"
+		);
+		return res.redirect("/weeklyprogress");
+	}
+
+	// Format the user's full name
+	let fullName = req.user.firstName;
+	if (req.user.middleName && req.user.middleName.length > 0) {
+		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+		fullName += ` ${middleInitial}.`;
+	}
+	fullName += ` ${req.user.lastName}`;
+
 	res.render("reports/weeklyProgress/edit", {
-		WeeklyProgressReport: {
-			_id: req.params.id,
-			studentName: "Sample Student",
-			internshipSite: "Sample Site",
-			weekStartDate: new Date(),
-			weekEndDate: new Date(),
-		},
-		fullName: "Sample Student",
+		WeeklyProgressReport: report,
+		fullName,
 	});
 });
 
 export const updateReport = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
-	req.flash("success", "Successfully updated weekly progress report!");
-	res.redirect(`/weeklyprogress/${req.params.id}`);
+	const { id } = req.params;
+
+	// Find the report by ID
+	const report = await WeeklyProgressReport.findById(id);
+
+	// If report not found, flash error and redirect
+	if (!report) {
+		req.flash("error", "Weekly Progress Report not found");
+		return res.redirect("/weeklyprogress");
+	}
+
+	// Check if the current user is the author of the report
+	const isAuthor =
+		req.user && report.author && report.author.equals(req.user._id);
+
+	// If not the author, flash error and redirect
+	if (!isAuthor) {
+		req.flash("error", "You do not have permission to edit this report");
+		return res.redirect("/weeklyprogress");
+	}
+
+	// If report is not pending or is archived, flash error and redirect
+	if (report.status !== "pending" || report.archived) {
+		req.flash(
+			"error",
+			"You cannot edit a report that has been approved, rejected, or archived"
+		);
+		return res.redirect("/weeklyprogress");
+	}
+
+	try {
+		// Extract data from the request body
+		const {
+			internshipSite,
+			weekNumber,
+			weekStartDate,
+			weekEndDate,
+			dutiesPerformed,
+			newTrainings,
+			accomplishments,
+			problemsEncountered,
+			problemSolutions,
+			goalsForNextWeek,
+			supervisorName,
+			supervisorRole,
+		} = req.body;
+
+		// Format accomplishments array if it's not already an array
+		let formattedAccomplishments = [];
+		if (accomplishments) {
+			if (Array.isArray(accomplishments)) {
+				formattedAccomplishments = accomplishments;
+			} else {
+				// Handle single accomplishment case
+				formattedAccomplishments = [
+					{
+						proposedActivity: accomplishments.proposedActivity,
+						accomplishmentDetails: accomplishments.accomplishmentDetails,
+					},
+				];
+			}
+		}
+
+		// Update the report
+		await WeeklyProgressReport.findByIdAndUpdate(id, {
+			internshipSite,
+			weekNumber: parseInt(weekNumber),
+			weekStartDate,
+			weekEndDate,
+			dutiesPerformed,
+			newTrainings,
+			accomplishments: formattedAccomplishments,
+			problemsEncountered,
+			problemSolutions,
+			goalsForNextWeek,
+			supervisorName,
+			supervisorRole,
+		});
+
+		req.flash("success", "Successfully updated weekly progress report!");
+		res.redirect(`/weeklyprogress/${id}`);
+	} catch (error) {
+		console.error("Error updating weekly progress report:", error);
+		req.flash(
+			"error",
+			"Failed to update weekly progress report. Please try again."
+		);
+		res.redirect(`/weeklyprogress/${id}/edit`);
+	}
 });
 
 export const deleteReport = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
-	req.flash("success", "Successfully deleted weekly progress report!");
-	res.redirect("/weeklyprogress");
+	const { id } = req.params;
+
+	// Find the report by ID
+	const report = await WeeklyProgressReport.findById(id);
+
+	// If report not found, flash error and redirect
+	if (!report) {
+		req.flash("error", "Weekly Progress Report not found");
+		return res.redirect("/weeklyprogress");
+	}
+
+	// Check if the current user is the author of the report
+	const isAuthor =
+		req.user && report.author && report.author.equals(req.user._id);
+
+	// If not the author, flash error and redirect
+	if (!isAuthor) {
+		req.flash("error", "You do not have permission to delete this report");
+		return res.redirect("/weeklyprogress");
+	}
+
+	// If report is not pending or is archived, flash error and redirect
+	if (report.status !== "pending" || report.archived) {
+		req.flash(
+			"error",
+			"You cannot delete a report that has been approved, rejected, or archived"
+		);
+		return res.redirect("/weeklyprogress");
+	}
+
+	try {
+		// Delete the report
+		await WeeklyProgressReport.findByIdAndDelete(id);
+
+		req.flash("success", "Successfully deleted weekly progress report!");
+		res.redirect("/weeklyprogress");
+	} catch (error) {
+		console.error("Error deleting weekly progress report:", error);
+		req.flash(
+			"error",
+			"Failed to delete weekly progress report. Please try again."
+		);
+		res.redirect(`/weeklyprogress/${id}`);
+	}
 });
 
 export default {
