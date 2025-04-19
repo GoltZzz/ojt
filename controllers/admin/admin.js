@@ -145,7 +145,7 @@ const toggleUserRole = catchAsync(async (req, res) => {
 
 const renderPendingReports = catchAsync(async (req, res) => {
 	const {
-		reportType,
+		reportType = "all",
 		studentName,
 		internshipSite,
 		weekPeriod,
@@ -155,9 +155,6 @@ const renderPendingReports = catchAsync(async (req, res) => {
 		status: "pending",
 		archived: false,
 	};
-	if (reportType) {
-		filter.reportType = reportType;
-	}
 
 	if (studentName) {
 		filter.studentName = { $regex: studentName, $options: "i" };
@@ -181,34 +178,148 @@ const renderPendingReports = catchAsync(async (req, res) => {
 	} else {
 		sortOptions = { dateSubmitted: -1 };
 	}
-	const pendingReports = await WeeklyReport.find(filter)
-		.populate("author")
-		.sort(sortOptions);
 
-	pendingReports.forEach((report) => {
-		if (report.author) {
-			let fullName = report.author.firstName;
-
-			if (report.author.middleName && report.author.middleName.length > 0) {
-				const middleInitial = report.author.middleName.charAt(0).toUpperCase();
-				fullName += ` ${middleInitial}.`;
+	// Helper function to format author names
+	const formatReportNames = (reports) => {
+		return reports.map((report) => {
+			// Format author name
+			if (report.author) {
+				let fullName = report.author.firstName;
+				if (report.author.middleName && report.author.middleName.length > 0) {
+					const middleInitial = report.author.middleName
+						.charAt(0)
+						.toUpperCase();
+					fullName += ` ${middleInitial}.`;
+				}
+				fullName += ` ${report.author.lastName}`;
+				report.authorFullName = fullName;
 			}
 
-			fullName += ` ${report.author.lastName}`;
+			// Add report type for display
+			report.reportTypeFormatted =
+				report.reportType || report.constructor.modelName;
+			return report;
+		});
+	};
 
-			report.authorFullName = fullName;
-		}
-	});
+	// Fetch reports based on the selected report type
+	let pendingReports = [];
+
+	if (reportType === "all" || reportType === "weeklyreport") {
+		const weeklyReports = await WeeklyReport.find(filter)
+			.populate("author")
+			.sort(sortOptions);
+
+		weeklyReports.forEach((report) => {
+			report.reportType = "weeklyreport";
+		});
+		pendingReports = [...pendingReports, ...weeklyReports];
+	}
+
+	if (reportType === "all" || reportType === "weeklyprogress") {
+		const weeklyProgressReports = await WeeklyProgressReport.find(filter)
+			.populate("author")
+			.sort(sortOptions);
+
+		weeklyProgressReports.forEach((report) => {
+			report.reportType = "weeklyprogress";
+		});
+		pendingReports = [...pendingReports, ...weeklyProgressReports];
+	}
+
+	if (reportType === "all" || reportType === "trainingschedule") {
+		const trainingSchedules = await TrainingSchedule.find(filter)
+			.populate("author")
+			.sort(sortOptions);
+
+		trainingSchedules.forEach((report) => {
+			report.reportType = "trainingschedule";
+		});
+		pendingReports = [...pendingReports, ...trainingSchedules];
+	}
+
+	if (reportType === "all" || reportType === "learningoutcome") {
+		const learningOutcomes = await LearningOutcome.find(filter)
+			.populate("author")
+			.sort(sortOptions);
+
+		learningOutcomes.forEach((report) => {
+			report.reportType = "learningoutcome";
+		});
+		pendingReports = [...pendingReports, ...learningOutcomes];
+	}
+
+	if (reportType === "all" || reportType === "dailyattendance") {
+		const dailyAttendances = await DailyAttendance.find(filter)
+			.populate("author")
+			.sort(sortOptions);
+
+		dailyAttendances.forEach((report) => {
+			report.reportType = "dailyattendance";
+		});
+		pendingReports = [...pendingReports, ...dailyAttendances];
+	}
+
+	if (reportType === "all" || reportType === "documentation") {
+		const documentations = await Documentation.find(filter)
+			.populate("author")
+			.sort(sortOptions);
+
+		documentations.forEach((report) => {
+			report.reportType = "documentation";
+		});
+		pendingReports = [...pendingReports, ...documentations];
+	}
+
+	if (reportType === "all" || reportType === "timereport") {
+		const timeReports = await TimeReport.find(filter)
+			.populate("author")
+			.sort(sortOptions);
+
+		timeReports.forEach((report) => {
+			report.reportType = "timereport";
+		});
+		pendingReports = [...pendingReports, ...timeReports];
+	}
+
+	// Sort all reports by the selected sort option
+	if (sortBy) {
+		const [field, order] = sortBy.split("_");
+		const sortMultiplier = order === "asc" ? 1 : -1;
+
+		pendingReports.sort((a, b) => {
+			if (field === "dateSubmitted") {
+				return (
+					(new Date(a.dateSubmitted) - new Date(b.dateSubmitted)) *
+					sortMultiplier
+				);
+			}
+			return 0;
+		});
+	}
+
+	// Format names for all reports
+	const formattedReports = formatReportNames(pendingReports);
 
 	res.render("admin/pending-reports", {
-		pendingReports,
+		pendingReports: formattedReports,
 		filters: req.query,
+		reportTypes: [
+			{ value: "all", label: "All Reports" },
+			{ value: "weeklyreport", label: "Weekly Reports" },
+			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
+			{ value: "trainingschedule", label: "Training Schedules" },
+			{ value: "learningoutcome", label: "Learning Outcomes" },
+			{ value: "dailyattendance", label: "Daily Attendance" },
+			{ value: "documentation", label: "Documentation" },
+			{ value: "timereport", label: "Time Reports" },
+		],
 	});
 });
 
 const renderAllReports = catchAsync(async (req, res) => {
 	const {
-		reportType,
+		reportType = "all",
 		studentName,
 		internshipSite,
 		weekPeriod,
@@ -219,10 +330,6 @@ const renderAllReports = catchAsync(async (req, res) => {
 
 	// By default, exclude archived reports
 	const filter = { archived: false };
-
-	if (reportType) {
-		filter.reportType = reportType;
-	}
 
 	if (studentName) {
 		filter.studentName = { $regex: studentName, $options: "i" };
@@ -239,6 +346,7 @@ const renderAllReports = catchAsync(async (req, res) => {
 			{ date: weekDate },
 		];
 	}
+
 	if (status) {
 		filter.status = status;
 	}
@@ -261,55 +369,205 @@ const renderAllReports = catchAsync(async (req, res) => {
 		sortOptions = { dateSubmitted: -1 };
 	}
 
-	const allReports = await WeeklyReport.find(filter)
-		.populate("author")
-		.populate("approvedBy")
-		.sort(sortOptions);
-
-	allReports.forEach((report) => {
-		if (report.author) {
-			let fullName = report.author.firstName;
-			if (report.author.middleName && report.author.middleName.length > 0) {
-				const middleInitial = report.author.middleName.charAt(0).toUpperCase();
-				fullName += ` ${middleInitial}.`;
+	// Helper function to format author and approver names
+	const formatReportNames = (reports) => {
+		return reports.map((report) => {
+			// Format author name
+			if (report.author) {
+				let fullName = report.author.firstName;
+				if (report.author.middleName && report.author.middleName.length > 0) {
+					const middleInitial = report.author.middleName
+						.charAt(0)
+						.toUpperCase();
+					fullName += ` ${middleInitial}.`;
+				}
+				fullName += ` ${report.author.lastName}`;
+				report.authorFullName = fullName;
 			}
 
-			fullName += ` ${report.author.lastName}`;
-
-			report.authorFullName = fullName;
-		}
-
-		if (report.approvedBy) {
-			let fullName = report.approvedBy.firstName;
-			if (
-				report.approvedBy.middleName &&
-				report.approvedBy.middleName.length > 0
-			) {
-				const middleInitial = report.approvedBy.middleName
-					.charAt(0)
-					.toUpperCase();
-				fullName += ` ${middleInitial}.`;
+			// Format approver name
+			if (report.approvedBy) {
+				let fullName = report.approvedBy.firstName;
+				if (
+					report.approvedBy.middleName &&
+					report.approvedBy.middleName.length > 0
+				) {
+					const middleInitial = report.approvedBy.middleName
+						.charAt(0)
+						.toUpperCase();
+					fullName += ` ${middleInitial}.`;
+				}
+				fullName += ` ${report.approvedBy.lastName}`;
+				report.approverFullName = fullName;
 			}
-			fullName += ` ${report.approvedBy.lastName}`;
 
-			report.approverFullName = fullName;
-		}
-	});
+			// Add report type for display
+			report.reportTypeFormatted =
+				report.reportType || report.constructor.modelName;
+			return report;
+		});
+	};
+
+	// Fetch reports based on the selected report type
+	let allReports = [];
+
+	if (reportType === "all" || reportType === "weeklyreport") {
+		const weeklyReports = await WeeklyReport.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		weeklyReports.forEach((report) => {
+			report.reportType = "weeklyreport";
+		});
+		allReports = [...allReports, ...weeklyReports];
+	}
+
+	if (reportType === "all" || reportType === "weeklyprogress") {
+		const weeklyProgressReports = await WeeklyProgressReport.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		weeklyProgressReports.forEach((report) => {
+			report.reportType = "weeklyprogress";
+		});
+		allReports = [...allReports, ...weeklyProgressReports];
+	}
+
+	if (reportType === "all" || reportType === "trainingschedule") {
+		const trainingSchedules = await TrainingSchedule.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		trainingSchedules.forEach((report) => {
+			report.reportType = "trainingschedule";
+		});
+		allReports = [...allReports, ...trainingSchedules];
+	}
+
+	if (reportType === "all" || reportType === "learningoutcome") {
+		const learningOutcomes = await LearningOutcome.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		learningOutcomes.forEach((report) => {
+			report.reportType = "learningoutcome";
+		});
+		allReports = [...allReports, ...learningOutcomes];
+	}
+
+	if (reportType === "all" || reportType === "dailyattendance") {
+		const dailyAttendances = await DailyAttendance.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		dailyAttendances.forEach((report) => {
+			report.reportType = "dailyattendance";
+		});
+		allReports = [...allReports, ...dailyAttendances];
+	}
+
+	if (reportType === "all" || reportType === "documentation") {
+		const documentations = await Documentation.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		documentations.forEach((report) => {
+			report.reportType = "documentation";
+		});
+		allReports = [...allReports, ...documentations];
+	}
+
+	if (reportType === "all" || reportType === "timereport") {
+		const timeReports = await TimeReport.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		timeReports.forEach((report) => {
+			report.reportType = "timereport";
+		});
+		allReports = [...allReports, ...timeReports];
+	}
+
+	// Sort all reports by the selected sort option
+	if (sortBy) {
+		const [field, order] = sortBy.split("_");
+		const sortMultiplier = order === "asc" ? 1 : -1;
+
+		allReports.sort((a, b) => {
+			if (field === "dateSubmitted") {
+				return (
+					(new Date(a.dateSubmitted) - new Date(b.dateSubmitted)) *
+					sortMultiplier
+				);
+			}
+			return 0;
+		});
+	}
+
+	// Format names for all reports
+	const formattedReports = formatReportNames(allReports);
 
 	res.render("admin/all-reports", {
-		allReports,
+		allReports: formattedReports,
 		filters: req.query,
+		reportTypes: [
+			{ value: "all", label: "All Reports" },
+			{ value: "weeklyreport", label: "Weekly Reports" },
+			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
+			{ value: "trainingschedule", label: "Training Schedules" },
+			{ value: "learningoutcome", label: "Learning Outcomes" },
+			{ value: "dailyattendance", label: "Daily Attendance" },
+			{ value: "documentation", label: "Documentation" },
+			{ value: "timereport", label: "Time Reports" },
+		],
 	});
 });
 
 const approveReport = catchAsync(async (req, res) => {
-	const { id } = req.params;
+	const { id, type } = req.params;
 	const { status, adminComments } = req.body;
 
-	const report = await WeeklyReport.findById(id);
+	let report;
+	let redirectUrl = "/admin/pending-reports";
+
+	// Find the appropriate report type
+	switch (type) {
+		case "weeklyreport":
+			report = await WeeklyReport.findById(id);
+			break;
+		case "weeklyprogress":
+			report = await WeeklyProgressReport.findById(id);
+			break;
+		case "trainingschedule":
+			report = await TrainingSchedule.findById(id);
+			break;
+		case "learningoutcome":
+			report = await LearningOutcome.findById(id);
+			break;
+		case "dailyattendance":
+			report = await DailyAttendance.findById(id);
+			break;
+		case "documentation":
+			report = await Documentation.findById(id);
+			break;
+		case "timereport":
+			report = await TimeReport.findById(id);
+			break;
+		default:
+			req.flash("error", "Invalid report type");
+			return res.redirect(redirectUrl);
+	}
+
 	if (!report) {
 		req.flash("error", "Report not found");
-		return res.redirect("/admin/pending-reports");
+		return res.redirect(redirectUrl);
 	}
 
 	report.status = status || "approved";
@@ -323,12 +581,12 @@ const approveReport = catchAsync(async (req, res) => {
 		"success",
 		`Report ${report.status === "approved" ? "approved" : "rejected"}`
 	);
-	res.redirect("/admin/pending-reports");
+	res.redirect(redirectUrl);
 });
 
 const renderArchivedReports = catchAsync(async (req, res) => {
 	const {
-		reportType,
+		reportType = "all",
 		studentName,
 		internshipSite,
 		weekPeriod,
@@ -337,10 +595,6 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 	} = req.query;
 
 	const filter = { archived: true };
-
-	if (reportType) {
-		filter.reportType = reportType;
-	}
 
 	if (studentName) {
 		filter.studentName = { $regex: studentName, $options: "i" };
@@ -370,47 +624,164 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 		sortOptions = { dateSubmitted: -1 };
 	}
 
-	const archivedReports = await WeeklyReport.find(filter)
-		.populate("author")
-		.populate("approvedBy")
-		.sort(sortOptions);
-
-	archivedReports.forEach((report) => {
-		if (report.author) {
-			let fullName = report.author.firstName;
-
-			if (report.author.middleName && report.author.middleName.length > 0) {
-				const middleInitial = report.author.middleName.charAt(0).toUpperCase();
-				fullName += ` ${middleInitial}.`;
+	// Helper function to format author and approver names
+	const formatReportNames = (reports) => {
+		return reports.map((report) => {
+			// Format author name
+			if (report.author) {
+				let fullName = report.author.firstName;
+				if (report.author.middleName && report.author.middleName.length > 0) {
+					const middleInitial = report.author.middleName
+						.charAt(0)
+						.toUpperCase();
+					fullName += ` ${middleInitial}.`;
+				}
+				fullName += ` ${report.author.lastName}`;
+				report.authorFullName = fullName;
 			}
 
-			fullName += ` ${report.author.lastName}`;
-
-			report.authorFullName = fullName;
-		}
-
-		if (report.approvedBy) {
-			let fullName = report.approvedBy.firstName;
-
-			if (
-				report.approvedBy.middleName &&
-				report.approvedBy.middleName.length > 0
-			) {
-				const middleInitial = report.approvedBy.middleName
-					.charAt(0)
-					.toUpperCase();
-				fullName += ` ${middleInitial}.`;
+			// Format approver name
+			if (report.approvedBy) {
+				let fullName = report.approvedBy.firstName;
+				if (
+					report.approvedBy.middleName &&
+					report.approvedBy.middleName.length > 0
+				) {
+					const middleInitial = report.approvedBy.middleName
+						.charAt(0)
+						.toUpperCase();
+					fullName += ` ${middleInitial}.`;
+				}
+				fullName += ` ${report.approvedBy.lastName}`;
+				report.approverFullName = fullName;
 			}
 
-			fullName += ` ${report.approvedBy.lastName}`;
+			// Add report type for display
+			report.reportTypeFormatted =
+				report.reportType || report.constructor.modelName;
+			return report;
+		});
+	};
 
-			report.approverFullName = fullName;
-		}
-	});
+	// Fetch reports based on the selected report type
+	let archivedReports = [];
+
+	if (reportType === "all" || reportType === "weeklyreport") {
+		const weeklyReports = await WeeklyReport.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		weeklyReports.forEach((report) => {
+			report.reportType = "weeklyreport";
+		});
+		archivedReports = [...archivedReports, ...weeklyReports];
+	}
+
+	if (reportType === "all" || reportType === "weeklyprogress") {
+		const weeklyProgressReports = await WeeklyProgressReport.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		weeklyProgressReports.forEach((report) => {
+			report.reportType = "weeklyprogress";
+		});
+		archivedReports = [...archivedReports, ...weeklyProgressReports];
+	}
+
+	if (reportType === "all" || reportType === "trainingschedule") {
+		const trainingSchedules = await TrainingSchedule.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		trainingSchedules.forEach((report) => {
+			report.reportType = "trainingschedule";
+		});
+		archivedReports = [...archivedReports, ...trainingSchedules];
+	}
+
+	if (reportType === "all" || reportType === "learningoutcome") {
+		const learningOutcomes = await LearningOutcome.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		learningOutcomes.forEach((report) => {
+			report.reportType = "learningoutcome";
+		});
+		archivedReports = [...archivedReports, ...learningOutcomes];
+	}
+
+	if (reportType === "all" || reportType === "dailyattendance") {
+		const dailyAttendances = await DailyAttendance.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		dailyAttendances.forEach((report) => {
+			report.reportType = "dailyattendance";
+		});
+		archivedReports = [...archivedReports, ...dailyAttendances];
+	}
+
+	if (reportType === "all" || reportType === "documentation") {
+		const documentations = await Documentation.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		documentations.forEach((report) => {
+			report.reportType = "documentation";
+		});
+		archivedReports = [...archivedReports, ...documentations];
+	}
+
+	if (reportType === "all" || reportType === "timereport") {
+		const timeReports = await TimeReport.find(filter)
+			.populate("author")
+			.populate("approvedBy")
+			.sort(sortOptions);
+
+		timeReports.forEach((report) => {
+			report.reportType = "timereport";
+		});
+		archivedReports = [...archivedReports, ...timeReports];
+	}
+
+	// Sort all reports by the selected sort option
+	if (sortBy) {
+		const [field, order] = sortBy.split("_");
+		const sortMultiplier = order === "asc" ? 1 : -1;
+
+		archivedReports.sort((a, b) => {
+			if (field === "dateSubmitted") {
+				return (
+					(new Date(a.dateSubmitted) - new Date(b.dateSubmitted)) *
+					sortMultiplier
+				);
+			}
+			return 0;
+		});
+	}
+
+	// Format names for all reports
+	const formattedReports = formatReportNames(archivedReports);
 
 	res.render("admin/archived-reports", {
-		archivedReports,
+		archivedReports: formattedReports,
 		filters: req.query,
+		reportTypes: [
+			{ value: "all", label: "All Reports" },
+			{ value: "weeklyreport", label: "Weekly Reports" },
+			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
+			{ value: "trainingschedule", label: "Training Schedules" },
+			{ value: "learningoutcome", label: "Learning Outcomes" },
+			{ value: "dailyattendance", label: "Daily Attendance" },
+			{ value: "documentation", label: "Documentation" },
+			{ value: "timereport", label: "Time Reports" },
+		],
 	});
 });
 
@@ -424,6 +795,7 @@ const deleteUser = catchAsync(async (req, res) => {
 		return res.redirect("/admin/users");
 	}
 
+	// Archive all report types
 	await WeeklyReport.updateMany(
 		{ author: user._id },
 		{ archived: true, archivedReason: "User deleted" }
@@ -439,6 +811,27 @@ const deleteUser = catchAsync(async (req, res) => {
 		{ archived: true, archivedReason: "User deleted" }
 	);
 
+	// Archive new report types
+	await WeeklyProgressReport.updateMany(
+		{ author: user._id },
+		{ archived: true, archivedReason: "User deleted" }
+	);
+
+	await TrainingSchedule.updateMany(
+		{ author: user._id },
+		{ archived: true, archivedReason: "User deleted" }
+	);
+
+	await LearningOutcome.updateMany(
+		{ author: user._id },
+		{ archived: true, archivedReason: "User deleted" }
+	);
+
+	await DailyAttendance.updateMany(
+		{ author: user._id },
+		{ archived: true, archivedReason: "User deleted" }
+	);
+
 	await User.findByIdAndDelete(id);
 
 	req.flash(
@@ -449,15 +842,45 @@ const deleteUser = catchAsync(async (req, res) => {
 });
 
 const unarchiveReport = catchAsync(async (req, res) => {
-	const { id } = req.params;
-	console.log(`⏳ Running unarchive for report ID: ${id}`);
+	const { id, type } = req.params;
+	console.log(`⏳ Running unarchive for report ID: ${id}, type: ${type}`);
 
-	const report = await WeeklyReport.findById(id);
+	let report;
+	let redirectUrl = "/admin/archived-reports";
+
+	// Find the appropriate report type
+	switch (type) {
+		case "weeklyreport":
+			report = await WeeklyReport.findById(id);
+			break;
+		case "weeklyprogress":
+			report = await WeeklyProgressReport.findById(id);
+			break;
+		case "trainingschedule":
+			report = await TrainingSchedule.findById(id);
+			break;
+		case "learningoutcome":
+			report = await LearningOutcome.findById(id);
+			break;
+		case "dailyattendance":
+			report = await DailyAttendance.findById(id);
+			break;
+		case "documentation":
+			report = await Documentation.findById(id);
+			break;
+		case "timereport":
+			report = await TimeReport.findById(id);
+			break;
+		default:
+			console.log(`❌ Invalid report type: ${type}`);
+			req.flash("error", "Invalid report type");
+			return res.redirect(redirectUrl);
+	}
 
 	if (!report) {
 		console.log(`❌ Report not found with ID: ${id}`);
 		req.flash("error", "Report not found");
-		return res.redirect("/admin/archived-reports");
+		return res.redirect(redirectUrl);
 	}
 
 	console.log(
@@ -473,7 +896,7 @@ const unarchiveReport = catchAsync(async (req, res) => {
 
 	// Redirect back to the archived reports page
 	// This will reload the page and show only the remaining archived reports
-	res.redirect("/admin/archived-reports");
+	res.redirect(redirectUrl);
 });
 
 const renderRegisterForm = catchAsync(async (req, res) => {

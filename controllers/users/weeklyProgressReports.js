@@ -399,6 +399,67 @@ export const deleteReport = catchAsync(async (req, res) => {
 	}
 });
 
+export const archiveReport = catchAsync(async (req, res) => {
+	const { id } = req.params;
+
+	// Find the report by ID
+	const report = await WeeklyProgressReport.findById(id);
+
+	// If report not found, flash error and redirect
+	if (!report) {
+		req.flash("error", "Weekly Progress Report not found");
+		return res.redirect("/weeklyprogress");
+	}
+
+	try {
+		// Archive the report
+		report.archived = true;
+		report.archivedReason =
+			req.body.archivedReason || "Manually archived by user";
+		await report.save();
+
+		req.flash("success", "Successfully archived weekly progress report!");
+		res.redirect("/admin/archived-reports");
+	} catch (error) {
+		console.error("Error archiving weekly progress report:", error);
+		req.flash(
+			"error",
+			"Failed to archive weekly progress report. Please try again."
+		);
+		res.redirect(`/weeklyprogress/${id}`);
+	}
+});
+
+export const unarchiveReport = catchAsync(async (req, res) => {
+	const { id } = req.params;
+
+	// Find the report by ID
+	const report = await WeeklyProgressReport.findById(id);
+
+	// If report not found, flash error and redirect
+	if (!report) {
+		req.flash("error", "Weekly Progress Report not found");
+		return res.redirect("/weeklyprogress");
+	}
+
+	try {
+		// Unarchive the report
+		report.archived = false;
+		report.archivedReason = "";
+		await report.save();
+
+		req.flash("success", "Successfully unarchived weekly progress report!");
+		res.redirect("/weeklyprogress");
+	} catch (error) {
+		console.error("Error unarchiving weekly progress report:", error);
+		req.flash(
+			"error",
+			"Failed to unarchive weekly progress report. Please try again."
+		);
+		res.redirect(`/weeklyprogress/${id}`);
+	}
+});
+
 export default {
 	index,
 	renderNewForm,
@@ -407,4 +468,6 @@ export default {
 	renderEditForm,
 	updateReport,
 	deleteReport,
+	archiveReport,
+	unarchiveReport,
 };

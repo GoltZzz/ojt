@@ -48,11 +48,11 @@ router
 	.get(isLoggedIn, isAdmin, adminController.renderArchivedReports);
 
 router
-	.route("/reports/:id/approve")
+	.route("/reports/:type/:id/approve")
 	.post(isLoggedIn, isAdmin, adminController.approveReport);
 
 router
-	.route("/reports/:id/unarchive")
+	.route("/reports/:type/:id/unarchive")
 	.post(isLoggedIn, isAdmin, adminController.unarchiveReport);
 
 export default router;

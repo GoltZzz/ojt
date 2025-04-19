@@ -16,10 +16,14 @@
 				<div class="col-md-3">
 					<label for="reportType" class="form-label">Report Type</label>
 					<select class="form-select" id="reportType" name="reportType">
-						<option value="">All Types</option>
-						<option value="weeklyreport">Weekly Report</option>
-						<option value="documentation">Documentation</option>
-						<option value="timereport">Time Report</option>
+						<option value="all" <%= filters && filters.reportType === 'all' ? 'selected' : '' %>>All Types</option>
+						<option value="weeklyreport" <%= filters && filters.reportType === 'weeklyreport' ? 'selected' : '' %>>Weekly Report</option>
+						<option value="weeklyprogress" <%= filters && filters.reportType === 'weeklyprogress' ? 'selected' : '' %>>Weekly Progress Report</option>
+						<option value="trainingschedule" <%= filters && filters.reportType === 'trainingschedule' ? 'selected' : '' %>>Training Schedule</option>
+						<option value="learningoutcome" <%= filters && filters.reportType === 'learningoutcome' ? 'selected' : '' %>>Learning Outcome</option>
+						<option value="dailyattendance" <%= filters && filters.reportType === 'dailyattendance' ? 'selected' : '' %>>Daily Attendance</option>
+						<option value="documentation" <%= filters && filters.reportType === 'documentation' ? 'selected' : '' %>>Documentation</option>
+						<option value="timereport" <%= filters && filters.reportType === 'timereport' ? 'selected' : '' %>>Time Report</option>
 					</select>
 				</div>
 				<div class="col-md-3">
@@ -72,10 +76,11 @@
 			<table class="table table-hover">
 				<thead>
 					<tr>
+						<th>Report Type</th>
 						<th>Student Name</th>
 						<th>Submitted By</th>
 						<th>Internship Site</th>
-						<th>Week Period</th>
+						<th>Period</th>
 						<th>Date Submitted</th>
 						<th>Actions</th>
 					</tr>
@@ -83,18 +88,42 @@
 				<tbody>
 					<% pendingReports.forEach(report => { %>
 					<tr>
+						<td>
+							<% if (report.reportType === 'weeklyreport') { %>
+								<span class="badge bg-primary">Weekly Report</span>
+							<% } else if (report.reportType === 'weeklyprogress') { %>
+								<span class="badge bg-purple">Weekly Progress</span>
+							<% } else if (report.reportType === 'trainingschedule') { %>
+								<span class="badge bg-teal">Training Schedule</span>
+							<% } else if (report.reportType === 'learningoutcome') { %>
+								<span class="badge bg-orange">Learning Outcome</span>
+							<% } else if (report.reportType === 'dailyattendance') { %>
+								<span class="badge bg-indigo">Daily Attendance</span>
+							<% } else if (report.reportType === 'documentation') { %>
+								<span class="badge bg-success">Documentation</span>
+							<% } else if (report.reportType === 'timereport') { %>
+								<span class="badge bg-info">Time Report</span>
+							<% } else { %>
+								<span class="badge bg-secondary">Other</span>
+							<% } %>
+						</td>
 						<td><%= report.studentName %></td>
 						<td><%= report.authorFullName || 'Unknown' %></td>
 						<td><%= report.internshipSite %></td>
 						<td>
-							<%= report.weekStartDate.toLocaleDateString() %> - <%=
-							report.weekEndDate.toLocaleDateString() %>
+							<% if (report.weekStartDate && report.weekEndDate) { %>
+								<%= new Date(report.weekStartDate).toLocaleDateString() %> - <%= new Date(report.weekEndDate).toLocaleDateString() %>
+							<% } else if (report.date) { %>
+								<%= new Date(report.date).toLocaleDateString() %>
+							<% } else { %>
+								N/A
+							<% } %>
 						</td>
-						<td><%= report.dateSubmitted.toLocaleDateString() %></td>
+						<td><%= new Date(report.dateSubmitted).toLocaleDateString() %></td>
 						<td>
 							<div class="btn-group" role="group">
 								<a
-									href="/weeklyreport/<%= report._id %>"
+									href="/<%= report.reportType %>/<%= report._id %>"
 									class="btn btn-sm btn-info text-white">
 									<i class="fas fa-eye"></i> View
 								</a>
@@ -102,14 +131,14 @@
 									type="button"
 									class="btn btn-sm btn-success"
 									data-bs-toggle="modal"
-									data-bs-target="#approveModal<%= report._id %>">
+									data-bs-target="#approveModal-<%= report.reportType %>-<%= report._id %>">
 									<i class="fas fa-check"></i> Approve
 								</button>
 								<button
 									type="button"
 									class="btn btn-sm btn-danger"
 									data-bs-toggle="modal"
-									data-bs-target="#rejectModal<%= report._id %>">
+									data-bs-target="#rejectModal-<%= report.reportType %>-<%= report._id %>">
 									<i class="fas fa-times"></i> Reject
 								</button>
 							</div>
@@ -117,9 +146,9 @@
 							<!-- Approve Modal -->
 							<div
 								class="modal fade report-modal"
-								id="approveModal<%= report._id %>"
+								id="approveModal-<%= report.reportType %>-<%= report._id %>"
 								tabindex="-1"
-								aria-labelledby="approveModalLabel<%= report._id %>"
+								aria-labelledby="approveModalLabel-<%= report.reportType %>-<%= report._id %>"
 								aria-hidden="true">
 								<div class="modal-dialog modal-dialog-centered">
 									<div class="modal-content">
@@ -131,7 +160,7 @@
 											">
 											<h5
 												class="modal-title"
-												id="approveModalLabel<%= report._id %>">
+												id="approveModalLabel-<%= report.reportType %>-<%= report._id %>">
 												<i class="fas fa-check me-2"></i> Approve Report
 											</h5>
 											<button
@@ -141,9 +170,9 @@
 												aria-label="Close"></button>
 										</div>
 										<form
-											action="/admin/reports/<%= report._id %>/approve"
+											action="/admin/reports/<%= report.reportType %>/<%= report._id %>/approve"
 											method="POST"
-											id="approveForm<%= report._id %>">
+											id="approveForm-<%= report.reportType %>-<%= report._id %>">
 											<div class="modal-body">
 												<div class="text-center mb-4">
 													<div
@@ -165,14 +194,14 @@
 												<input type="hidden" name="status" value="approved" />
 												<div class="form-group mb-3">
 													<label
-														for="approveComments<%= report._id %>"
+														for="approveComments-<%= report.reportType %>-<%= report._id %>"
 														class="form-label"
 														style="font-weight: 600; color: #333"
 														>Comments (Optional):</label
 													>
 													<textarea
 														class="form-control"
-														id="approveComments<%= report._id %>"
+														id="approveComments-<%= report.reportType %>-<%= report._id %>"
 														name="adminComments"
 														rows="4"
 														placeholder="Add any feedback or comments about this report"
@@ -184,7 +213,7 @@
 														maxlength="500"></textarea>
 													<span
 														class="char-counter"
-														id="approveCharCounter<%= report._id %>"
+														id="approveCharCounter-<%= report.reportType %>-<%= report._id %>"
 														style="
 															display: block;
 															text-align: right;
@@ -228,9 +257,9 @@
 							<!-- Reject Modal -->
 							<div
 								class="modal fade report-modal"
-								id="rejectModal<%= report._id %>"
+								id="rejectModal-<%= report.reportType %>-<%= report._id %>"
 								tabindex="-1"
-								aria-labelledby="rejectModalLabel<%= report._id %>"
+								aria-labelledby="rejectModalLabel-<%= report.reportType %>-<%= report._id %>"
 								aria-hidden="true">
 								<div class="modal-dialog modal-dialog-centered">
 									<div class="modal-content">
@@ -242,7 +271,7 @@
 											">
 											<h5
 												class="modal-title"
-												id="rejectModalLabel<%= report._id %>">
+												id="rejectModalLabel-<%= report.reportType %>-<%= report._id %>">
 												<i class="fas fa-times me-2"></i> Reject Report
 											</h5>
 											<button
@@ -252,9 +281,9 @@
 												aria-label="Close"></button>
 										</div>
 										<form
-											action="/admin/reports/<%= report._id %>/approve"
+											action="/admin/reports/<%= report.reportType %>/<%= report._id %>/approve"
 											method="POST"
-											id="rejectForm<%= report._id %>">
+											id="rejectForm-<%= report.reportType %>-<%= report._id %>">
 											<div class="modal-body">
 												<div class="text-center mb-4">
 													<div
@@ -276,7 +305,7 @@
 												<input type="hidden" name="status" value="rejected" />
 												<div class="form-group mb-3">
 													<label
-														for="rejectComments<%= report._id %>"
+														for="rejectComments-<%= report.reportType %>-<%= report._id %>"
 														class="form-label"
 														style="font-weight: 600; color: #333">
 														Reason for Rejection
@@ -284,7 +313,7 @@
 													</label>
 													<textarea
 														class="form-control"
-														id="rejectComments<%= report._id %>"
+														id="rejectComments-<%= report.reportType %>-<%= report._id %>"
 														name="adminComments"
 														rows="4"
 														placeholder="Please provide a detailed explanation of why this report is being rejected"
@@ -297,7 +326,7 @@
 														maxlength="500"></textarea>
 													<span
 														class="char-counter"
-														id="rejectCharCounter<%= report._id %>"
+														id="rejectCharCounter-<%= report.reportType %>-<%= report._id %>"
 														style="
 															display: block;
 															text-align: right;
@@ -359,3 +388,21 @@
 
 <script src="/js/reportFilters.js"></script>
 <script src="/js/reportModals.js"></script>
+
+<style>
+.bg-purple {
+	background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.bg-teal {
+	background: linear-gradient(135deg, #1abc9c, #16a085);
+}
+
+.bg-orange {
+	background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+.bg-indigo {
+	background: linear-gradient(135deg, #4a69bd, #1e3799);
+}
+</style>

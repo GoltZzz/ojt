@@ -15,10 +15,14 @@
 				<div class="col-md-3">
 					<label for="reportType" class="form-label">Report Type</label>
 					<select class="form-select" id="reportType" name="reportType">
-						<option value="">All Types</option>
-						<option value="weeklyreport">Weekly Report</option>
-						<option value="documentation">Documentation</option>
-						<option value="timereport">Time Report</option>
+						<option value="all" <%= filters && filters.reportType === 'all' ? 'selected' : '' %>>All Types</option>
+						<option value="weeklyreport" <%= filters && filters.reportType === 'weeklyreport' ? 'selected' : '' %>>Weekly Report</option>
+						<option value="weeklyprogress" <%= filters && filters.reportType === 'weeklyprogress' ? 'selected' : '' %>>Weekly Progress Report</option>
+						<option value="trainingschedule" <%= filters && filters.reportType === 'trainingschedule' ? 'selected' : '' %>>Training Schedule</option>
+						<option value="learningoutcome" <%= filters && filters.reportType === 'learningoutcome' ? 'selected' : '' %>>Learning Outcome</option>
+						<option value="dailyattendance" <%= filters && filters.reportType === 'dailyattendance' ? 'selected' : '' %>>Daily Attendance</option>
+						<option value="documentation" <%= filters && filters.reportType === 'documentation' ? 'selected' : '' %>>Documentation</option>
+						<option value="timereport" <%= filters && filters.reportType === 'timereport' ? 'selected' : '' %>>Time Report</option>
 					</select>
 				</div>
 				<div class="col-md-3">
@@ -80,10 +84,11 @@
 			<table class="table table-hover">
 				<thead>
 					<tr>
+						<th>Report Type</th>
 						<th>Student Name</th>
 						<th>Submitted By</th>
 						<th>Internship Site</th>
-						<th>Week Period</th>
+						<th>Period</th>
 						<th>Status</th>
 						<th>Archived Reason</th>
 						<th>Actions</th>
@@ -93,12 +98,36 @@
 					<% archivedReports.forEach(report => { %>
 					<tr
 						class="<%= report.status === 'approved' ? 'table-success' : (report.status === 'rejected' ? 'table-danger' : '') %>">
+						<td>
+							<% if (report.reportType === 'weeklyreport') { %>
+								<span class="badge bg-primary">Weekly Report</span>
+							<% } else if (report.reportType === 'weeklyprogress') { %>
+								<span class="badge bg-purple">Weekly Progress</span>
+							<% } else if (report.reportType === 'trainingschedule') { %>
+								<span class="badge bg-teal">Training Schedule</span>
+							<% } else if (report.reportType === 'learningoutcome') { %>
+								<span class="badge bg-orange">Learning Outcome</span>
+							<% } else if (report.reportType === 'dailyattendance') { %>
+								<span class="badge bg-indigo">Daily Attendance</span>
+							<% } else if (report.reportType === 'documentation') { %>
+								<span class="badge bg-success">Documentation</span>
+							<% } else if (report.reportType === 'timereport') { %>
+								<span class="badge bg-info">Time Report</span>
+							<% } else { %>
+								<span class="badge bg-secondary">Other</span>
+							<% } %>
+						</td>
 						<td><%= report.studentName %></td>
 						<td><%= report.authorFullName || 'Unknown' %></td>
 						<td><%= report.internshipSite %></td>
 						<td>
-							<%= report.weekStartDate.toLocaleDateString() %> - <%=
-							report.weekEndDate.toLocaleDateString() %>
+							<% if (report.weekStartDate && report.weekEndDate) { %>
+								<%= new Date(report.weekStartDate).toLocaleDateString() %> - <%= new Date(report.weekEndDate).toLocaleDateString() %>
+							<% } else if (report.date) { %>
+								<%= new Date(report.date).toLocaleDateString() %>
+							<% } else { %>
+								N/A
+							<% } %>
 						</td>
 						<td>
 							<% if (report.status === 'approved') { %>
@@ -113,14 +142,14 @@
 						<td>
 							<div class="btn-group" role="group">
 								<a
-									href="/weeklyreport/<%= report._id %>"
+									href="/<%= report.reportType %>/<%= report._id %>"
 									class="btn btn-sm btn-info text-white">
 									<i class="fas fa-eye"></i>
 								</a>
 								<button
 									type="button"
 									class="btn btn-sm btn-success"
-									data-custom-modal-target="unarchiveModal<%= report._id %>">
+									data-custom-modal-target="unarchiveModal-<%= report.reportType %>-<%= report._id %>">
 									<i class="fas fa-box-open"></i>
 								</button>
 							</div>
@@ -130,14 +159,14 @@
 					<!-- Unarchive Modal for this report -->
 					<div
 						class="custom-modal-overlay"
-						id="unarchiveModal<%= report._id %>"
+						id="unarchiveModal-<%= report.reportType %>-<%= report._id %>"
 						role="dialog"
-						aria-labelledby="unarchiveModalLabel<%= report._id %>">
+						aria-labelledby="unarchiveModalLabel-<%= report.reportType %>-<%= report._id %>">
 						<div class="custom-modal">
 							<div class="custom-modal-header bg-success">
 								<h5
 									class="custom-modal-title"
-									id="unarchiveModalLabel<%= report._id %>">
+									id="unarchiveModalLabel-<%= report.reportType %>-<%= report._id %>">
 									<i class="fas fa-box-open"></i>
 									Unarchive Report
 								</h5>
@@ -156,7 +185,7 @@
 							</div>
 							<div class="custom-modal-footer">
 								<form
-									action="/admin/reports/<%= report._id %>/unarchive"
+									action="/admin/reports/<%= report.reportType %>/<%= report._id %>/unarchive"
 									method="POST"
 									data-custom-message="Report has been unarchived successfully"
 									data-action-type="unarchive"
@@ -184,3 +213,21 @@
 
 <script src="/js/reportFilters.js"></script>
 <!-- Custom modal script is loaded in boilerplate.ejs -->
+
+<style>
+.bg-purple {
+	background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.bg-teal {
+	background: linear-gradient(135deg, #1abc9c, #16a085);
+}
+
+.bg-orange {
+	background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+.bg-indigo {
+	background: linear-gradient(135deg, #4a69bd, #1e3799);
+}
+</style>
