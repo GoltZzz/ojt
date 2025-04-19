@@ -47,6 +47,9 @@
 								id="internshipSite"
 								name="internshipSite"
 								required />
+							<div class="invalid-feedback">
+								Please provide your internship site.
+							</div>
 						</div>
 					</div>
 				</div>
@@ -73,6 +76,9 @@
 								name="weekNumber"
 								min="1"
 								required />
+							<div class="invalid-feedback">
+								Please provide a valid week number (minimum 1).
+							</div>
 						</div>
 					</div>
 					<div class="col-md-4 mb-3">
@@ -89,6 +95,9 @@
 								id="weekStartDate"
 								name="weekStartDate"
 								required />
+							<div class="invalid-feedback">
+								Please select a start date for the week.
+							</div>
 						</div>
 					</div>
 					<div class="col-md-4 mb-3">
@@ -103,6 +112,9 @@
 								id="weekEndDate"
 								name="weekEndDate"
 								required />
+							<div class="invalid-feedback">
+								Please select an end date for the week (must be after start date and within 7 days).
+							</div>
 						</div>
 					</div>
 				</div>
@@ -125,6 +137,9 @@
 						name="dutiesPerformed"
 						rows="4"
 						required></textarea>
+					<div class="invalid-feedback">
+						Please provide details about duties performed (minimum 10 characters).
+					</div>
 				</div>
 				<div class="mb-3">
 					<label for="newTrainings" class="form-label"
@@ -136,6 +151,9 @@
 						name="newTrainings"
 						rows="4"
 						required></textarea>
+					<div class="invalid-feedback">
+						Please provide details about new trainings (minimum 10 characters).
+					</div>
 				</div>
 			</div>
 		</div>
@@ -168,6 +186,9 @@
 								name="accomplishments[0][proposedActivity]"
 								rows="2"
 								required></textarea>
+							<div class="invalid-feedback">
+								Please provide a proposed activity.
+							</div>
 						</div>
 						<div class="mb-3">
 							<label
@@ -181,6 +202,9 @@
 								name="accomplishments[0][accomplishmentDetails]"
 								rows="3"
 								required></textarea>
+							<div class="invalid-feedback">
+								Please provide accomplishment details.
+							</div>
 						</div>
 					</div>
 				</div>
@@ -208,6 +232,7 @@
 						id="problemsEncountered"
 						name="problemsEncountered"
 						rows="3"></textarea>
+					<small class="text-muted">Optional field</small>
 				</div>
 				<div class="mb-3">
 					<label for="problemSolutions" class="form-label"
@@ -218,6 +243,7 @@
 						id="problemSolutions"
 						name="problemSolutions"
 						rows="3"></textarea>
+					<small class="text-muted">Optional field</small>
 				</div>
 				<div class="mb-3">
 					<label for="goalsForNextWeek" class="form-label"
@@ -229,6 +255,9 @@
 						name="goalsForNextWeek"
 						rows="3"
 						required></textarea>
+					<div class="invalid-feedback">
+						Please provide goals for next week (minimum 10 characters).
+					</div>
 				</div>
 			</div>
 		</div>
@@ -254,6 +283,9 @@
 								id="supervisorName"
 								name="supervisorName"
 								required />
+							<div class="invalid-feedback">
+								Please provide your supervisor's name.
+							</div>
 						</div>
 					</div>
 					<div class="col-md-6 mb-3">
@@ -270,6 +302,9 @@
 								id="supervisorRole"
 								name="supervisorRole"
 								required />
+							<div class="invalid-feedback">
+								Please provide your supervisor's role.
+							</div>
 						</div>
 					</div>
 				</div>
@@ -289,61 +324,4 @@
 	</form>
 </div>
 
-<script>
-	document.addEventListener("DOMContentLoaded", function () {
-		// Add accomplishment button functionality
-		let accomplishmentCount = 1;
-		const addAccomplishmentBtn = document.getElementById("addAccomplishment");
-		const accomplishmentsContainer = document.getElementById(
-			"accomplishmentsContainer"
-		);
-
-		addAccomplishmentBtn.addEventListener("click", function () {
-			const newAccomplishment = document.createElement("div");
-			newAccomplishment.className =
-				"accomplishment-item mb-3 p-3 border rounded";
-			newAccomplishment.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <h6 class="mb-0">Additional Accomplishment</h6>
-                    <button type="button" class="btn btn-sm btn-outline-danger remove-accomplishment">
-                        <i class="fas fa-times"></i> Remove
-                    </button>
-                </div>
-                <div class="mb-3">
-                    <label for="accomplishments[${accomplishmentCount}][proposedActivity]" class="form-label">PROPOSED ACTIVITY</label>
-                    <textarea class="form-control" id="accomplishments[${accomplishmentCount}][proposedActivity]" name="accomplishments[${accomplishmentCount}][proposedActivity]" rows="2" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="accomplishments[${accomplishmentCount}][accomplishmentDetails]" class="form-label">ACCOMPLISHMENTS</label>
-                    <textarea class="form-control" id="accomplishments[${accomplishmentCount}][accomplishmentDetails]" name="accomplishments[${accomplishmentCount}][accomplishmentDetails]" rows="3" required></textarea>
-                </div>
-            `;
-
-			accomplishmentsContainer.appendChild(newAccomplishment);
-			accomplishmentCount++;
-
-			// Add event listener to the remove button
-			const removeButtons = document.querySelectorAll(".remove-accomplishment");
-			removeButtons.forEach((button) => {
-				button.addEventListener("click", function () {
-					this.closest(".accomplishment-item").remove();
-				});
-			});
-		});
-
-		// Date validation - ensure end date is after start date
-		const weekStartDate = document.getElementById("weekStartDate");
-		const weekEndDate = document.getElementById("weekEndDate");
-
-		weekStartDate.addEventListener("change", function () {
-			weekEndDate.min = this.value;
-		});
-
-		weekEndDate.addEventListener("change", function () {
-			if (weekStartDate.value && this.value < weekStartDate.value) {
-				alert("End date cannot be before start date");
-				this.value = "";
-			}
-		});
-	});
-</script>
+<script src="/js/weeklyProgressValidation.js"></script>

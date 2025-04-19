@@ -1,7 +1,7 @@
 import catchAsync from "../../utils/catchAsync.js";
 import WeeklyReport from "../../models/weeklyReports.js";
 import ExpressError from "../../utils/ExpressError.js";
-import { generateWeeklyReportPdf } from "../../utils/pdfGenerator.js";
+import { generateWeeklyReportPdf } from "../../utils/pdfGenerators/index.js";
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination

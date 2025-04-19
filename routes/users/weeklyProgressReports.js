@@ -26,6 +26,12 @@ router
 	.route("/:id/unarchive")
 	.post(isLoggedIn, weeklyProgressReports.unarchiveReport);
 
+router.get(
+	"/:id/export-pdf",
+	isLoggedIn,
+	weeklyProgressReports.exportReportAsPdf
+);
+
 router
 	.route("/:id/edit")
 	.get(isLoggedIn, isAuthor, weeklyProgressReports.renderEditForm);

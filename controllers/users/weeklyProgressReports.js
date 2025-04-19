@@ -1,6 +1,11 @@
 import catchAsync from "../../utils/catchAsync.js";
 import ExpressError from "../../utils/ExpressError.js";
 import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
+import {
+	validateWeeklyProgressReport,
+	sanitizeWeeklyProgressReport,
+} from "../../utils/weeklyProgressValidator.js";
+import { generateWeeklyProgressReportPdf } from "../../utils/pdfGenerators/index.js";
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
@@ -156,11 +161,11 @@ export const createReport = catchAsync(async (req, res) => {
 			}
 		}
 
-		// Create a new weekly progress report
-		const newReport = new WeeklyProgressReport({
+		// Prepare report data for validation
+		const reportData = {
 			studentName,
 			internshipSite,
-			weekNumber: parseInt(weekNumber),
+			weekNumber,
 			weekStartDate,
 			weekEndDate,
 			dutiesPerformed,
@@ -171,6 +176,24 @@ export const createReport = catchAsync(async (req, res) => {
 			goalsForNextWeek,
 			supervisorName,
 			supervisorRole,
+		};
+
+		// Validate the report data
+		const validation = validateWeeklyProgressReport(reportData);
+		if (!validation.isValid) {
+			// If validation fails, flash error messages and redirect back to form
+			validation.errors.forEach((error) => {
+				req.flash("error", error);
+			});
+			return res.redirect("/weeklyprogress/new");
+		}
+
+		// Sanitize the report data
+		const sanitizedData = sanitizeWeeklyProgressReport(reportData);
+
+		// Create a new weekly progress report with sanitized data
+		const newReport = new WeeklyProgressReport({
+			...sanitizedData,
 			author: req.user._id,
 			dateSubmitted: new Date(),
 		});
@@ -182,10 +205,19 @@ export const createReport = catchAsync(async (req, res) => {
 		res.redirect("/weeklyprogress");
 	} catch (error) {
 		console.error("Error creating weekly progress report:", error);
-		req.flash(
-			"error",
-			"Failed to create weekly progress report. Please try again."
-		);
+
+		// Handle specific validation errors from Mongoose
+		if (error.name === "ValidationError") {
+			Object.values(error.errors).forEach((err) => {
+				req.flash("error", err.message);
+			});
+		} else {
+			req.flash(
+				"error",
+				"Failed to create weekly progress report. Please try again."
+			);
+		}
+
 		res.redirect("/weeklyprogress/new");
 	}
 });
@@ -221,6 +253,7 @@ export const showReport = catchAsync(async (req, res) => {
 
 	res.render("reports/weeklyProgress/show", {
 		WeeklyProgressReport: report,
+		currentUser: req.user,
 	});
 });
 
@@ -333,10 +366,15 @@ export const updateReport = catchAsync(async (req, res) => {
 			}
 		}
 
-		// Update the report
-		await WeeklyProgressReport.findByIdAndUpdate(id, {
+		// Get the student name from the existing report for validation
+		const existingReport = await WeeklyProgressReport.findById(id);
+		const studentName = existingReport.studentName;
+
+		// Prepare report data for validation
+		const reportData = {
+			studentName,
 			internshipSite,
-			weekNumber: parseInt(weekNumber),
+			weekNumber,
 			weekStartDate,
 			weekEndDate,
 			dutiesPerformed,
@@ -347,16 +385,54 @@ export const updateReport = catchAsync(async (req, res) => {
 			goalsForNextWeek,
 			supervisorName,
 			supervisorRole,
+		};
+
+		// Validate the report data
+		const validation = validateWeeklyProgressReport(reportData);
+		if (!validation.isValid) {
+			// If validation fails, flash error messages and redirect back to form
+			validation.errors.forEach((error) => {
+				req.flash("error", error);
+			});
+			return res.redirect(`/weeklyprogress/${id}/edit`);
+		}
+
+		// Sanitize the report data
+		const sanitizedData = sanitizeWeeklyProgressReport(reportData);
+
+		// Update the report with sanitized data
+		await WeeklyProgressReport.findByIdAndUpdate(id, {
+			internshipSite: sanitizedData.internshipSite,
+			weekNumber: sanitizedData.weekNumber,
+			weekStartDate: sanitizedData.weekStartDate,
+			weekEndDate: sanitizedData.weekEndDate,
+			dutiesPerformed: sanitizedData.dutiesPerformed,
+			newTrainings: sanitizedData.newTrainings,
+			accomplishments: sanitizedData.accomplishments,
+			problemsEncountered: sanitizedData.problemsEncountered,
+			problemSolutions: sanitizedData.problemSolutions,
+			goalsForNextWeek: sanitizedData.goalsForNextWeek,
+			supervisorName: sanitizedData.supervisorName,
+			supervisorRole: sanitizedData.supervisorRole,
 		});
 
 		req.flash("success", "Successfully updated weekly progress report!");
 		res.redirect(`/weeklyprogress/${id}`);
 	} catch (error) {
 		console.error("Error updating weekly progress report:", error);
-		req.flash(
-			"error",
-			"Failed to update weekly progress report. Please try again."
-		);
+
+		// Handle specific validation errors from Mongoose
+		if (error.name === "ValidationError") {
+			Object.values(error.errors).forEach((err) => {
+				req.flash("error", err.message);
+			});
+		} else {
+			req.flash(
+				"error",
+				"Failed to update weekly progress report. Please try again."
+			);
+		}
+
 		res.redirect(`/weeklyprogress/${id}/edit`);
 	}
 });
@@ -411,6 +487,12 @@ export const deleteReport = catchAsync(async (req, res) => {
 export const archiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 
+	// Check if user is admin
+	if (!req.user || req.user.role !== "admin") {
+		req.flash("error", "Only administrators can archive reports");
+		return res.redirect(`/weeklyprogress/${id}`);
+	}
+
 	// Find the report by ID
 	const report = await WeeklyProgressReport.findById(id);
 
@@ -442,6 +524,12 @@ export const archiveReport = catchAsync(async (req, res) => {
 export const unarchiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 
+	// Check if user is admin
+	if (!req.user || req.user.role !== "admin") {
+		req.flash("error", "Only administrators can unarchive reports");
+		return res.redirect(`/weeklyprogress/${id}`);
+	}
+
 	// Find the report by ID
 	const report = await WeeklyProgressReport.findById(id);
 
@@ -469,6 +557,80 @@ export const unarchiveReport = catchAsync(async (req, res) => {
 	}
 });
 
+export const exportReportAsPdf = catchAsync(async (req, res) => {
+	const { id } = req.params;
+	console.log(`Starting PDF export for weekly progress report ID: ${id}`);
+
+	try {
+		// Find the report with populated fields
+		const report = await WeeklyProgressReport.findById(id)
+			.populate("approvedBy", "username firstName middleName lastName")
+			.populate("author", "username firstName middleName lastName");
+
+		if (!report) {
+			console.log(`Report not found with ID: ${id}`);
+			req.flash("error", "Cannot find that weekly progress report!");
+			return res.redirect("/weeklyprogress");
+		}
+
+		console.log(`Found report: ${report._id}, status: ${report.status}`);
+
+		// Check if the current user is authorized to export this report
+		// Only the author can export the report
+		const isAuthor =
+			report.author && req.user && report.author._id.equals(req.user._id);
+
+		if (!isAuthor) {
+			console.log(
+				`User ${req.user._id} is not the author of report ${report._id}`
+			);
+			req.flash("error", "Only the report owner can export to PDF");
+			return res.redirect(`/weeklyprogress/${id}`);
+		}
+
+		// Check if the report status is rejected
+		if (report.status === "rejected") {
+			console.log(`Report ${report._id} is rejected, cannot export to PDF`);
+			req.flash("error", "Rejected reports cannot be exported to PDF");
+			return res.redirect(`/weeklyprogress/${id}`);
+		}
+
+		// Validate report data before generating PDF
+		if (!report.studentName || !report.internshipSite) {
+			console.error(`Report ${report._id} is missing required fields`);
+			req.flash(
+				"error",
+				"Report is missing required information for PDF export"
+			);
+			return res.redirect(`/weeklyprogress/${id}`);
+		}
+
+		console.log(`Generating PDF for report ${report._id}`);
+
+		// Generate the PDF file
+		const buffer = await generateWeeklyProgressReportPdf(report);
+
+		console.log(`PDF generated successfully for report ${report._id}`);
+
+		// Set the appropriate headers for a PDF file download
+		res.setHeader(
+			"Content-Disposition",
+			`attachment; filename=weekly-progress-report-${id}.pdf`
+		);
+		res.setHeader("Content-Type", "application/pdf");
+
+		// Send the buffer as the response
+		res.send(buffer);
+	} catch (error) {
+		console.error(`PDF generation error for report ${id}:`, error);
+		req.flash(
+			"error",
+			`Error generating PDF: ${error.message}. Please try again.`
+		);
+		return res.redirect(`/weeklyprogress/${id}`);
+	}
+});
+
 export default {
 	index,
 	renderNewForm,
@@ -479,4 +641,5 @@ export default {
 	deleteReport,
 	archiveReport,
 	unarchiveReport,
+	exportReportAsPdf,
 };
