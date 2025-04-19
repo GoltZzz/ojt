@@ -9,13 +9,22 @@ export const index = catchAsync(async (req, res) => {
 		internshipSite,
 		weekPeriod,
 		status,
+		archived,
 		sortBy = "dateSubmitted_desc",
 		page = 1,
 		limit = 10,
 	} = req.query;
 
-	// Always exclude archived reports from the main reports page
-	const filter = { archived: false };
+	// Set up filter object
+	const filter = {};
+
+	// Handle archived filter
+	if (archived === "true") {
+		filter.archived = true;
+	} else if (archived === "false" || !archived) {
+		filter.archived = false;
+	}
+	// If archived is not specified or is an invalid value, show all reports
 
 	// Apply filters if provided
 	if (studentName) {

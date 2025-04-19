@@ -1,5 +1,6 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/weeklyReportsIndex.css" />
+<script src="/js/reportTooltips.js" defer></script>
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -14,13 +15,16 @@
     </div>
 
     <!-- Filter Section -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Filter Reports</h5>
+    <div class="filter-card mb-4">
+        <div class="filter-header">
+            <h4><i class="fas fa-filter me-2"></i>Filter Reports</h4>
+            <button class="btn btn-sm btn-outline-secondary" id="toggleFilters">
+                <i class="fas fa-chevron-down"></i>
+            </button>
         </div>
-        <div class="card-body">
-            <form action="/weeklyprogress" method="GET" class="row g-3">
-                <div class="col-md-4">
+        <div class="filter-body" id="filterBody">
+            <form id="filterForm" class="row g-3" method="GET" action="/weeklyprogress">
+                <div class="col-md-4 col-lg-3">
                     <label for="studentName" class="form-label">Student Name</label>
                     <input
                         type="text"
@@ -28,9 +32,9 @@
                         id="studentName"
                         name="studentName"
                         value="<%= filters.studentName || '' %>"
-                    />
+                        placeholder="Search by name" />
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-3">
                     <label for="internshipSite" class="form-label">Internship Site</label>
                     <input
                         type="text"
@@ -38,155 +42,258 @@
                         id="internshipSite"
                         name="internshipSite"
                         value="<%= filters.internshipSite || '' %>"
-                    />
+                        placeholder="Search by site" />
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-2">
                     <label for="weekPeriod" class="form-label">Week Period</label>
                     <input
                         type="date"
                         class="form-control"
                         id="weekPeriod"
                         name="weekPeriod"
-                        value="<%= filters.weekPeriod || '' %>"
-                    />
+                        value="<%= filters.weekPeriod || '' %>" />
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-2">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
-                        <option value="">All</option>
-                        <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>
-                            Pending
-                        </option>
-                        <option value="approved" <%= filters.status === 'approved' ? 'selected' : '' %>>
-                            Approved
-                        </option>
-                        <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>
-                            Rejected
-                        </option>
+                        <option value="" <%= !filters.status ? 'selected' : '' %>>All Statuses</option>
+                        <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                        <option value="approved" <%= filters.status === 'approved' ? 'selected' : '' %>>Approved</option>
+                        <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-2">
+                    <label for="archived" class="form-label">Archive Status</label>
+                    <select class="form-select" id="archived" name="archived">
+                        <option value="" <%= !filters.archived ? 'selected' : '' %>>All Reports</option>
+                        <option value="false" <%= filters.archived === 'false' ? 'selected' : '' %>>Active Only</option>
+                        <option value="true" <%= filters.archived === 'true' ? 'selected' : '' %>>Archived Only</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-lg-2">
                     <label for="sortBy" class="form-label">Sort By</label>
                     <select class="form-select" id="sortBy" name="sortBy">
-                        <option value="dateSubmitted_desc" <%= filters.sortBy === 'dateSubmitted_desc' ? 'selected' : '' %>>
-                            Newest First
-                        </option>
-                        <option value="dateSubmitted_asc" <%= filters.sortBy === 'dateSubmitted_asc' ? 'selected' : '' %>>
-                            Oldest First
-                        </option>
-                        <option value="studentName_asc" <%= filters.sortBy === 'studentName_asc' ? 'selected' : '' %>>
-                            Student Name (A-Z)
-                        </option>
-                        <option value="studentName_desc" <%= filters.sortBy === 'studentName_desc' ? 'selected' : '' %>>
-                            Student Name (Z-A)
-                        </option>
+                        <option value="dateSubmitted_desc" <%= filters.sortBy === 'dateSubmitted_desc' || !filters.sortBy ? 'selected' : '' %>>Newest First</option>
+                        <option value="dateSubmitted_asc" <%= filters.sortBy === 'dateSubmitted_asc' ? 'selected' : '' %>>Oldest First</option>
+                        <option value="studentName_asc" <%= filters.sortBy === 'studentName_asc' ? 'selected' : '' %>>Name (A-Z)</option>
+                        <option value="studentName_desc" <%= filters.sortBy === 'studentName_desc' ? 'selected' : '' %>>Name (Z-A)</option>
+                        <option value="internshipSite_asc" <%= filters.sortBy === 'internshipSite_asc' ? 'selected' : '' %>>Site (A-Z)</option>
+                        <option value="internshipSite_desc" <%= filters.sortBy === 'internshipSite_desc' ? 'selected' : '' %>>Site (Z-A)</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="fas fa-filter"></i> Apply Filters
+                <div class="col-12 mt-3 filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Apply Filters
                     </button>
-                    <a href="/weeklyprogress" class="btn btn-secondary">
-                        <i class="fas fa-undo"></i> Reset
+                    <a href="/weeklyprogress" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear Filters
                     </a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Reports Table -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Weekly Progress Reports</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Internship Site</th>
-                            <th>Week Period</th>
-                            <th>Status</th>
-                            <th>Date Submitted</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (WeeklyProgressReports.length === 0) { %>
-                        <tr>
-                            <td colspan="6" class="text-center py-4">
-                                <div class="alert alert-info mb-0">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    No weekly progress reports found.
-                                    <% if (currentUser && currentUser.role !== 'admin') { %>
-                                    <a href="/weeklyprogress/new" class="alert-link">Create a new report</a>.
-                                    <% } %>
-                                </div>
-                            </td>
-                        </tr>
-                        <% } else { %>
-                        <% WeeklyProgressReports.forEach(report => { %>
-                        <tr>
-                            <td><%= report.studentName %></td>
-                            <td><%= report.internshipSite %></td>
-                            <td>
-                                <%= new Date(report.weekStartDate).toLocaleDateString() %> -
-                                <%= new Date(report.weekEndDate).toLocaleDateString() %>
-                            </td>
-                            <td>
-                                <% if (report.status === 'pending') { %>
-                                <span class="badge bg-warning text-dark">Pending</span>
-                                <% } else if (report.status === 'approved') { %>
-                                <span class="badge bg-success">Approved</span>
-                                <% } else if (report.status === 'rejected') { %>
-                                <span class="badge bg-danger">Rejected</span>
-                                <% } %>
-                            </td>
-                            <td><%= new Date(report.dateSubmitted).toLocaleDateString() %></td>
-                            <td>
-                                <a href="/weeklyprogress/<%= report._id %>" class="btn btn-sm btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        <% }) %>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <% if (WeeklyProgressReports && WeeklyProgressReports.length) { %>
+    <div class="table-responsive">
+        <table class="table table-hover report-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Internship Site</th>
+                    <th>Week Period</th>
+                    <th>Status</th>
+                    <th>Date Submitted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% WeeklyProgressReports.forEach(report => { %>
+                <tr class="<%= report.isCurrentUserReport ? 'current-user-report' : '' %>">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <% if (report.isCurrentUserReport) { %>
+                            <span
+                                class="your-report-badge"
+                                data-bs-toggle="tooltip"
+                                title="This is your report">
+                                <i class="fas fa-user-check"></i>
+                            </span>
+                            <span class="student-name your-name"><%= report.studentName %></span>
+                            <% } else { %>
+                            <span class="student-name"><%= report.studentName %></span>
+                            <% } %>
+                        </div>
+                    </td>
+                    <td><%= report.internshipSite %></td>
+                    <td>
+                        <span class="date-range">
+                            <i class="far fa-calendar-alt me-1"></i>
+                            <%= new Date(report.weekStartDate).toLocaleDateString() %> - 
+                            <%= new Date(report.weekEndDate).toLocaleDateString() %>
+                        </span>
+                    </td>
+                    <td>
+                        <div class="status-badge">
+                            <% if (report.status === 'approved') { %>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i> Approved
+                            </span>
+                            <% } else if (report.status === 'rejected') { %>
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i> Rejected
+                            </span>
+                            <% } else { %>
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock me-1"></i> Pending
+                            </span>
+                            <% } %>
+                            <% if (report.archived) { %>
+                            <span class="badge bg-secondary mt-1">
+                                <i class="fas fa-archive me-1"></i> Archived
+                            </span>
+                            <% } %>
+                        </div>
+                    </td>
+                    <td><%= new Date(report.dateSubmitted).toLocaleDateString() %></td>
+                    <td>
+                        <div class="action-buttons">
+                            <a
+                                href="/weeklyprogress/<%= report._id %>"
+                                class="btn btn-sm btn-info text-white"
+                                data-bs-toggle="tooltip"
+                                title="View Report">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <% if (report.isCurrentUserReport && report.status === 'pending' && !report.archived) { %>
+                            <a
+                                href="/weeklyprogress/<%= report._id %>/edit"
+                                class="btn btn-sm btn-warning"
+                                data-bs-toggle="tooltip"
+                                title="Edit Report">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form
+                                class="d-inline"
+                                action="/weeklyprogress/<%= report._id %>?_method=DELETE"
+                                method="POST">
+                                <button
+                                    type="submit"
+                                    class="btn btn-sm btn-danger"
+                                    data-bs-toggle="tooltip"
+                                    title="Delete Report"
+                                    onclick="return confirm('Are you sure you want to delete this report?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            <% } %>
+                        </div>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
     </div>
 
-    <!-- Pagination -->
-    <% if (pagination.totalPages > 1) { %>
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div>
-            Showing <%= (pagination.currentPage - 1) * pagination.pageSize + 1 %> to
-            <%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %>
-            of <%= pagination.totalReports %> reports
+    <!-- Pagination Controls -->
+    <% if (pagination && pagination.totalPages > 1) { %>
+    <div class="pagination-container mt-4">
+        <div class="pagination-info">
+            Showing <span class="fw-bold"><%= (pagination.currentPage - 1) * pagination.pageSize + 1 %></span> to
+            <span class="fw-bold"><%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %></span> of
+            <span class="fw-bold"><%= pagination.totalReports %></span> reports
         </div>
         <nav aria-label="Page navigation">
-            <ul class="pagination mb-0">
+            <ul class="pagination">
+                <!-- First Page -->
                 <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
-                    <a class="page-link" href="/weeklyprogress?page=<%= pagination.prevPage %>&<%= new URLSearchParams(filters).toString() %>" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
+                    <a class="page-link" href="/weeklyprogress?<%= new URLSearchParams({...filters, page: 1}).toString() %>" aria-label="First">
+                        <i class="fas fa-angle-double-left"></i>
                     </a>
                 </li>
-                <% for(let i = 1; i <= pagination.totalPages; i++) { %>
-                <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
-                    <a class="page-link" href="/weeklyprogress?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>">
-                        <%= i %>
+                <!-- Previous Page -->
+                <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                    <a class="page-link" href="/weeklyprogress?<%= new URLSearchParams({...filters, page: pagination.prevPage}).toString() %>" aria-label="Previous">
+                        <i class="fas fa-angle-left"></i>
                     </a>
                 </li>
+
+                <!-- Page Numbers -->
+                <%
+                    let startPage = Math.max(1, pagination.currentPage - 2);
+                    let endPage = Math.min(pagination.totalPages, startPage + 4);
+
+                    // Adjust start page if we're near the end
+                    if (endPage - startPage < 4) {
+                        startPage = Math.max(1, endPage - 4);
+                    }
+
+                    for (let i = startPage; i <= endPage; i++) {
+                %>
+                    <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="/weeklyprogress?<%= new URLSearchParams({...filters, page: i}).toString() %>">
+                            <%= i %>
+                        </a>
+                    </li>
                 <% } %>
+
+                <!-- Next Page -->
                 <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
-                    <a class="page-link" href="/weeklyprogress?page=<%= pagination.nextPage %>&<%= new URLSearchParams(filters).toString() %>" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
+                    <a class="page-link" href="/weeklyprogress?<%= new URLSearchParams({...filters, page: pagination.nextPage}).toString() %>" aria-label="Next">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <!-- Last Page -->
+                <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                    <a class="page-link" href="/weeklyprogress?<%= new URLSearchParams({...filters, page: pagination.totalPages}).toString() %>" aria-label="Last">
+                        <i class="fas fa-angle-double-right"></i>
                     </a>
                 </li>
             </ul>
         </nav>
     </div>
     <% } %>
+    <% } else { %>
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>
+        <% if (Object.keys(filters || {}).length > 0 && Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit')) { %>
+            No reports found matching your filters. <a href="/weeklyprogress" class="alert-link">Clear filters</a> to see all reports.
+        <% } else { %>
+            No weekly progress reports found. 
+            <% if (currentUser && currentUser.role !== 'admin') { %>
+                <a href="/weeklyprogress/new" class="alert-link">Create a new report</a>.
+            <% } %>
+        <% } %>
+    </div>
+    <% } %>
 </div>
+
+<!-- Filter Toggle Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleFiltersBtn = document.getElementById('toggleFilters');
+        const filterBody = document.getElementById('filterBody');
+
+        // Check if there are active filters
+        const hasActiveFilters = <%= Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit') ? 'true' : 'false' %>;
+
+        // If no active filters, collapse the filter section by default
+        if (!hasActiveFilters) {
+            filterBody.style.display = 'none';
+            toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-down');
+            toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-up');
+        }
+
+        toggleFiltersBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (filterBody.style.display === 'none') {
+                filterBody.style.display = 'block';
+                toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-up');
+                toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-down');
+            } else {
+                filterBody.style.display = 'none';
+                toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-down');
+                toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-up');
+            }
+        });
+    });
+</script>
