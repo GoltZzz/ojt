@@ -30,9 +30,9 @@ export const generateWeeklyProgressReportPdf = (report) => {
 				throw new Error("Supervisor name is missing");
 			}
 
-			// Create a document with Legal size for more space
+			// Create a document with Legal size for more space and compress content to fit on one page
 			const doc = new PDFDocument({
-				margin: 30,
+				margin: 20, // Reduced margins to fit more content
 				size: "legal",
 				autoFirstPage: true,
 				info: {
@@ -80,26 +80,26 @@ export const generateWeeklyProgressReportPdf = (report) => {
 				highlight: "#17a2b8",
 			};
 
-			// Define fonts and sizes
+			// Define fonts and sizes - slightly reduced for better fit
 			const fonts = {
-				title: 22,
-				subtitle: 16,
-				heading: 14,
-				normal: 10,
-				small: 9,
+				title: 18,
+				subtitle: 14,
+				heading: 12,
+				normal: 9,
+				small: 8,
 			};
 
-			// Helper function for section spacing
+			// Helper function for section spacing - reduced spacing to fit on one page
 			const addSectionSpacing = (doc, sectionType) => {
-				// Define custom spacing for each section (in points)
+				// Define custom spacing for each section (in points) - reduced for compact layout
 				const spacings = {
-					header: 8, // After header image
-					title: 12, // After title
-					info: 15, // After info box
-					section: 15, // After section
-					subsection: 10, // After subsection
-					certification: 15, // After certification
-					default: 12, // Default spacing
+					header: 6, // After header image - reduced
+					title: 8, // After title - reduced
+					info: 10, // After info box - reduced
+					section: 8, // After section - reduced
+					subsection: 5, // After subsection - reduced
+					certification: 8, // After certification - reduced
+					default: 6, // Default spacing - reduced
 				};
 
 				const spacing = spacings[sectionType] || spacings.default;
@@ -135,9 +135,9 @@ export const generateWeeklyProgressReportPdf = (report) => {
 
 			// ===== HEADER SECTION =====
 			try {
-				// Add header image with optimized dimensions
+				// Add header image with optimized dimensions - smaller for better fit
 				doc.image(headerImagePath, {
-					fit: [contentWidth, 60], // Reduced height
+					fit: [contentWidth, 40], // Further reduced height to save space
 					align: "center",
 				});
 			} catch (imageError) {
@@ -167,10 +167,10 @@ export const generateWeeklyProgressReportPdf = (report) => {
 			// ===== STUDENT INFO SECTION =====
 			addSectionSpacing(doc, "title"); // Custom spacing after title
 
-			// Create a modern info box with card-like styling to match show page
+			// Create a modern info box with card-like styling to match show page - more compact
 			const infoBoxY = doc.y;
 			doc
-				.roundedRect(30, infoBoxY, contentWidth, 100, 8) // Increased height and rounded corners
+				.roundedRect(30, infoBoxY, contentWidth, 80, 8) // Reduced height for better fit
 				.fillAndStroke(colors.white, colors.border);
 
 			// Report meta information in a grid layout similar to show page
@@ -304,9 +304,9 @@ export const generateWeeklyProgressReportPdf = (report) => {
 				align: "left",
 			});
 
-			// Current Y position for table rows
-			let currentY = activitiesTableTop + 30; // Adjusted for taller header
-			const rowHeight = 80; // Increased height for each row
+			// Current Y position for table rows - reduced heights for better fit
+			let currentY = activitiesTableTop + 25; // Reduced header height
+			const rowHeight = 60; // Reduced row height for better fit
 
 			// Duties Performed row
 			doc.rect(30, currentY, tableWidth, rowHeight).fill(colors.white);
@@ -396,66 +396,13 @@ export const generateWeeklyProgressReportPdf = (report) => {
 					width: tableWidth - 20,
 				});
 
-				// Current Y position for table rows
-				let currentY = accomplishTableTop + 30; // Adjusted for taller header
-				const rowHeight = 120; // Height for each accomplishment
+				// Current Y position for table rows - reduced heights for better fit
+				let currentY = accomplishTableTop + 25; // Reduced header height
+				const rowHeight = 90; // Reduced height for better fit
 
 				// Loop through accomplishments
 				report.accomplishments.forEach((accomplishment, index) => {
-					// Check if we need to add a new page
-					if (currentY + rowHeight > doc.page.height - 100) {
-						// Draw bottom border for current page
-						doc.rect(30, currentY, tableWidth, 1).fill(colors.border);
-
-						// Add a new page
-						doc.addPage();
-
-						// Add header to new page
-						try {
-							// Add header image with optimized dimensions
-							doc.image(headerImagePath, {
-								fit: [contentWidth, 40], // Smaller height for continuation pages
-								align: "center",
-							});
-						} catch (imageError) {
-							console.error("Error loading header image:", imageError);
-						}
-
-						// Add continuation title
-						doc
-							.fontSize(fonts.heading)
-							.fillColor(colors.primary)
-							.text("Weekly Progress Report (Continued)", { align: "center" });
-
-						// Add decorative line
-						const lineWidth = 450;
-						const lineX = (pageWidth - lineWidth) / 2;
-						doc
-							.moveTo(lineX, doc.y + 5)
-							.lineTo(lineX + lineWidth, doc.y + 5)
-							.lineWidth(1)
-							.stroke(colors.primary);
-
-						addSectionSpacing(doc, "header");
-
-						// Reset Y position and redraw table header
-						currentY = doc.y;
-
-						// Draw table header with rounded corners
-						doc
-							.roundedRect(30, currentY, tableWidth, 30, 8)
-							.fill(colors.primary);
-
-						// Header text
-						doc.fillColor(colors.white).fontSize(fonts.heading);
-						doc.text("Accomplishment (Continued)", 45, currentY + 10, {
-							align: "center",
-							width: tableWidth - 20,
-						});
-
-						// Update Y position
-						currentY += 30;
-					}
+					// Optimize layout to fit on one page - no page breaks
 
 					// Draw row with alternating colors
 					doc
@@ -470,45 +417,31 @@ export const generateWeeklyProgressReportPdf = (report) => {
 							width: tableWidth - 20,
 						});
 
-					// Proposed Activity
+					// Proposed Activity - more compact layout
 					doc
 						.fontSize(fonts.normal)
 						.fillColor(colors.dark)
-						.text("Proposed Activity:", 40, currentY + 35, {
-							continued: false,
+						.text("Proposed Activity:", 40, currentY + 20, {
+							continued: true,
+						})
+						.fillColor(colors.secondary)
+						.text(` ${accomplishment.proposedActivity || "None reported"}`, {
+							align: "left",
 						});
 
-					doc
-						.fontSize(fonts.normal)
-						.fillColor(colors.secondary)
-						.text(
-							accomplishment.proposedActivity || "None reported",
-							40,
-							currentY + 50,
-							{
-								width: tableWidth - 20,
-								align: "left",
-								lineGap: 2,
-							}
-						);
-
-					// Accomplishment Details
+					// Accomplishment Details - more compact layout
 					doc
 						.fontSize(fonts.normal)
 						.fillColor(colors.dark)
-						.text("Accomplishments:", 40, currentY + 75, { continued: false });
-
-					doc
-						.fontSize(fonts.normal)
+						.text("Accomplishments:", 40, currentY + 40, {
+							continued: true,
+						})
 						.fillColor(colors.secondary)
 						.text(
-							accomplishment.accomplishmentDetails || "None reported",
-							40,
-							currentY + 90,
+							` ${accomplishment.accomplishmentDetails || "None reported"}`,
 							{
-								width: tableWidth - 20,
 								align: "left",
-								lineGap: 2,
+								width: tableWidth - 60,
 							}
 						);
 
@@ -536,39 +469,7 @@ export const generateWeeklyProgressReportPdf = (report) => {
 			// ===== PROBLEMS AND GOALS SECTION =====
 			addSectionSpacing(doc, "section");
 
-			// Check if we need to add a new page
-			if (doc.y > doc.page.height - 300) {
-				// Add a new page
-				doc.addPage();
-
-				// Add header to new page
-				try {
-					// Add header image with optimized dimensions
-					doc.image(headerImagePath, {
-						fit: [contentWidth, 40], // Smaller height for continuation pages
-						align: "center",
-					});
-				} catch (imageError) {
-					console.error("Error loading header image:", imageError);
-				}
-
-				// Add continuation title
-				doc
-					.fontSize(fonts.heading)
-					.fillColor(colors.primary)
-					.text("Weekly Progress Report (Continued)", { align: "center" });
-
-				// Add decorative line
-				const lineWidth = 450;
-				const lineX = (pageWidth - lineWidth) / 2;
-				doc
-					.moveTo(lineX, doc.y + 5)
-					.lineTo(lineX + lineWidth, doc.y + 5)
-					.lineWidth(1)
-					.stroke(colors.primary);
-
-				addSectionSpacing(doc, "header");
-			}
+			// Optimize layout to fit on one page - no page breaks
 
 			// Add spacing before section
 			addSectionSpacing(doc, "section");
@@ -689,54 +590,22 @@ export const generateWeeklyProgressReportPdf = (report) => {
 			// ===== CERTIFICATION SECTION =====
 			addSectionSpacing(doc, "section");
 
-			// Check if we need to add a new page
-			if (doc.y > doc.page.height - 200) {
-				// Add a new page
-				doc.addPage();
+			// Optimize layout to fit on one page - no page breaks
 
-				// Add header to new page
-				try {
-					// Add header image with optimized dimensions
-					doc.image(headerImagePath, {
-						fit: [contentWidth, 40], // Smaller height for continuation pages
-						align: "center",
-					});
-				} catch (imageError) {
-					console.error("Error loading header image:", imageError);
-				}
-
-				// Add continuation title
-				doc
-					.fontSize(fonts.heading)
-					.fillColor(colors.primary)
-					.text("Weekly Progress Report (Continued)", { align: "center" });
-
-				// Add decorative line
-				const lineWidth = 450;
-				const lineX = (pageWidth - lineWidth) / 2;
-				doc
-					.moveTo(lineX, doc.y + 5)
-					.lineTo(lineX + lineWidth, doc.y + 5)
-					.lineWidth(1)
-					.stroke(colors.primary);
-
-				addSectionSpacing(doc, "header");
-			}
-
-			// Certification box
+			// Certification box - reduced height to fit on one page
 			const certBoxY = doc.y;
 			doc
-				.roundedRect(30, certBoxY, contentWidth, 110, 8) // Rounded corners
+				.roundedRect(30, certBoxY, contentWidth, 80, 8) // Reduced height, rounded corners
 				.fillAndStroke(colors.light, colors.border);
 
-			// Certification text
+			// Certification text - more compact
 			doc
-				.fontSize(fonts.normal)
+				.fontSize(fonts.small) // Smaller font
 				.fillColor(colors.dark)
 				.text(
 					'"I certify on my honor that the above is a true and correct report of the progress made during the week."',
 					40,
-					certBoxY + 12, // Adjusted position
+					certBoxY + 8, // Reduced spacing
 					{
 						width: contentWidth - 20,
 						align: "center",
@@ -744,8 +613,8 @@ export const generateWeeklyProgressReportPdf = (report) => {
 					}
 				);
 
-			// Signature lines
-			const signatureY = certBoxY + 45; // Adjusted position
+			// Signature lines - reduced spacing
+			const signatureY = certBoxY + 35; // Reduced spacing
 			const signatureWidth = 200;
 
 			// Supervisor signature
