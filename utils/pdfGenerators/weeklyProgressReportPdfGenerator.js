@@ -684,66 +684,7 @@ export const generateWeeklyProgressReportPdf = (report) => {
 			// Update Y position
 			doc.y = currentY + 10;
 
-			// ===== SUPERVISOR INFORMATION SECTION =====
-			addSectionSpacing(doc, "section");
-
-			// Create a card for supervisor info with header to match show page
-			const supervisorBoxY = doc.y;
-
-			// Draw card header with rounded top corners
-			doc
-				.roundedRect(30, supervisorBoxY, tableWidth, 30, 8)
-				.fill(colors.primary);
-
-			// Header text - match show page card header style
-			doc.fillColor(colors.white).fontSize(fonts.heading);
-			doc.text("Supervisor Information", 45, supervisorBoxY + 8, {
-				width: tableWidth - 20,
-				align: "left",
-			});
-
-			// Card body
-			const supervisorBodyY = supervisorBoxY + 30;
-			doc
-				.rect(30, supervisorBodyY, tableWidth, 80)
-				.fillAndStroke(colors.light, colors.border);
-
-			// Noted by text
-			doc
-				.fontSize(fonts.normal)
-				.fillColor(colors.dark)
-				.text("Noted by:", {
-					align: "center",
-					y: supervisorBodyY + 15,
-				});
-
-			// Signature line
-			const signatureLineY = supervisorBodyY + 40;
-			const signatureLineWidth = 200;
-			const signatureLineX = (pageWidth - signatureLineWidth) / 2;
-
-			doc
-				.moveTo(signatureLineX, signatureLineY)
-				.lineTo(signatureLineX + signatureLineWidth, signatureLineY)
-				.stroke(colors.dark);
-
-			// Supervisor name
-			doc
-				.fontSize(fonts.normal)
-				.fillColor(colors.dark)
-				.text(report.supervisorName, {
-					align: "center",
-					y: signatureLineY + 5,
-				});
-
-			// Supervisor role
-			doc
-				.fontSize(fonts.small)
-				.fillColor(colors.secondary)
-				.text(report.supervisorRole, {
-					align: "center",
-					y: signatureLineY + 20,
-				});
+			// Supervisor Information section removed as requested
 
 			// ===== CERTIFICATION SECTION =====
 			addSectionSpacing(doc, "section");
