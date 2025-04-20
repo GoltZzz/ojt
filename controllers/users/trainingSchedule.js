@@ -7,14 +7,27 @@ export const index = catchAsync(async (req, res) => {
 	const {
 		studentName,
 		internshipSite,
+		activities,
+		performanceMethod,
+		trainer,
+		timeline,
+		expectedOutput,
 		status,
+		archived,
 		sortBy = "dateSubmitted_desc",
 		page = 1,
 		limit = 10,
 	} = req.query;
 
-	// Always exclude archived reports from the main reports page
-	const filter = { archived: false };
+	// Set up filter object
+	const filter = {};
+
+	// Handle archived filter
+	if (archived === "true") {
+		filter.archived = true;
+	} else if (archived === "false" || !archived) {
+		filter.archived = false;
+	}
 
 	// Apply filters if provided
 	if (studentName) {
@@ -27,6 +40,56 @@ export const index = catchAsync(async (req, res) => {
 
 	if (status) {
 		filter.status = status;
+	}
+
+	// Apply new filters for schedule items
+	if (
+		activities ||
+		performanceMethod ||
+		trainer ||
+		timeline ||
+		expectedOutput
+	) {
+		// Create a filter for scheduleItems array
+		const scheduleItemsFilter = [];
+
+		if (activities) {
+			scheduleItemsFilter.push({
+				"scheduleItems.activities": { $regex: activities, $options: "i" },
+			});
+		}
+
+		if (performanceMethod) {
+			scheduleItemsFilter.push({
+				"scheduleItems.deliverables": {
+					$regex: performanceMethod,
+					$options: "i",
+				},
+			});
+		}
+
+		if (trainer) {
+			scheduleItemsFilter.push({
+				"scheduleItems.supervisorName": { $regex: trainer, $options: "i" },
+			});
+		}
+
+		if (timeline) {
+			scheduleItemsFilter.push({
+				"scheduleItems.week": { $regex: timeline, $options: "i" },
+			});
+		}
+
+		if (expectedOutput) {
+			scheduleItemsFilter.push({
+				"scheduleItems.deliverables": { $regex: expectedOutput, $options: "i" },
+			});
+		}
+
+		// Add the $or condition to the main filter if we have any schedule item filters
+		if (scheduleItemsFilter.length > 0) {
+			filter.$or = scheduleItemsFilter;
+		}
 	}
 
 	// Set up sorting
@@ -107,9 +170,60 @@ export const renderNewForm = async (req, res) => {
 };
 
 export const createSchedule = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
-	req.flash("success", "Successfully created a new training schedule!");
-	res.redirect("/trainingschedule");
+	try {
+		// Extract data from the request body
+		const {
+			studentName,
+			internshipSite,
+			startDate,
+			endDate,
+			proposedActivities,
+			performanceMethod,
+			trainer,
+			timeline,
+			expectedOutput,
+			additionalNotes,
+		} = req.body;
+
+		// Create a new training schedule
+		const newSchedule = new TrainingSchedule({
+			studentName,
+			internshipSite,
+			startDate,
+			endDate,
+			proposedActivities,
+			performanceMethod,
+			trainer,
+			timeline,
+			expectedOutput,
+			additionalNotes,
+			author: req.user._id,
+			dateSubmitted: new Date(),
+			status: "pending",
+		});
+
+		// Save the schedule
+		await newSchedule.save();
+
+		req.flash("success", "Successfully created a new training schedule!");
+		res.redirect("/trainingschedule");
+	} catch (error) {
+		console.error("Error creating training schedule:", error);
+
+		// Handle specific validation errors from Mongoose
+		if (error.name === "ValidationError") {
+			Object.values(error.errors).forEach((err) => {
+				req.flash("error", err.message);
+			});
+		} else {
+			req.flash(
+				"error",
+				"Failed to create training schedule. Please try again."
+			);
+		}
+
+		res.redirect("/trainingschedule/new");
+	}
 });
 
 export const showSchedule = catchAsync(async (req, res, next) => {

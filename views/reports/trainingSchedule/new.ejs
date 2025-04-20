@@ -1,0 +1,226 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/weeklyReportsNew.css" />
+
+<div class="container mt-4">
+    <h1 class="mb-4">New Training Schedule Form</h1>
+    <form action="/trainingschedule" method="POST" novalidate class="validated-form needs-validation">
+        <!-- Student Information Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Student Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="studentName" class="form-label">Student Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="studentName"
+                                name="studentName"
+                                value="<%= fullName %>"
+                                readonly
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="internshipSite" class="form-label">Internship Site</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-building"></i></span>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="internshipSite"
+                                name="internshipSite"
+                                required
+                            />
+                            <div class="invalid-feedback">
+                                Please provide the internship site.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="startDate"
+                                name="startDate"
+                                required
+                            />
+                            <div class="invalid-feedback">
+                                Please select a start date.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="endDate"
+                                name="endDate"
+                                required
+                            />
+                            <div class="invalid-feedback">
+                                Please select an end date.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Details Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Training Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="proposedActivities" class="form-label">Proposed Activities</label>
+                    <textarea
+                        class="form-control"
+                        id="proposedActivities"
+                        name="proposedActivities"
+                        rows="3"
+                        required
+                    ></textarea>
+                    <div class="invalid-feedback">
+                        Please provide the proposed activities.
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="performanceMethod" class="form-label">How Activities Will Be Performed</label>
+                    <textarea
+                        class="form-control"
+                        id="performanceMethod"
+                        name="performanceMethod"
+                        rows="3"
+                        required
+                    ></textarea>
+                    <div class="invalid-feedback">
+                        Please provide information on how activities will be performed.
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="trainer" class="form-label">Trainer</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="trainer"
+                                name="trainer"
+                                required
+                            />
+                            <div class="invalid-feedback">
+                                Please provide the trainer's name.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="timeline" class="form-label">Timeline</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="timeline"
+                                name="timeline"
+                                required
+                                placeholder="e.g., 2 weeks, 3 days per week"
+                            />
+                            <div class="invalid-feedback">
+                                Please provide the timeline.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="expectedOutput" class="form-label">Expected Output</label>
+                    <textarea
+                        class="form-control"
+                        id="expectedOutput"
+                        name="expectedOutput"
+                        rows="3"
+                        required
+                    ></textarea>
+                    <div class="invalid-feedback">
+                        Please provide the expected output.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Notes Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Additional Notes (Optional)</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <textarea
+                        class="form-control"
+                        id="additionalNotes"
+                        name="additionalNotes"
+                        rows="3"
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="/trainingschedule" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Submit Training Schedule
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+
+    // Date validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+
+        startDateInput.addEventListener('change', function() {
+            endDateInput.min = startDateInput.value;
+            if (endDateInput.value && new Date(endDateInput.value) < new Date(startDateInput.value)) {
+                endDateInput.value = startDateInput.value;
+            }
+        });
+    });
+</script>
