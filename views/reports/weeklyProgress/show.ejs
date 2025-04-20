@@ -1,8 +1,6 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/weeklyReportsShow.css" />
 <link rel="stylesheet" href="/css/reportModals.css" />
-<link rel="stylesheet" href="/css/customModal.css" />
-<link rel="stylesheet" href="/css/reportButtons.css" />
 
 <div class="container mt-4">
 	<div class="report-header mb-4">
@@ -149,7 +147,7 @@
 
 	<!-- Action Buttons -->
 	<div class="action-buttons">
-		<div class="left-buttons">
+		<div class="button-group">
 			<!-- Edit button - only for authors of pending reports -->
 			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status ===
 			'pending' && !WeeklyProgressReport.archived) { %>
@@ -182,7 +180,7 @@
 			<% } %>
 		</div>
 
-		<div class="right-buttons">
+		<div class="button-group">
 			<!-- Archive/Unarchive buttons - only for admins -->
 			<% if (currentUser && currentUser.role === 'admin') { %> <% if
 			(WeeklyProgressReport.archived) { %>
@@ -335,50 +333,6 @@
 
 <!-- Custom modal script is loaded in boilerplate.ejs -->
 <script src="/js/reportModals.js"></script>
-<!-- Delete Report Modal -->
-<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status ===
-'pending' && !WeeklyProgressReport.archived) { %>
-<div
-	class="custom-modal-overlay report-modal"
-	id="deleteReportModal"
-	role="dialog"
-	aria-labelledby="deleteReportModalLabel">
-	<div class="custom-modal">
-		<div class="custom-modal-header bg-danger">
-			<h5 class="custom-modal-title" id="deleteReportModalLabel">
-				<i class="fas fa-trash"></i>
-				Delete Report
-			</h5>
-			<button type="button" class="custom-modal-close" aria-label="Close">
-				<i class="fas fa-times"></i>
-			</button>
-		</div>
-		<div class="custom-modal-body">
-			<div class="custom-modal-content">
-				<i
-					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
-				<h4>Are you sure you want to delete this report?</h4>
-				<p class="text-danger mt-3">
-					<strong>This action cannot be undone.</strong>
-				</p>
-			</div>
-		</div>
-		<div class="custom-modal-footer">
-			<form
-				action="/weeklyprogress/<%= WeeklyProgressReport._id %>?_method=DELETE"
-				method="POST"
-				data-custom-message="Report has been deleted successfully"
-				data-action-type="delete"
-				class="d-inline">
-				<button type="submit" class="custom-modal-btn custom-modal-btn-danger">
-					<i class="fas fa-trash me-1"></i> Delete Report
-				</button>
-			</form>
-		</div>
-	</div>
-</div>
-<% } %>
-
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
 		// For archive modal

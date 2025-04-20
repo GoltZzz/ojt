@@ -150,7 +150,7 @@
 
 	<!-- Action Buttons -->
 	<div class="action-buttons">
-		<div class="left-buttons">
+		<div class="button-group">
 			<!-- Edit button - only for authors of pending schedules -->
 			<% if (TrainingSchedule.canEdit) { %>
 			<a
@@ -181,7 +181,7 @@
 			<% } %>
 		</div>
 
-		<div class="right-buttons">
+		<div class="button-group">
 			<!-- Archive/Unarchive buttons - only for admins -->
 			<% if (currentUser && currentUser.role === 'admin') { %> <% if
 			(TrainingSchedule.archived) { %>

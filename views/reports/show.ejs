@@ -131,7 +131,7 @@
 	<% } %>
 
 	<div class="action-buttons">
-		<div class="left-buttons">
+		<div class="button-group">
 			<!-- Edit button - only for authors of pending reports -->
 			<% if (WeeklyReports.canEdit) { %>
 			<a
@@ -161,7 +161,7 @@
 			<% } %>
 		</div>
 
-		<div class="right-buttons">
+		<div class="button-group">
 			<!-- Admin approval buttons - only for admins with pending reports -->
 			<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending')
 			{ %>
