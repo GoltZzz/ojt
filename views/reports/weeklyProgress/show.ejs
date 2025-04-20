@@ -149,7 +149,8 @@
 	<!-- Action Buttons -->
 	<div class="d-flex justify-content-center mb-5">
 		<div class="d-flex gap-2">
-			<% if (!WeeklyProgressReport.archived) { %>
+			<% if (currentUser && currentUser.role === 'admin') { %> <% if
+			(!WeeklyProgressReport.archived) { %>
 			<button
 				type="button"
 				class="btn btn-secondary"
@@ -163,7 +164,7 @@
 				data-custom-modal-target="unarchiveReportModal">
 				<i class="fas fa-box-open"></i> Unarchive
 			</button>
-			<% } %>
+			<% } %> <% } %>
 
 			<!-- Export to PDF button - only for report authors and non-rejected reports -->
 			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status !==
