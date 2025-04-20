@@ -1,6 +1,6 @@
 import express from "express";
 import { isLoggedIn } from "../../middleware.js";
-import isAuthor from "../../middleware/isAuthor.js";
+import isReportAuthor from "../../middleware/isReportAuthor.js";
 import * as weeklyProgressReports from "../../controllers/users/weeklyProgressReports.js";
 import { handleValidationErrors } from "../../utils/sanitize.js";
 
@@ -16,7 +16,11 @@ router.get("/new", isLoggedIn, weeklyProgressReports.renderNewForm);
 router
 	.route("/:id")
 	.get(isLoggedIn, weeklyProgressReports.showReport)
-	.delete(isLoggedIn, isAuthor, weeklyProgressReports.deleteReport);
+	.delete(
+		isLoggedIn,
+		isReportAuthor("weeklyProgressReport"),
+		weeklyProgressReports.deleteReport
+	);
 
 router
 	.route("/:id/archive")
@@ -34,12 +38,16 @@ router.get(
 
 router
 	.route("/:id/edit")
-	.get(isLoggedIn, isAuthor, weeklyProgressReports.renderEditForm);
+	.get(
+		isLoggedIn,
+		isReportAuthor("weeklyProgressReport"),
+		weeklyProgressReports.renderEditForm
+	);
 router
 	.route("/:id/update")
 	.post(
 		isLoggedIn,
-		isAuthor,
+		isReportAuthor("weeklyProgressReport"),
 		handleValidationErrors,
 		weeklyProgressReports.updateReport
 	);

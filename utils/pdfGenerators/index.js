@@ -1,21 +1,24 @@
 /**
  * PDF Generators Index
- * 
+ *
  * This file exports all PDF generator functions from the pdfGenerators folder.
  * It serves as a central point for importing PDF generation functionality.
  */
 
-import { generateWeeklyReportPdf } from './weeklyReportPdfGenerator.js';
-import { generateWeeklyProgressReportPdf } from './weeklyProgressReportPdfGenerator.js';
+import { generateWeeklyReportPdf } from "./weeklyReportPdfGenerator.js";
+import { generateWeeklyProgressReportPdf } from "./weeklyProgressReportPdfGenerator.js";
+import { generateTrainingSchedulePdf } from "./trainingSchedulePdfGenerator.js";
 
 // Export all PDF generator functions
 export {
-    generateWeeklyReportPdf,
-    generateWeeklyProgressReportPdf
+	generateWeeklyReportPdf,
+	generateWeeklyProgressReportPdf,
+	generateTrainingSchedulePdf,
 };
 
 // Default export for convenience
 export default {
-    generateWeeklyReportPdf,
-    generateWeeklyProgressReportPdf
+	generateWeeklyReportPdf,
+	generateWeeklyProgressReportPdf,
+	generateTrainingSchedulePdf,
 };

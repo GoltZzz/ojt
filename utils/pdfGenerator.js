@@ -8,18 +8,21 @@
  */
 
 import {
-    generateWeeklyReportPdf,
-    generateWeeklyProgressReportPdf
-} from './pdfGenerators/index.js';
+	generateWeeklyReportPdf,
+	generateWeeklyProgressReportPdf,
+	generateTrainingSchedulePdf,
+} from "./pdfGenerators/index.js";
 
 // Re-export the PDF generator functions
 export {
-    generateWeeklyReportPdf,
-    generateWeeklyProgressReportPdf
+	generateWeeklyReportPdf,
+	generateWeeklyProgressReportPdf,
+	generateTrainingSchedulePdf,
 };
 
 // Default export for convenience
 export default {
-    generateWeeklyReportPdf,
-    generateWeeklyProgressReportPdf
+	generateWeeklyReportPdf,
+	generateWeeklyProgressReportPdf,
+	generateTrainingSchedulePdf,
 };

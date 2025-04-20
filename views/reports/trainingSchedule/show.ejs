@@ -1,0 +1,373 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/weeklyReportsShow.css" />
+<link rel="stylesheet" href="/css/reportModals.css" />
+<link rel="stylesheet" href="/css/customModal.css" />
+
+<div class="container mt-4">
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h1>Training Schedule Form</h1>
+		<div class="d-flex gap-2">
+			<a href="/trainingschedule" class="btn btn-outline-secondary">
+				<i class="fas fa-arrow-left"></i> Back to List
+			</a>
+		</div>
+	</div>
+
+	<!-- Status Badge -->
+	<div class="status-banner mb-4">
+		<% if (TrainingSchedule.status === 'approved') { %>
+		<div class="status-badge approved">
+			<i class="fas fa-check-circle"></i> Approved <% if
+			(TrainingSchedule.approvedBy) { %>
+			<span class="approved-by"
+				>by <%= TrainingSchedule.approvedBy.username %></span
+			>
+			<% } %>
+		</div>
+		<% } else if (TrainingSchedule.status === 'rejected') { %>
+		<div class="status-badge rejected">
+			<i class="fas fa-times-circle"></i> Rejected <% if
+			(TrainingSchedule.approvedBy) { %>
+			<span class="approved-by"
+				>by <%= TrainingSchedule.approvedBy.username %></span
+			>
+			<% } %>
+		</div>
+		<% } else { %>
+		<div class="status-badge pending">
+			<i class="fas fa-clock"></i> Pending Review
+		</div>
+		<% } %> <% if (TrainingSchedule.archived) { %>
+		<div class="status-badge archived">
+			<i class="fas fa-archive"></i> Archived
+		</div>
+		<% } %>
+	</div>
+
+	<!-- Student Information Section -->
+	<div class="card mb-4">
+		<div class="card-header bg-light">
+			<h5 class="mb-0">Student Information</h5>
+		</div>
+		<div class="card-body">
+			<div class="row">
+				<div class="col-md-6 mb-3">
+					<label class="form-label fw-bold">Student Name</label>
+					<p class="mb-0"><%= TrainingSchedule.studentName %></p>
+				</div>
+				<div class="col-md-6 mb-3">
+					<label class="form-label fw-bold">Internship Site</label>
+					<p class="mb-0"><%= TrainingSchedule.internshipSite %></p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-6 mb-3">
+					<label class="form-label fw-bold">Start Date</label>
+					<p class="mb-0">
+						<%= new Date(TrainingSchedule.startDate).toLocaleDateString() %>
+					</p>
+				</div>
+				<div class="col-md-6 mb-3">
+					<label class="form-label fw-bold">End Date</label>
+					<p class="mb-0">
+						<%= new Date(TrainingSchedule.endDate).toLocaleDateString() %>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Training Details Section -->
+	<div class="card mb-4">
+		<div class="card-header bg-light">
+			<h5 class="mb-0">Training Details</h5>
+		</div>
+		<div class="card-body">
+			<div class="mb-3">
+				<label class="form-label fw-bold">Proposed Activities</label>
+				<p class="mb-0"><%= TrainingSchedule.proposedActivities %></p>
+			</div>
+			<div class="mb-3">
+				<label class="form-label fw-bold"
+					>How Activities Will Be Performed</label
+				>
+				<p class="mb-0"><%= TrainingSchedule.performanceMethod %></p>
+			</div>
+			<div class="row">
+				<div class="col-md-6 mb-3">
+					<label class="form-label fw-bold">Trainer</label>
+					<p class="mb-0"><%= TrainingSchedule.trainer %></p>
+				</div>
+				<div class="col-md-6 mb-3">
+					<label class="form-label fw-bold">Timeline</label>
+					<p class="mb-0"><%= TrainingSchedule.timeline %></p>
+				</div>
+			</div>
+			<div class="mb-3">
+				<label class="form-label fw-bold">Expected Output</label>
+				<p class="mb-0"><%= TrainingSchedule.expectedOutput %></p>
+			</div>
+		</div>
+	</div>
+
+	<!-- Additional Notes Section -->
+	<% if (TrainingSchedule.additionalNotes) { %>
+	<div class="card mb-4">
+		<div class="card-header bg-light">
+			<h5 class="mb-0">Additional Notes</h5>
+		</div>
+		<div class="card-body">
+			<p class="mb-0"><%= TrainingSchedule.additionalNotes %></p>
+		</div>
+	</div>
+	<% } %>
+
+	<!-- Admin Comments Section (if rejected) -->
+	<% if (TrainingSchedule.status === 'rejected' &&
+	TrainingSchedule.adminComments) { %>
+	<div class="card mb-4 border-danger">
+		<div class="card-header bg-danger text-white">
+			<h5 class="mb-0">Rejection Reason</h5>
+		</div>
+		<div class="card-body">
+			<p class="mb-0"><%= TrainingSchedule.adminComments %></p>
+		</div>
+	</div>
+	<% } %>
+
+	<!-- Archive Reason Section (if archived) -->
+	<% if (TrainingSchedule.archived && TrainingSchedule.archivedReason) { %>
+	<div class="card mb-4 border-secondary">
+		<div class="card-header bg-secondary text-white">
+			<h5 class="mb-0">Archive Reason</h5>
+		</div>
+		<div class="card-body">
+			<p class="mb-0"><%= TrainingSchedule.archivedReason %></p>
+		</div>
+	</div>
+	<% } %>
+
+	<!-- Action Buttons -->
+	<div class="d-flex justify-content-between mt-4">
+		<div>
+			<!-- Export to PDF button - only for schedule authors and non-rejected schedules -->
+			<% if (TrainingSchedule.isAuthor && TrainingSchedule.status !==
+			'rejected') { %>
+			<a
+				href="/trainingschedule/<%= TrainingSchedule._id %>/export-pdf"
+				class="btn btn-info text-white me-2">
+				<i class="fas fa-file-pdf"></i> Export to PDF
+			</a>
+			<% } %> <% if (TrainingSchedule.canEdit) { %>
+			<a
+				href="/trainingschedule/<%= TrainingSchedule._id %>/edit"
+				class="btn btn-warning me-2">
+				<i class="fas fa-edit"></i> Edit
+			</a>
+			<% } %> <% if (TrainingSchedule.canDelete) { %>
+			<button
+				type="button"
+				class="btn btn-danger"
+				data-custom-modal-target="deleteScheduleModal">
+				<i class="fas fa-trash"></i> Delete
+			</button>
+			<% } %>
+		</div>
+
+		<div class="d-flex gap-2">
+			<% if (currentUser && currentUser.role === 'admin') { %> <% if
+			(!TrainingSchedule.archived) { %>
+			<button
+				type="button"
+				class="btn btn-secondary"
+				data-custom-modal-target="archiveScheduleModal">
+				<i class="fas fa-archive"></i> Archive
+			</button>
+			<% } else { %>
+			<button
+				type="button"
+				class="btn btn-secondary"
+				data-custom-modal-target="unarchiveScheduleModal">
+				<i class="fas fa-box-open"></i> Unarchive
+			</button>
+			<% } %> <% } %>
+		</div>
+	</div>
+
+	<!-- Submission Info -->
+	<div class="submission-info mt-4">
+		<p class="text-muted">
+			Submitted by <%= TrainingSchedule.authorFullName || 'Unknown' %> on <%=
+			new Date(TrainingSchedule.dateSubmitted).toLocaleDateString() %> at <%=
+			new Date(TrainingSchedule.dateSubmitted).toLocaleTimeString() %>
+		</p>
+	</div>
+</div>
+
+<!-- Delete Schedule Modal -->
+<% if (TrainingSchedule.canDelete) { %>
+<div
+	class="custom-modal-overlay report-modal"
+	id="deleteScheduleModal"
+	role="dialog"
+	aria-labelledby="deleteScheduleModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-danger">
+			<h5 class="custom-modal-title" id="deleteScheduleModalLabel">
+				<i class="fas fa-trash"></i>
+				Delete Schedule
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i
+					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+				<h4>Are you sure you want to delete this training schedule?</h4>
+				<p class="text-danger mt-3">
+					<strong>This action cannot be undone.</strong>
+				</p>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				action="/trainingschedule/<%= TrainingSchedule._id %>?_method=DELETE"
+				method="POST"
+				data-custom-message="Schedule has been deleted successfully"
+				data-action-type="delete"
+				class="d-inline">
+				<button type="submit" class="custom-modal-btn custom-modal-btn-danger">
+					<i class="fas fa-trash me-1"></i> Delete Schedule
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Archive Schedule Modal -->
+<% if (currentUser && currentUser.role === 'admin' &&
+!TrainingSchedule.archived) { %>
+<div
+	class="custom-modal-overlay report-modal"
+	id="archiveScheduleModal"
+	role="dialog"
+	aria-labelledby="archiveScheduleModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-secondary">
+			<h5 class="custom-modal-title" id="archiveScheduleModalLabel">
+				<i class="fas fa-archive"></i>
+				Archive Schedule
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-archive custom-modal-icon text-secondary"></i>
+				<h4>Archive this training schedule?</h4>
+				<p class="text-muted mt-3">
+					Archiving will hide this schedule from regular views. It can be
+					unarchived later.
+				</p>
+				<form
+					id="archiveForm"
+					action="/trainingschedule/<%= TrainingSchedule._id %>/archive"
+					method="POST"
+					data-custom-message="Schedule has been archived successfully"
+					data-action-type="archive">
+					<div class="mb-3">
+						<label for="archiveReason" class="form-label"
+							>Reason for archiving (optional)</label
+						>
+						<textarea
+							class="form-control"
+							id="archiveReason"
+							rows="3"
+							placeholder="Enter reason for archiving"></textarea>
+						<input
+							type="hidden"
+							id="hiddenArchiveReason"
+							name="archiveReason"
+							value="" />
+					</div>
+				</form>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<button
+				type="submit"
+				form="archiveForm"
+				class="custom-modal-btn custom-modal-btn-secondary">
+				<i class="fas fa-archive me-1"></i> Archive Schedule
+			</button>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Unarchive Schedule Modal -->
+<% if (currentUser && currentUser.role === 'admin' && TrainingSchedule.archived)
+{ %>
+<div
+	class="custom-modal-overlay report-modal"
+	id="unarchiveScheduleModal"
+	role="dialog"
+	aria-labelledby="unarchiveScheduleModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-secondary">
+			<h5 class="custom-modal-title" id="unarchiveScheduleModalLabel">
+				<i class="fas fa-box-open"></i>
+				Unarchive Schedule
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-box-open custom-modal-icon text-secondary"></i>
+				<h4>Unarchive this training schedule?</h4>
+				<p class="text-muted mt-3">
+					This will restore the schedule to regular views.
+				</p>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				action="/trainingschedule/<%= TrainingSchedule._id %>/unarchive"
+				method="POST"
+				data-custom-message="Schedule has been unarchived successfully"
+				data-action-type="unarchive"
+				class="d-inline">
+				<button
+					type="submit"
+					class="custom-modal-btn custom-modal-btn-secondary">
+					<i class="fas fa-box-open me-1"></i> Unarchive Schedule
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Custom modal scripts -->
+<script src="/js/reportModals.js"></script>
+<script src="/js/customModal.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// For archive modal
+		const archiveReasonTextarea = document.getElementById("archiveReason");
+		const hiddenArchiveReason = document.getElementById("hiddenArchiveReason");
+		const archiveForm = document.getElementById("archiveForm");
+
+		if (archiveForm && archiveReasonTextarea && hiddenArchiveReason) {
+			archiveForm.addEventListener("submit", function () {
+				hiddenArchiveReason.value = archiveReasonTextarea.value;
+			});
+		}
+	});
+</script>
