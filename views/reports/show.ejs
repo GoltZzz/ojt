@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="/css/weeklyReportsShow.css" />
 <link rel="stylesheet" href="/css/reportModals.css" />
 <link rel="stylesheet" href="/css/customModal.css" />
+<link rel="stylesheet" href="/css/reportButtons.css" />
 <div class="container mt-4">
 	<div class="report-header mb-4">
 		<h1>Weekly Report Details</h1>
@@ -129,69 +130,73 @@
 	</div>
 	<% } %>
 
-	<div class="action-buttons mt-4">
-		<!-- Edit button - only for authors of pending reports -->
-		<% if (WeeklyReports.canEdit) { %>
-		<a
-			href="/weeklyreport/<%= WeeklyReports._id %>/edit"
-			class="btn btn-warning">
-			<i class="fas fa-edit"></i> Edit Report
-		</a>
-		<% } %>
+	<div class="action-buttons">
+		<div class="left-buttons">
+			<!-- Edit button - only for authors of pending reports -->
+			<% if (WeeklyReports.canEdit) { %>
+			<a
+				href="/weeklyreport/<%= WeeklyReports._id %>/edit"
+				class="btn btn-warning">
+				<i class="fas fa-edit"></i> Edit Report
+			</a>
+			<% } %>
 
-		<!-- Export to PDF button - only for report authors and non-rejected reports -->
-		<% if (WeeklyReports.isAuthor && WeeklyReports.status !== 'rejected') { %>
-		<a
-			href="/weeklyreport/<%= WeeklyReports._id %>/export-pdf"
-			class="btn btn-primary">
-			<i class="fas fa-file-pdf"></i> Export to PDF
-		</a>
-		<% } %>
+			<!-- Export to PDF button - only for report authors and non-rejected reports -->
+			<% if (WeeklyReports.isAuthor && WeeklyReports.status !== 'rejected') { %>
+			<a
+				href="/weeklyreport/<%= WeeklyReports._id %>/export-pdf"
+				class="btn btn-primary">
+				<i class="fas fa-file-pdf"></i> Export to PDF
+			</a>
+			<% } %>
 
-		<!-- Admin approval buttons - only for admins with pending reports -->
-		<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') {
-		%>
-		<button
-			type="button"
-			class="btn btn-success"
-			data-custom-modal-target="approveModal">
-			<i class="fas fa-check"></i> Approve
-		</button>
-		<button
-			type="button"
-			class="btn btn-danger"
-			data-custom-modal-target="rejectModal">
-			<i class="fas fa-times"></i> Reject
-		</button>
-		<% } %>
+			<!-- Delete button - for authors of pending or rejected reports -->
+			<% if (WeeklyReports.canDelete) { %>
+			<button
+				type="button"
+				class="btn btn-danger"
+				data-custom-modal-target="deleteReportModal">
+				<i class="fas fa-trash"></i> Delete
+			</button>
+			<% } %>
+		</div>
 
-		<!-- Archive/Unarchive buttons - only for admins -->
-		<% if (currentUser.role === 'admin') { %> <% if (WeeklyReports.archived) {
-		%>
-		<button
-			type="button"
-			class="btn btn-success"
-			data-custom-modal-target="unarchiveReportModal">
-			<i class="fas fa-box-open"></i> Unarchive
-		</button>
-		<% } else { %>
-		<button
-			type="button"
-			class="btn btn-secondary"
-			data-custom-modal-target="archiveReportModal">
-			<i class="fas fa-archive"></i> Archive
-		</button>
-		<% } %> <% } %>
+		<div class="right-buttons">
+			<!-- Admin approval buttons - only for admins with pending reports -->
+			<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending')
+			{ %>
+			<button
+				type="button"
+				class="btn btn-success"
+				data-custom-modal-target="approveModal">
+				<i class="fas fa-check"></i> Approve
+			</button>
+			<button
+				type="button"
+				class="btn btn-danger"
+				data-custom-modal-target="rejectModal">
+				<i class="fas fa-times"></i> Reject
+			</button>
+			<% } %>
 
-		<!-- Delete button - for authors of pending or rejected reports -->
-		<% if (WeeklyReports.canDelete) { %>
-		<button
-			type="button"
-			class="btn btn-danger"
-			data-custom-modal-target="deleteReportModal">
-			<i class="fas fa-trash"></i> Delete
-		</button>
-		<% } %>
+			<!-- Archive/Unarchive buttons - only for admins -->
+			<% if (currentUser.role === 'admin') { %> <% if (WeeklyReports.archived) {
+			%>
+			<button
+				type="button"
+				class="btn btn-success"
+				data-custom-modal-target="unarchiveReportModal">
+				<i class="fas fa-box-open"></i> Unarchive
+			</button>
+			<% } else { %>
+			<button
+				type="button"
+				class="btn btn-secondary"
+				data-custom-modal-target="archiveReportModal">
+				<i class="fas fa-archive"></i> Archive
+			</button>
+			<% } %> <% } %>
+		</div>
 	</div>
 
 	<!-- Approve Modal -->

@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="/css/weeklyReportsShow.css" />
 <link rel="stylesheet" href="/css/reportModals.css" />
 <link rel="stylesheet" href="/css/customModal.css" />
+<link rel="stylesheet" href="/css/reportButtons.css" />
 
 <div class="container mt-4">
 	<div class="report-header mb-4">
@@ -147,41 +148,31 @@
 	</div>
 
 	<!-- Action Buttons -->
-	<div class="d-flex justify-content-center mb-5">
-		<div class="d-flex gap-2">
-			<% if (currentUser && currentUser.role === 'admin') { %> <% if
-			(!WeeklyProgressReport.archived) { %>
-			<button
-				type="button"
-				class="btn btn-secondary"
-				data-custom-modal-target="archiveReportModal">
-				<i class="fas fa-archive"></i> Archive
-			</button>
-			<% } else { %>
-			<button
-				type="button"
-				class="btn btn-secondary"
-				data-custom-modal-target="unarchiveReportModal">
-				<i class="fas fa-box-open"></i> Unarchive
-			</button>
-			<% } %> <% } %>
+	<div class="action-buttons">
+		<div class="left-buttons">
+			<!-- Edit button - only for authors of pending reports -->
+			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status ===
+			'pending' && !WeeklyProgressReport.archived) { %>
+			<a
+				href="/weeklyprogress/<%= WeeklyProgressReport._id %>/edit"
+				class="btn btn-warning">
+				<i class="fas fa-edit"></i> Edit Report
+			</a>
+			<% } %>
 
 			<!-- Export to PDF button - only for report authors and non-rejected reports -->
 			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status !==
 			'rejected') { %>
 			<a
 				href="/weeklyprogress/<%= WeeklyProgressReport._id %>/export-pdf"
-				class="btn btn-info text-white">
+				class="btn btn-primary">
 				<i class="fas fa-file-pdf"></i> Export to PDF
 			</a>
-			<% } %> <% if (WeeklyProgressReport.isAuthor &&
-			WeeklyProgressReport.status === 'pending' &&
-			!WeeklyProgressReport.archived) { %>
-			<a
-				href="/weeklyprogress/<%= WeeklyProgressReport._id %>/edit"
-				class="btn btn-primary">
-				<i class="fas fa-edit"></i> Edit
-			</a>
+			<% } %>
+
+			<!-- Delete button - for authors of pending reports -->
+			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status ===
+			'pending' && !WeeklyProgressReport.archived) { %>
 			<button
 				type="button"
 				class="btn btn-danger"
@@ -189,6 +180,26 @@
 				<i class="fas fa-trash"></i> Delete
 			</button>
 			<% } %>
+		</div>
+
+		<div class="right-buttons">
+			<!-- Archive/Unarchive buttons - only for admins -->
+			<% if (currentUser && currentUser.role === 'admin') { %> <% if
+			(WeeklyProgressReport.archived) { %>
+			<button
+				type="button"
+				class="btn btn-success"
+				data-custom-modal-target="unarchiveReportModal">
+				<i class="fas fa-box-open"></i> Unarchive
+			</button>
+			<% } else { %>
+			<button
+				type="button"
+				class="btn btn-secondary"
+				data-custom-modal-target="archiveReportModal">
+				<i class="fas fa-archive"></i> Archive
+			</button>
+			<% } %> <% } %>
 		</div>
 	</div>
 </div>
@@ -322,6 +333,8 @@
 	}
 </style>
 
+<!-- Custom modal script is loaded in boilerplate.ejs -->
+<script src="/js/reportModals.js"></script>
 <!-- Delete Report Modal -->
 <% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status ===
 'pending' && !WeeklyProgressReport.archived) { %>
@@ -366,9 +379,6 @@
 </div>
 <% } %>
 
-<!-- Custom modal scripts -->
-<script src="/js/reportModals.js"></script>
-<script src="/js/customModal.js"></script>
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
 		// For archive modal

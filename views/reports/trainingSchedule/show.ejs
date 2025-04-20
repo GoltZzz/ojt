@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="/css/weeklyReportsShow.css" />
 <link rel="stylesheet" href="/css/reportModals.css" />
 <link rel="stylesheet" href="/css/customModal.css" />
+<link rel="stylesheet" href="/css/reportButtons.css" />
 
 <div class="container mt-4">
 	<div class="d-flex justify-content-between align-items-center mb-4">
@@ -148,23 +149,29 @@
 	<% } %>
 
 	<!-- Action Buttons -->
-	<div class="d-flex justify-content-between mt-4">
-		<div>
+	<div class="action-buttons">
+		<div class="left-buttons">
+			<!-- Edit button - only for authors of pending schedules -->
+			<% if (TrainingSchedule.canEdit) { %>
+			<a
+				href="/trainingschedule/<%= TrainingSchedule._id %>/edit"
+				class="btn btn-warning">
+				<i class="fas fa-edit"></i> Edit Schedule
+			</a>
+			<% } %>
+
 			<!-- Export to PDF button - only for schedule authors and non-rejected schedules -->
 			<% if (TrainingSchedule.isAuthor && TrainingSchedule.status !==
 			'rejected') { %>
 			<a
 				href="/trainingschedule/<%= TrainingSchedule._id %>/export-pdf"
-				class="btn btn-info text-white me-2">
+				class="btn btn-primary">
 				<i class="fas fa-file-pdf"></i> Export to PDF
 			</a>
-			<% } %> <% if (TrainingSchedule.canEdit) { %>
-			<a
-				href="/trainingschedule/<%= TrainingSchedule._id %>/edit"
-				class="btn btn-warning me-2">
-				<i class="fas fa-edit"></i> Edit
-			</a>
-			<% } %> <% if (TrainingSchedule.canDelete) { %>
+			<% } %>
+
+			<!-- Delete button - for authors of pending schedules -->
+			<% if (TrainingSchedule.canDelete) { %>
 			<button
 				type="button"
 				class="btn btn-danger"
@@ -174,21 +181,22 @@
 			<% } %>
 		</div>
 
-		<div class="d-flex gap-2">
+		<div class="right-buttons">
+			<!-- Archive/Unarchive buttons - only for admins -->
 			<% if (currentUser && currentUser.role === 'admin') { %> <% if
-			(!TrainingSchedule.archived) { %>
+			(TrainingSchedule.archived) { %>
 			<button
 				type="button"
-				class="btn btn-secondary"
-				data-custom-modal-target="archiveScheduleModal">
-				<i class="fas fa-archive"></i> Archive
+				class="btn btn-success"
+				data-custom-modal-target="unarchiveScheduleModal">
+				<i class="fas fa-box-open"></i> Unarchive
 			</button>
 			<% } else { %>
 			<button
 				type="button"
 				class="btn btn-secondary"
-				data-custom-modal-target="unarchiveScheduleModal">
-				<i class="fas fa-box-open"></i> Unarchive
+				data-custom-modal-target="archiveScheduleModal">
+				<i class="fas fa-archive"></i> Archive
 			</button>
 			<% } %> <% } %>
 		</div>
