@@ -409,39 +409,57 @@ export const generateWeeklyProgressReportPdf = (report) => {
 						.rect(30, currentY, tableWidth, rowHeight)
 						.fill(index % 2 === 0 ? colors.white : colors.light);
 
-					// Accomplishment number
+					// Draw vertical divider
+					doc
+						.moveTo(30 + labelColWidth, currentY)
+						.lineTo(30 + labelColWidth, currentY + rowHeight)
+						.stroke(colors.border);
+
+					// Accomplishment number and title in label column
 					doc
 						.fontSize(fonts.heading)
 						.fillColor(colors.primary)
-						.text(`Accomplishment ${index + 1}`, 40, currentY + 10, {
-							width: tableWidth - 20,
-						});
+						.text(`Accomplishment ${index + 1}`, 40, currentY + 10);
 
-					// Proposed Activity - more compact layout
+					// Proposed Activity label
 					doc
 						.fontSize(fonts.normal)
 						.fillColor(colors.dark)
-						.text("Proposed Activity:", 40, currentY + 20, {
-							continued: true,
-						})
-						.fillColor(colors.secondary)
-						.text(` ${accomplishment.proposedActivity || "None reported"}`, {
-							align: "left",
-						});
+						.text("Proposed Activity:", 40, currentY + 30);
 
-					// Accomplishment Details - more compact layout
+					// Accomplishment Details label
 					doc
 						.fontSize(fonts.normal)
 						.fillColor(colors.dark)
-						.text("Accomplishments:", 40, currentY + 40, {
-							continued: true,
-						})
-						.fillColor(colors.secondary)
+						.text("Accomplishments:", 40, currentY + 50);
+
+					// Content column - proposed activity
+					doc
+						.fontSize(fonts.normal)
+						.fillColor(colors.dark)
 						.text(
-							` ${accomplishment.accomplishmentDetails || "None reported"}`,
+							accomplishment.proposedActivity || "None reported",
+							40 + labelColWidth + 10,
+							currentY + 30,
 							{
+								width: contentColWidth - 20,
 								align: "left",
-								width: tableWidth - 60,
+								lineGap: 2,
+							}
+						);
+
+					// Content column - accomplishment details
+					doc
+						.fontSize(fonts.normal)
+						.fillColor(colors.dark)
+						.text(
+							accomplishment.accomplishmentDetails || "None reported",
+							40 + labelColWidth + 10,
+							currentY + 50,
+							{
+								width: contentColWidth - 20,
+								align: "left",
+								lineGap: 2,
 							}
 						);
 
