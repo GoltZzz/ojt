@@ -272,9 +272,42 @@ export const generateTrainingSchedulePdf = (schedule) => {
 			const rowHeight = 70; // Increased height for content to prevent overflow
 			let currentY = tableTop;
 
-			// Draw table header - using a lighter blue color
-			const headerColor = "#7fbfff"; // Lighter blue color
-			doc.rect(30, currentY, tableWidth, 30).fill(headerColor);
+			// Create a gradient-like effect for the header
+			// Simulating linear-gradient(45deg, #2193b0, #6dd5ed)
+			// We'll create multiple rectangles with slightly different colors
+			const startColor = "#2193b0"; // Start color of gradient
+			const endColor = "#6dd5ed"; // End color of gradient
+			const segments = 10; // Number of segments to create
+			const segmentWidth = tableWidth / segments;
+
+			// Helper function to interpolate between two colors
+			const interpolateColor = (color1, color2, factor) => {
+				// Convert hex to RGB
+				const r1 = parseInt(color1.substring(1, 3), 16);
+				const g1 = parseInt(color1.substring(3, 5), 16);
+				const b1 = parseInt(color1.substring(5, 7), 16);
+
+				const r2 = parseInt(color2.substring(1, 3), 16);
+				const g2 = parseInt(color2.substring(3, 5), 16);
+				const b2 = parseInt(color2.substring(5, 7), 16);
+
+				// Interpolate
+				const r = Math.round(r1 + factor * (r2 - r1));
+				const g = Math.round(g1 + factor * (g2 - g1));
+				const b = Math.round(b1 + factor * (b2 - b1));
+
+				// Convert back to hex
+				return `#${r.toString(16).padStart(2, "0")}${g
+					.toString(16)
+					.padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+			};
+
+			// Draw the gradient segments
+			for (let i = 0; i < segments; i++) {
+				const factor = i / (segments - 1);
+				const color = interpolateColor(startColor, endColor, factor);
+				doc.rect(30 + i * segmentWidth, currentY, segmentWidth, 30).fill(color);
+			}
 
 			// Header text
 			doc.fillColor(colors.white).fontSize(fonts.heading);
