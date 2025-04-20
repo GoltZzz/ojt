@@ -1,5 +1,7 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/weeklyReportsIndex.css" />
+<link rel="stylesheet" href="/css/customModal.css" />
+<link rel="stylesheet" href="/css/reportModals.css" />
 <script src="/js/reportTooltips.js" defer></script>
 
 <div class="container mt-4">
@@ -128,7 +130,7 @@
                     <td>
                         <span class="date-range">
                             <i class="far fa-calendar-alt me-1"></i>
-                            <%= new Date(report.weekStartDate).toLocaleDateString() %> - 
+                            <%= new Date(report.weekStartDate).toLocaleDateString() %> -
                             <%= new Date(report.weekEndDate).toLocaleDateString() %>
                         </span>
                     </td>
@@ -172,19 +174,14 @@
                                 title="Edit Report">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form
-                                class="d-inline"
-                                action="/weeklyprogress/<%= report._id %>?_method=DELETE"
-                                method="POST">
-                                <button
-                                    type="submit"
-                                    class="btn btn-sm btn-danger"
-                                    data-bs-toggle="tooltip"
-                                    title="Delete Report"
-                                    onclick="return confirm('Are you sure you want to delete this report?')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-danger"
+                                data-bs-toggle="tooltip"
+                                title="Delete Report"
+                                data-custom-modal-target="deleteReportModal<%= report._id %>">
+                                <i class="fas fa-trash"></i>
+                            </button>
                             <% } %>
                         </div>
                     </td>
@@ -258,7 +255,7 @@
         <% if (Object.keys(filters || {}).length > 0 && Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit')) { %>
             No reports found matching your filters. <a href="/weeklyprogress" class="alert-link">Clear filters</a> to see all reports.
         <% } else { %>
-            No weekly progress reports found. 
+            No weekly progress reports found.
             <% if (currentUser && currentUser.role !== 'admin') { %>
                 <a href="/weeklyprogress/new" class="alert-link">Create a new report</a>.
             <% } %>
@@ -266,6 +263,55 @@
     </div>
     <% } %>
 </div>
+
+<!-- Delete Report Modals -->
+<% if (WeeklyProgressReports && WeeklyProgressReports.length) { %>
+    <% WeeklyProgressReports.forEach(report => { %>
+        <% if (report.isCurrentUserReport && report.status === 'pending' && !report.archived) { %>
+            <!-- Delete Report Modal for <%= report._id %> -->
+            <div
+                class="custom-modal-overlay report-modal"
+                id="deleteReportModal<%= report._id %>"
+                role="dialog"
+                aria-labelledby="deleteReportModalLabel<%= report._id %>">
+                <div class="custom-modal">
+                    <div class="custom-modal-header bg-danger">
+                        <h5 class="custom-modal-title" id="deleteReportModalLabel<%= report._id %>">
+                            <i class="fas fa-trash"></i>
+                            Delete Report
+                        </h5>
+                        <button type="button" class="custom-modal-close" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="custom-modal-body">
+                        <div class="custom-modal-content">
+                            <i class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+                            <h4>Are you sure you want to delete this report?</h4>
+                            <p class="text-danger mt-3">
+                                <strong>This action cannot be undone.</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="custom-modal-footer">
+                        <form
+                            action="/weeklyprogress/<%= report._id %>?_method=DELETE"
+                            method="POST"
+                            data-custom-message="Report has been deleted successfully"
+                            data-action-type="delete"
+                            class="d-inline">
+                            <button
+                                type="submit"
+                                class="custom-modal-btn custom-modal-btn-danger">
+                                <i class="fas fa-trash me-1"></i> Delete Report
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    <% }) %>
+<% } %>
 
 <!-- Filter Toggle Script -->
 <script>
@@ -297,3 +343,7 @@
         });
     });
 </script>
+
+<!-- Custom modal scripts -->
+<script src="/js/reportModals.js"></script>
+<script src="/js/customModal.js"></script>
