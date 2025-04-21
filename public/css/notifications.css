@@ -144,6 +144,34 @@
 	background-color: rgba(33, 147, 176, 0.1);
 }
 
+/* Notification Pulse Dot */
+.notification-pulse-dot {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: #dc3545;
+	display: none;
+	animation: pulse-dot 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+@keyframes pulse-dot {
+	0% {
+		transform: scale(0.8);
+		opacity: 0.8;
+	}
+	50% {
+		transform: scale(1.2);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(0.8);
+		opacity: 0.8;
+	}
+}
+
 /* Profile Notifications Styles */
 .profile-notifications-container {
 	max-height: 400px;

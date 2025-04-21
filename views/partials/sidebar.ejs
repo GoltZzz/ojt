@@ -29,9 +29,12 @@
 					</li>
 					<% if (currentUser) { %>
 					<li class="nav-item">
-						<a href="/profile" class="nav-link"
-							><i class="fa-solid fa-user"></i> My Profile</a
-						>
+						<a href="/profile" class="nav-link position-relative"
+							><i class="fa-solid fa-user"></i> My Profile
+							<span
+								class="notification-pulse-dot"
+								id="mobile-profile-notification-dot"></span>
+						</a>
 					</li>
 					<% if (currentUser.role === 'admin') { %> <% } else { %>
 					<li class="nav-item">
@@ -140,9 +143,12 @@
 			</li>
 			<% if (currentUser) { %>
 			<li class="nav-item">
-				<a href="/profile" class="nav-link"
-					><i class="fa-solid fa-user"></i> My Profile</a
-				>
+				<a href="/profile" class="nav-link position-relative"
+					><i class="fa-solid fa-user"></i> My Profile
+					<span
+						class="notification-pulse-dot"
+						id="desktop-profile-notification-dot"></span>
+				</a>
 			</li>
 			<% if (currentUser.role === 'admin') { %> <% } else { %>
 			<li class="nav-item">

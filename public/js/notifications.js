@@ -28,6 +28,14 @@ document.addEventListener("DOMContentLoaded", function () {
 		"profile-mark-all-read"
 	);
 
+	// Elements - Notification Indicators
+	const mobileProfileNotificationDot = document.getElementById(
+		"mobile-profile-notification-dot"
+	);
+	const desktopProfileNotificationDot = document.getElementById(
+		"desktop-profile-notification-dot"
+	);
+
 	let notifications = [];
 
 	// Fetch notifications
@@ -75,6 +83,15 @@ document.addEventListener("DOMContentLoaded", function () {
 				mobileNotificationBadge.removeAttribute("data-tooltip-active");
 			}
 
+			// Show notification dots on profile links
+			if (mobileProfileNotificationDot) {
+				mobileProfileNotificationDot.style.display = "block";
+			}
+
+			if (desktopProfileNotificationDot) {
+				desktopProfileNotificationDot.style.display = "block";
+			}
+
 			// Header badge removed - notifications now only on profile page
 		} else {
 			console.log("No notifications, hiding badges");
@@ -86,6 +103,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 			if (mobileNotificationBadge) {
 				mobileNotificationBadge.style.display = "none";
+			}
+
+			// Hide notification dots on profile links
+			if (mobileProfileNotificationDot) {
+				mobileProfileNotificationDot.style.display = "none";
+			}
+
+			if (desktopProfileNotificationDot) {
+				desktopProfileNotificationDot.style.display = "none";
 			}
 
 			// Header badge removed
