@@ -1,12 +1,12 @@
 // Notifications handling
 document.addEventListener("DOMContentLoaded", function () {
-	// Elements - Desktop
+	// Elements - Sidebar Desktop
 	const notificationBtn = document.getElementById("notification-btn");
 	const notificationBadge = document.getElementById("notification-badge");
 	const notificationList = document.getElementById("notification-list");
 	const markAllReadBtn = document.getElementById("mark-all-read");
 
-	// Elements - Mobile
+	// Elements - Sidebar Mobile
 	const mobileNotificationBtn = document.getElementById(
 		"mobile-notification-btn"
 	);
@@ -17,6 +17,18 @@ document.addEventListener("DOMContentLoaded", function () {
 		"mobile-notification-list"
 	);
 	const mobileMarkAllReadBtn = document.getElementById("mobile-mark-all-read");
+
+	// Elements - Header
+	const headerNotificationBtn = document.getElementById(
+		"header-notification-btn"
+	);
+	const headerNotificationBadge = document.getElementById(
+		"header-notification-badge"
+	);
+	const headerNotificationList = document.getElementById(
+		"header-notification-list"
+	);
+	const headerMarkAllReadBtn = document.getElementById("header-mark-all-read");
 
 	let notifications = [];
 
@@ -46,6 +58,12 @@ document.addEventListener("DOMContentLoaded", function () {
 				mobileNotificationBadge.textContent = notifications.length;
 				mobileNotificationBadge.style.display = "block";
 			}
+
+			// Header badge
+			if (headerNotificationBadge) {
+				headerNotificationBadge.textContent = notifications.length;
+				headerNotificationBadge.style.display = "block";
+			}
 		} else {
 			// Hide badges when no notifications
 			if (notificationBadge) {
@@ -55,11 +73,16 @@ document.addEventListener("DOMContentLoaded", function () {
 			if (mobileNotificationBadge) {
 				mobileNotificationBadge.style.display = "none";
 			}
+
+			if (headerNotificationBadge) {
+				headerNotificationBadge.style.display = "none";
+			}
 		}
 
 		// Update notification lists
 		updateNotificationList(notificationList);
 		updateNotificationList(mobileNotificationList);
+		updateNotificationList(headerNotificationList);
 	}
 
 	// Update a specific notification list
@@ -211,6 +234,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	if (mobileMarkAllReadBtn) {
 		mobileMarkAllReadBtn.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			markAllAsRead();
+		});
+	}
+
+	if (headerMarkAllReadBtn) {
+		headerMarkAllReadBtn.addEventListener("click", (e) => {
 			e.preventDefault();
 			e.stopPropagation();
 			markAllAsRead();
