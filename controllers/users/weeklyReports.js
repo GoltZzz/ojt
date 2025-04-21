@@ -390,10 +390,10 @@ export const exportReportAsPdf = catchAsync(async (req, res) => {
 			return res.redirect(`/weeklyreport/${id}`);
 		}
 
-		// Check if the report status is rejected
-		if (report.status === "rejected") {
-			console.log(`Report ${report._id} is rejected, cannot export to PDF`);
-			req.flash("error", "Rejected reports cannot be exported to PDF");
+		// Check if the report status is not approved
+		if (report.status !== "approved") {
+			console.log(`Report ${report._id} is not approved, cannot export to PDF`);
+			req.flash("error", "Only approved reports can be exported to PDF");
 			return res.redirect(`/weeklyreport/${id}`);
 		}
 

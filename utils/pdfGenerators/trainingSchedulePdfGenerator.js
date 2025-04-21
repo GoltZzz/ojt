@@ -230,29 +230,7 @@ export const generateTrainingSchedulePdf = (schedule) => {
 					align: "center",
 				});
 
-			// Date Submitted
-			doc
-				.fontSize(fonts.normal)
-				.fillColor(colors.dark)
-				.text("Date Submitted:", statusX, infoBoxY + 30, { continued: true }) // Adjusted position
-				.fillColor(colors.primary);
-
-			// Format date with error handling
-			let formattedSubmitDate = "N/A";
-			try {
-				if (schedule.dateSubmitted) {
-					const submitDate = new Date(schedule.dateSubmitted);
-					if (!isNaN(submitDate.getTime())) {
-						formattedSubmitDate = format(submitDate, "MMM dd, yyyy");
-					}
-				}
-			} catch (dateError) {
-				console.error("Error formatting submission date:", dateError);
-			}
-
-			doc.text(` ${formattedSubmitDate}`, {
-				align: "left",
-			});
+			// Date Submitted section removed
 
 			// Trainer
 			doc

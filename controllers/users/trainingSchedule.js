@@ -569,10 +569,12 @@ export const exportScheduleAsPdf = catchAsync(async (req, res) => {
 			return res.redirect(`/trainingschedule/${id}`);
 		}
 
-		// Check if the schedule status is rejected
-		if (schedule.status === "rejected") {
-			console.log(`Schedule ${schedule._id} is rejected, cannot export to PDF`);
-			req.flash("error", "Rejected schedules cannot be exported to PDF");
+		// Check if the schedule status is not approved
+		if (schedule.status !== "approved") {
+			console.log(
+				`Schedule ${schedule._id} is not approved, cannot export to PDF`
+			);
+			req.flash("error", "Only approved schedules can be exported to PDF");
 			return res.redirect(`/trainingschedule/${id}`);
 		}
 

@@ -141,8 +141,8 @@
 			</a>
 			<% } %>
 
-			<!-- Export to PDF button - only for report authors and non-rejected reports -->
-			<% if (WeeklyReports.isAuthor && WeeklyReports.status !== 'rejected') { %>
+			<!-- Export to PDF button - only for report authors and approved reports -->
+			<% if (WeeklyReports.isAuthor && WeeklyReports.status === 'approved') { %>
 			<a
 				href="/weeklyreport/<%= WeeklyReports._id %>/export-pdf"
 				class="btn btn-primary">

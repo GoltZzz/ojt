@@ -253,7 +253,6 @@ export const showReport = catchAsync(async (req, res) => {
 
 	res.render("reports/weeklyProgress/show", {
 		WeeklyProgressReport: report,
-		currentUser: req.user,
 	});
 });
 
@@ -488,7 +487,7 @@ export const archiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 
 	// Check if user is admin
-	if (!req.user || req.user.role !== "admin") {
+	if (req.user.role !== "admin") {
 		req.flash("error", "Only administrators can archive reports");
 		return res.redirect(`/weeklyprogress/${id}`);
 	}
@@ -525,7 +524,7 @@ export const unarchiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 
 	// Check if user is admin
-	if (!req.user || req.user.role !== "admin") {
+	if (req.user.role !== "admin") {
 		req.flash("error", "Only administrators can unarchive reports");
 		return res.redirect(`/weeklyprogress/${id}`);
 	}
