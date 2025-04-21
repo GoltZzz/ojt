@@ -30,6 +30,14 @@ document.addEventListener("DOMContentLoaded", function () {
 	);
 	const headerMarkAllReadBtn = document.getElementById("header-mark-all-read");
 
+	// Elements - Profile Page
+	const profileNotificationList = document.getElementById(
+		"profile-notification-list"
+	);
+	const profileMarkAllReadBtn = document.getElementById(
+		"profile-mark-all-read"
+	);
+
 	let notifications = [];
 
 	// Fetch notifications
@@ -120,10 +128,11 @@ document.addEventListener("DOMContentLoaded", function () {
 		updateNotificationList(notificationList);
 		updateNotificationList(mobileNotificationList);
 		updateNotificationList(headerNotificationList);
+		updateNotificationList(profileNotificationList, true); // true for profile page (larger display)
 	}
 
 	// Update a specific notification list
-	function updateNotificationList(listElement) {
+	function updateNotificationList(listElement, isProfilePage = false) {
 		if (!listElement) return;
 
 		listElement.innerHTML = "";
@@ -131,8 +140,14 @@ document.addEventListener("DOMContentLoaded", function () {
 		if (notifications.length === 0) {
 			listElement.innerHTML = `
                 <div class="notification-empty">
-                    <i class="fas fa-bell-slash mb-2"></i>
-                    <p>No new notifications</p>
+                    <i class="fas fa-bell-slash ${
+											isProfilePage ? "fa-2x mb-3" : "mb-2"
+										}"></i>
+                    <p>${
+											isProfilePage
+												? "You have no new notifications"
+												: "No new notifications"
+										}</p>
                 </div>
             `;
 			return;
@@ -140,7 +155,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		notifications.forEach((notification) => {
 			const li = document.createElement("li");
-			li.className = "notification-item";
+			li.className = isProfilePage
+				? "notification-item notification-item-large"
+				: "notification-item";
 			li.dataset.id = notification._id;
 
 			// Set icon based on notification type
@@ -152,8 +169,34 @@ document.addEventListener("DOMContentLoaded", function () {
 			// Format time
 			const time = new Date(notification.createdAt);
 			const timeString = time.toLocaleString();
+			const dateFormatted = time.toLocaleDateString();
+			const timeFormatted = time.toLocaleTimeString();
 
-			li.innerHTML = `
+			// Get report type name
+			const reportTypeName = getReportTypeName(notification.reportType);
+
+			// Different HTML for profile page vs dropdown
+			if (isProfilePage) {
+				li.innerHTML = `
+                <div class="notification-icon ${iconClass}">
+                    <i class="fas ${getIconForAction(notification.action)}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-header-row">
+                        <span class="notification-report-type">${reportTypeName}</span>
+                        <span class="notification-time">${dateFormatted} at ${timeFormatted}</span>
+                    </div>
+                    <p class="notification-message">${notification.message}</p>
+                    <div class="notification-footer-row">
+                        <span class="notification-action-type">${getActionLabel(
+													notification.action
+												)}</span>
+                        <button class="btn btn-sm btn-link view-report-btn">View Report</button>
+                    </div>
+                </div>
+            `;
+			} else {
+				li.innerHTML = `
                 <div class="notification-icon ${iconClass}">
                     <i class="fas ${getIconForAction(notification.action)}"></i>
                 </div>
@@ -162,6 +205,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <span class="notification-time">${timeString}</span>
                 </div>
             `;
+			}
 
 			// Add click event to mark as read
 			li.addEventListener("click", () => {
@@ -238,6 +282,44 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	}
 
+	// Helper function to get action label
+	function getActionLabel(action) {
+		switch (action) {
+			case "approved":
+				return "Approved";
+			case "rejected":
+				return "Rejected";
+			case "archived":
+				return "Archived";
+			case "unarchived":
+				return "Unarchived";
+			default:
+				return "Notification";
+		}
+	}
+
+	// Helper function to get report type name
+	function getReportTypeName(reportType) {
+		switch (reportType) {
+			case "weeklyreport":
+				return "Weekly Report";
+			case "weeklyprogress":
+				return "Weekly Progress Report";
+			case "trainingschedule":
+				return "Training Schedule";
+			case "learningoutcome":
+				return "Learning Outcome";
+			case "dailyattendance":
+				return "Daily Attendance";
+			case "documentation":
+				return "Documentation";
+			case "timereport":
+				return "Time Report";
+			default:
+				return "Report";
+		}
+	}
+
 	// Helper function to get report URL
 	function getReportUrl(reportType, reportId) {
 		switch (reportType) {
@@ -279,6 +361,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	if (headerMarkAllReadBtn) {
 		headerMarkAllReadBtn.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			markAllAsRead();
+		});
+	}
+
+	// Profile page mark all read button
+	if (profileMarkAllReadBtn) {
+		profileMarkAllReadBtn.addEventListener("click", (e) => {
 			e.preventDefault();
 			e.stopPropagation();
 			markAllAsRead();

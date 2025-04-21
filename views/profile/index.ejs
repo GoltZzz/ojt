@@ -115,115 +115,86 @@
 		<% if (user.role !== 'admin') { %>
 
 		<div class="col-lg-8">
-			<!-- Activity Summary Card -->
+			<!-- Notifications Card -->
 			<div class="dashboard-card mb-4">
 				<div class="card-header-with-actions">
-					<h3><i class="fas fa-chart-line me-2"></i>Activity Summary</h3>
-					<div class="report-actions">
-						<a href="/dashboard" class="btn btn-sm btn-outline-primary">
+					<h3><i class="fas fa-bell me-2"></i>Notifications</h3>
+					<div class="notification-actions">
+						<button
+							class="btn btn-sm btn-outline-primary"
+							id="profile-mark-all-read">
+							<i class="fas fa-check-double me-1"></i> Mark all as read
+						</button>
+						<a href="/dashboard" class="btn btn-sm btn-outline-secondary">
 							<i class="fas fa-tachometer-alt me-1"></i> Dashboard
 						</a>
 					</div>
 				</div>
 
-				<!-- Report Stats Cards -->
-				<div class="report-stats-grid">
-					<!-- Weekly Reports -->
-					<div class="report-stat-card">
-						<div class="report-stat-header bg-primary">
-							<i class="fas fa-file-alt"></i>
+				<!-- Notifications List -->
+				<div class="profile-notifications-container">
+					<ul class="notification-list" id="profile-notification-list">
+						<!-- Notifications will be loaded here via JavaScript -->
+						<div class="notification-loading">
+							<i class="fas fa-spinner fa-spin"></i>
+							<p>Loading notifications...</p>
 						</div>
-						<div class="report-stat-body">
-							<div class="report-stat-count">
-								<%= reportStats ? reportStats.weeklyReports : 0 %>
-							</div>
-							<div class="report-stat-title">Weekly Reports</div>
-						</div>
-						<a href="/weeklyreport" class="report-stat-link">View All</a>
-					</div>
+					</ul>
+				</div>
 
-					<!-- Weekly Progress -->
-					<div class="report-stat-card">
-						<div class="report-stat-header bg-purple">
-							<i class="fas fa-tasks"></i>
-						</div>
-						<div class="report-stat-body">
-							<div class="report-stat-count">
-								<%= reportStats ? reportStats.weeklyProgress : 0 %>
-							</div>
-							<div class="report-stat-title">Weekly Progress</div>
-						</div>
-						<a href="/weeklyprogress" class="report-stat-link">View All</a>
-					</div>
-
-					<!-- Training Schedules -->
-					<div class="report-stat-card">
-						<div class="report-stat-header bg-teal">
-							<i class="fas fa-calendar-alt"></i>
-						</div>
-						<div class="report-stat-body">
-							<div class="report-stat-count">
-								<%= reportStats ? reportStats.trainingSchedule : 0 %>
-							</div>
-							<div class="report-stat-title">Training Schedules</div>
-						</div>
-						<a href="/trainingschedule" class="report-stat-link">View All</a>
-					</div>
-
-					<!-- Learning Outcomes -->
-					<div class="report-stat-card">
-						<div class="report-stat-header bg-orange">
-							<i class="fas fa-graduation-cap"></i>
-						</div>
-						<div class="report-stat-body">
-							<div class="report-stat-count">
-								<%= reportStats ? reportStats.learningOutcome : 0 %>
-							</div>
-							<div class="report-stat-title">Learning Outcomes</div>
-						</div>
-						<a href="/learningoutcome" class="report-stat-link">View All</a>
-					</div>
-
-					<!-- Daily Attendance -->
-					<div class="report-stat-card">
-						<div class="report-stat-header bg-indigo">
-							<i class="fas fa-clipboard-check"></i>
-						</div>
-						<div class="report-stat-body">
-							<div class="report-stat-count">
-								<%= reportStats ? reportStats.dailyAttendance : 0 %>
-							</div>
-							<div class="report-stat-title">Daily Attendance</div>
-						</div>
-						<a href="/dailyattendance" class="report-stat-link">View All</a>
-					</div>
-
-					<!-- Documentation -->
-					<div class="report-stat-card">
-						<div class="report-stat-header bg-success">
-							<i class="fas fa-book"></i>
-						</div>
-						<div class="report-stat-body">
-							<div class="report-stat-count">
-								<%= reportStats ? reportStats.documentation : 0 %>
-							</div>
-							<div class="report-stat-title">Documentation</div>
-						</div>
-						<a href="/documentation" class="report-stat-link">View All</a>
-					</div>
-
-					<!-- Time Reports -->
-					<div class="report-stat-card">
-						<div class="report-stat-header bg-info">
-							<i class="fas fa-clock"></i>
-						</div>
-						<div class="report-stat-body">
-							<div class="report-stat-count">
-								<%= reportStats ? reportStats.timeReports : 0 %>
-							</div>
-							<div class="report-stat-title">Time Reports</div>
-						</div>
-						<a href="/timereport" class="report-stat-link">View All</a>
+				<!-- Report Stats Summary -->
+				<div class="report-summary">
+					<h4 class="report-summary-title">Your Reports</h4>
+					<div class="report-summary-grid">
+						<a href="/weeklyreport" class="report-summary-item">
+							<i class="fas fa-file-alt text-primary"></i>
+							<span
+								>Weekly Reports (<%= reportStats ? reportStats.weeklyReports : 0
+								%>)</span
+							>
+						</a>
+						<a href="/weeklyprogress" class="report-summary-item">
+							<i class="fas fa-tasks text-purple"></i>
+							<span
+								>Weekly Progress (<%= reportStats ? reportStats.weeklyProgress :
+								0 %>)</span
+							>
+						</a>
+						<a href="/trainingschedule" class="report-summary-item">
+							<i class="fas fa-calendar-alt text-teal"></i>
+							<span
+								>Training Schedules (<%= reportStats ?
+								reportStats.trainingSchedule : 0 %>)</span
+							>
+						</a>
+						<a href="/learningoutcome" class="report-summary-item">
+							<i class="fas fa-graduation-cap text-orange"></i>
+							<span
+								>Learning Outcomes (<%= reportStats ?
+								reportStats.learningOutcome : 0 %>)</span
+							>
+						</a>
+						<a href="/dailyattendance" class="report-summary-item">
+							<i class="fas fa-clipboard-check text-indigo"></i>
+							<span
+								>Daily Attendance (<%= reportStats ? reportStats.dailyAttendance
+								: 0 %>)</span
+							>
+						</a>
+						<a href="/documentation" class="report-summary-item">
+							<i class="fas fa-book text-success"></i>
+							<span
+								>Documentation (<%= reportStats ? reportStats.documentation : 0
+								%>)</span
+							>
+						</a>
+						<a href="/timereport" class="report-summary-item">
+							<i class="fas fa-clock text-info"></i>
+							<span
+								>Time Reports (<%= reportStats ? reportStats.timeReports : 0
+								%>)</span
+							>
+						</a>
 					</div>
 				</div>
 			</div>
