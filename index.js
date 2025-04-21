@@ -42,6 +42,8 @@ import trainingScheduleRoutes from "./routes/users/trainingSchedule.js";
 import learningOutcomesRoutes from "./routes/users/learningOutcomes.js";
 // for daily attendance routes
 import dailyAttendanceRoutes from "./routes/users/dailyAttendance.js";
+// for notifications routes
+import notificationRoutes from "./routes/notifications.js";
 
 // for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -129,6 +131,8 @@ app.use("/trainingschedule", trainingScheduleRoutes);
 app.use("/learningoutcomes", learningOutcomesRoutes);
 // for daily attendance routes
 app.use("/dailyattendance", dailyAttendanceRoutes);
+// for notifications routes
+app.use("/api/notifications", notificationRoutes);
 
 app.use("/", userRoutes);
 // for homepage

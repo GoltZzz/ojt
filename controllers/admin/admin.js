@@ -7,6 +7,7 @@ import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
 import TrainingSchedule from "../../models/trainingSchedule.js";
 import LearningOutcome from "../../models/learningOutcomes.js";
 import DailyAttendance from "../../models/dailyAttendance.js";
+import Notification from "../../models/notification.js";
 import ExpressError from "../../utils/ExpressError.js";
 import { cloudinary } from "../../utils/cloudinary.js";
 
@@ -540,25 +541,25 @@ const approveReport = catchAsync(async (req, res) => {
 	// Find the appropriate report type
 	switch (type) {
 		case "weeklyreport":
-			report = await WeeklyReport.findById(id);
+			report = await WeeklyReport.findById(id).populate("author");
 			break;
 		case "weeklyprogress":
-			report = await WeeklyProgressReport.findById(id);
+			report = await WeeklyProgressReport.findById(id).populate("author");
 			break;
 		case "trainingschedule":
-			report = await TrainingSchedule.findById(id);
+			report = await TrainingSchedule.findById(id).populate("author");
 			break;
 		case "learningoutcome":
-			report = await LearningOutcome.findById(id);
+			report = await LearningOutcome.findById(id).populate("author");
 			break;
 		case "dailyattendance":
-			report = await DailyAttendance.findById(id);
+			report = await DailyAttendance.findById(id).populate("author");
 			break;
 		case "documentation":
-			report = await Documentation.findById(id);
+			report = await Documentation.findById(id).populate("author");
 			break;
 		case "timereport":
-			report = await TimeReport.findById(id);
+			report = await TimeReport.findById(id).populate("author");
 			break;
 		default:
 			req.flash("error", "Invalid report type");
@@ -570,12 +571,34 @@ const approveReport = catchAsync(async (req, res) => {
 		return res.redirect(redirectUrl);
 	}
 
+	// Update report status
 	report.status = status || "approved";
 	report.approvedBy = req.user._id;
 	report.approvalDate = new Date();
 	report.adminComments = adminComments;
 
 	await report.save();
+
+	// Create notification for the report author
+	if (report.author) {
+		const action = report.status === "approved" ? "approved" : "rejected";
+		const notificationType =
+			report.status === "approved" ? "success" : "danger";
+		const reportName = getReportTypeName(type);
+
+		const notification = new Notification({
+			recipient: report.author._id,
+			message: `Your ${reportName} has been ${action} by an administrator${
+				adminComments ? " with comments" : ""
+			}.`,
+			type: notificationType,
+			reportType: type,
+			reportId: report._id,
+			action: action,
+		});
+
+		await notification.save();
+	}
 
 	req.flash(
 		"success",
@@ -851,25 +874,25 @@ const unarchiveReport = catchAsync(async (req, res) => {
 	// Find the appropriate report type
 	switch (type) {
 		case "weeklyreport":
-			report = await WeeklyReport.findById(id);
+			report = await WeeklyReport.findById(id).populate("author");
 			break;
 		case "weeklyprogress":
-			report = await WeeklyProgressReport.findById(id);
+			report = await WeeklyProgressReport.findById(id).populate("author");
 			break;
 		case "trainingschedule":
-			report = await TrainingSchedule.findById(id);
+			report = await TrainingSchedule.findById(id).populate("author");
 			break;
 		case "learningoutcome":
-			report = await LearningOutcome.findById(id);
+			report = await LearningOutcome.findById(id).populate("author");
 			break;
 		case "dailyattendance":
-			report = await DailyAttendance.findById(id);
+			report = await DailyAttendance.findById(id).populate("author");
 			break;
 		case "documentation":
-			report = await Documentation.findById(id);
+			report = await Documentation.findById(id).populate("author");
 			break;
 		case "timereport":
-			report = await TimeReport.findById(id);
+			report = await TimeReport.findById(id).populate("author");
 			break;
 		default:
 			console.log(`❌ Invalid report type: ${type}`);
@@ -890,6 +913,22 @@ const unarchiveReport = catchAsync(async (req, res) => {
 	report.archivedReason = "";
 	await report.save();
 	console.log(`✅ Report unarchived successfully: ${report._id}`);
+
+	// Create notification for the report author
+	if (report.author) {
+		const reportName = getReportTypeName(type);
+
+		const notification = new Notification({
+			recipient: report.author._id,
+			message: `Your ${reportName} has been unarchived by an administrator.`,
+			type: "info",
+			reportType: type,
+			reportId: report._id,
+			action: "unarchived",
+		});
+
+		await notification.save();
+	}
 
 	// Set a success flash message
 	req.flash("success", "Report has been unarchived successfully");
@@ -977,6 +1016,28 @@ const registerUser = catchAsync(async (req, res) => {
 		return res.redirect("/admin/register");
 	}
 });
+
+// Helper function to get report type name
+const getReportTypeName = (type) => {
+	switch (type) {
+		case "weeklyreport":
+			return "Weekly Report";
+		case "weeklyprogress":
+			return "Weekly Progress Report";
+		case "trainingschedule":
+			return "Training Schedule";
+		case "learningoutcome":
+			return "Learning Outcome";
+		case "dailyattendance":
+			return "Daily Attendance";
+		case "documentation":
+			return "Documentation";
+		case "timereport":
+			return "Time Report";
+		default:
+			return "Report";
+	}
+};
 
 export default {
 	renderDashboard,

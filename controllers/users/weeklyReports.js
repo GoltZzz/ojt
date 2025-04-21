@@ -1,5 +1,6 @@
 import catchAsync from "../../utils/catchAsync.js";
 import WeeklyReport from "../../models/weeklyReports.js";
+import Notification from "../../models/notification.js";
 import ExpressError from "../../utils/ExpressError.js";
 import { generateWeeklyReportPdf } from "../../utils/pdfGenerators/index.js";
 
@@ -335,6 +336,24 @@ export const archiveReport = catchAsync(async (req, res) => {
 	console.log(
 		`✅ Report archived successfully: ${report._id} with reason: ${report.archivedReason}`
 	);
+
+	// Create notification for the report author
+	if (report.author) {
+		const notification = new Notification({
+			recipient: report.author,
+			message: `Your Weekly Report has been archived by an administrator${
+				req.body.archivedReason
+					? " with reason: " + req.body.archivedReason
+					: ""
+			}.`,
+			type: "info",
+			reportType: "weeklyreport",
+			reportId: report._id,
+			action: "archived",
+		});
+
+		await notification.save();
+	}
 
 	req.flash("success", "Report has been archived successfully");
 	return res.redirect("/admin/archived-reports");
