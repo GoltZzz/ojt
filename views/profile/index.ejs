@@ -2,204 +2,243 @@
 <link rel="stylesheet" href="/css/dashboard.css" />
 <link rel="stylesheet" href="/css/profile.css" />
 
-<div class="dashboard-container">
-	<div class="welcome-section">
-		<h1>My Profile</h1>
-		<p>View and manage your profile information and activity</p>
+<div class="profile-container">
+	<div class="profile-header-banner">
+		<div class="container">
+			<h1><i class="fas fa-user-circle me-3"></i>My Profile</h1>
+			<p>View and manage your profile information and notifications</p>
+		</div>
 	</div>
 
-	<div class="row">
-		<!-- Profile Information Card - Same for both admin and regular users -->
-		<div class="<%= user.role === 'admin' ? 'col-lg-6' : 'col-lg-4' %> mb-4">
-			<div class="profile-card">
-				<!-- Profile Header with gradient background based on role -->
-				<div
-					class="profile-header <%= user.role === 'admin' ? 'admin-profile-header' : '' %>">
-					<div class="profile-avatar">
-						<% if (user.profileImage && user.profileImage.url) { %>
-						<img
-							src="<%= user.profileImage.url %>"
-							alt="<%= user.username %>"
-							class="profile-img" />
-						<% } else { %>
-						<i
-							class="<%= user.role === 'admin' ? 'fas fa-user-shield' : 'fas fa-user-circle' %>"></i>
+	<div class="container py-4">
+		<div class="row g-4">
+			<!-- Left Column: Profile Information -->
+			<div class="col-lg-4">
+				<div class="profile-card">
+					<!-- Profile Header with gradient background based on role -->
+					<div
+						class="profile-header <%= user.role === 'admin' ? 'admin-profile-header' : '' %>">
+						<div class="profile-avatar-wrapper">
+							<div class="profile-avatar">
+								<% if (user.profileImage && user.profileImage.url) { %>
+								<img
+									src="<%= user.profileImage.url %>"
+									alt="<%= user.username %>"
+									class="profile-img" />
+								<% } else { %>
+								<i
+									class="<%= user.role === 'admin' ? 'fas fa-user-shield' : 'fas fa-user-circle' %>"></i>
+								<% } %>
+							</div>
+						</div>
+
+						<div class="profile-header-content">
+							<h3 class="profile-name">
+								<% let fullName = user.firstName; if (user.middleName &&
+								user.middleName.length > 0) { const middleInitial =
+								user.middleName.charAt(0).toUpperCase(); fullName += `
+								${middleInitial}.`; } fullName += ` ${user.lastName}`; %> <%=
+								fullName %>
+							</h3>
+							<span class="profile-username">@<%= user.username %></span>
+							<span
+								class="profile-role badge <%= user.role === 'admin' ? 'bg-danger' : 'bg-primary' %>">
+								<%= user.role === 'admin' ? 'Administrator' : 'Regular User' %>
+							</span>
+						</div>
+					</div>
+
+					<!-- Profile Body with user information -->
+					<div class="profile-body">
+						<div class="profile-info">
+							<div class="info-item">
+								<span class="info-label">
+									<i class="fas fa-user me-2"></i>Username
+								</span>
+								<span class="info-value"><%= user.username %></span>
+							</div>
+							<div class="info-item">
+								<span class="info-label">
+									<i class="fas fa-id-card me-2"></i>Full Name
+								</span>
+								<span class="info-value"><%= fullName %></span>
+							</div>
+							<div class="info-item">
+								<span class="info-label">
+									<i class="fas fa-user-shield me-2"></i>Role
+								</span>
+								<span class="info-value"
+									><%= user.role === 'admin' ? 'Administrator' : 'Regular User'
+									%></span
+								>
+							</div>
+						</div>
+
+						<!-- Admin Privileges Section (only for admin users) -->
+						<% if (user.role === 'admin') { %>
+						<div class="admin-info mt-4 mb-4">
+							<div class="admin-info-header">
+								<i class="fas fa-shield-alt me-2"></i> Administrator Privileges
+							</div>
+							<ul class="admin-privileges-list">
+								<li>
+									<i class="fas fa-check-circle text-success me-2"></i> Manage
+									user accounts
+								</li>
+								<li>
+									<i class="fas fa-check-circle text-success me-2"></i>
+									Approve/reject reports
+								</li>
+								<li>
+									<i class="fas fa-check-circle text-success me-2"></i>
+									Archive/unarchive reports
+								</li>
+								<li>
+									<i class="fas fa-check-circle text-success me-2"></i> Access
+									system statistics
+								</li>
+							</ul>
+						</div>
 						<% } %>
+
+						<!-- Profile Action Buttons -->
+						<div
+							class="profile-actions <%= user.role === 'admin' ? '' : 'mt-4' %>">
+							<a
+								href="#editProfileModal"
+								class="btn btn-primary w-100 mb-3"
+								data-bs-toggle="modal">
+								<i class="fas fa-edit me-2"></i>Edit Profile
+							</a>
+							<a
+								href="/profile/change-password"
+								class="btn btn-outline-secondary w-100">
+								<i class="fas fa-key me-2"></i>Change Password
+							</a>
+						</div>
 					</div>
-					<h3 class="profile-name">
-						<% let fullName = user.firstName; if (user.middleName &&
-						user.middleName.length > 0) { const middleInitial =
-						user.middleName.charAt(0).toUpperCase(); fullName += `
-						${middleInitial}.`; } fullName += ` ${user.lastName}`; %> <%=
-						fullName %>
-					</h3>
-					<span class="profile-username">@<%= user.username %></span>
-					<span
-						class="profile-role badge <%= user.role === 'admin' ? 'bg-danger' : 'bg-primary' %>">
-						<%= user.role === 'admin' ? 'Administrator' : 'Regular User' %>
-					</span>
 				</div>
+			</div>
 
-				<!-- Profile Body with user information -->
-				<div class="profile-body">
-					<div class="profile-info">
-						<div class="info-item">
-							<span class="info-label">
-								<i class="fas fa-user me-2"></i>Username
-							</span>
-							<span class="info-value"><%= user.username %></span>
-						</div>
-						<div class="info-item">
-							<span class="info-label">
-								<i class="fas fa-id-card me-2"></i>Full Name
-							</span>
-							<span class="info-value"><%= fullName %></span>
-						</div>
-						<div class="info-item">
-							<span class="info-label">
-								<i class="fas fa-user-shield me-2"></i>Role
-							</span>
-							<span class="info-value"
-								><%= user.role === 'admin' ? 'Administrator' : 'Regular User'
-								%></span
-							>
+			<!-- Right Column: Notifications and Reports -->
+			<% if (user.role !== 'admin') { %>
+			<div class="col-lg-8">
+				<!-- Notifications Card -->
+				<div class="notifications-card mb-4">
+					<div class="card-header-with-actions">
+						<h3><i class="fas fa-bell me-2"></i>Notifications</h3>
+						<div class="notification-actions">
+							<button
+								class="btn btn-sm btn-outline-primary"
+								id="profile-mark-all-read">
+								<i class="fas fa-check-double me-1"></i> Mark all as read
+							</button>
+							<a href="/dashboard" class="btn btn-sm btn-outline-secondary">
+								<i class="fas fa-tachometer-alt me-1"></i> Dashboard
+							</a>
 						</div>
 					</div>
 
-					<!-- Admin Privileges Section (only for admin users) -->
-					<% if (user.role === 'admin') { %>
-					<div class="admin-info mt-4 mb-4">
-						<div class="admin-info-header">
-							<i class="fas fa-shield-alt me-2"></i> Administrator Privileges
-						</div>
-						<ul class="admin-privileges-list">
-							<li>
-								<i class="fas fa-check-circle text-success me-2"></i> Manage
-								user accounts
-							</li>
-							<li>
-								<i class="fas fa-check-circle text-success me-2"></i>
-								Approve/reject reports
-							</li>
-							<li>
-								<i class="fas fa-check-circle text-success me-2"></i>
-								Archive/unarchive reports
-							</li>
-							<li>
-								<i class="fas fa-check-circle text-success me-2"></i> Access
-								system statistics
-							</li>
+					<!-- Notifications List -->
+					<div class="profile-notifications-container">
+						<ul class="notification-list" id="profile-notification-list">
+							<!-- Notifications will be loaded here via JavaScript -->
+							<div class="notification-loading">
+								<i class="fas fa-spinner fa-spin"></i>
+								<p>Loading notifications...</p>
+							</div>
 						</ul>
 					</div>
-					<% } %>
+				</div>
 
-					<!-- Profile Action Buttons -->
-					<div
-						class="profile-actions <%= user.role === 'admin' ? '' : 'mt-4' %>">
-						<a
-							href="#editProfileModal"
-							class="btn btn-primary w-100 mb-2"
-							data-bs-toggle="modal">
-							<i class="fas fa-edit me-2"></i>Edit Profile
-						</a>
-						<a
-							href="/profile/change-password"
-							class="btn btn-outline-secondary w-100">
-							<i class="fas fa-key me-2"></i>Change Password
-						</a>
+				<!-- Report Summary Card -->
+				<div class="reports-card">
+					<div class="card-header">
+						<h3><i class="fas fa-file-alt me-2"></i>Your Reports</h3>
 					</div>
-				</div>
-			</div>
-		</div>
-
-		<% if (user.role !== 'admin') { %>
-
-		<div class="col-lg-8">
-			<!-- Notifications Card -->
-			<div class="dashboard-card mb-4">
-				<div class="card-header-with-actions">
-					<h3><i class="fas fa-bell me-2"></i>Notifications</h3>
-					<div class="notification-actions">
-						<button
-							class="btn btn-sm btn-outline-primary"
-							id="profile-mark-all-read">
-							<i class="fas fa-check-double me-1"></i> Mark all as read
-						</button>
-						<a href="/dashboard" class="btn btn-sm btn-outline-secondary">
-							<i class="fas fa-tachometer-alt me-1"></i> Dashboard
-						</a>
-					</div>
-				</div>
-
-				<!-- Notifications List -->
-				<div class="profile-notifications-container">
-					<ul class="notification-list" id="profile-notification-list">
-						<!-- Notifications will be loaded here via JavaScript -->
-						<div class="notification-loading">
-							<i class="fas fa-spinner fa-spin"></i>
-							<p>Loading notifications...</p>
-						</div>
-					</ul>
-				</div>
-
-				<!-- Report Stats Summary -->
-				<div class="report-summary">
-					<h4 class="report-summary-title">Your Reports</h4>
 					<div class="report-summary-grid">
 						<a href="/weeklyreport" class="report-summary-item">
-							<i class="fas fa-file-alt text-primary"></i>
-							<span
-								>Weekly Reports (<%= reportStats ? reportStats.weeklyReports : 0
-								%>)</span
-							>
+							<div class="report-icon bg-primary-light">
+								<i class="fas fa-file-alt text-primary"></i>
+							</div>
+							<div class="report-info">
+								<h4>Weekly Reports</h4>
+								<span class="report-count"
+									><%= reportStats ? reportStats.weeklyReports : 0 %></span
+								>
+							</div>
 						</a>
 						<a href="/weeklyprogress" class="report-summary-item">
-							<i class="fas fa-tasks text-purple"></i>
-							<span
-								>Weekly Progress (<%= reportStats ? reportStats.weeklyProgress :
-								0 %>)</span
-							>
+							<div class="report-icon bg-purple-light">
+								<i class="fas fa-tasks text-purple"></i>
+							</div>
+							<div class="report-info">
+								<h4>Weekly Progress</h4>
+								<span class="report-count"
+									><%= reportStats ? reportStats.weeklyProgress : 0 %></span
+								>
+							</div>
 						</a>
 						<a href="/trainingschedule" class="report-summary-item">
-							<i class="fas fa-calendar-alt text-teal"></i>
-							<span
-								>Training Schedules (<%= reportStats ?
-								reportStats.trainingSchedule : 0 %>)</span
-							>
+							<div class="report-icon bg-teal-light">
+								<i class="fas fa-calendar-alt text-teal"></i>
+							</div>
+							<div class="report-info">
+								<h4>Training Schedules</h4>
+								<span class="report-count"
+									><%= reportStats ? reportStats.trainingSchedule : 0 %></span
+								>
+							</div>
 						</a>
 						<a href="/learningoutcome" class="report-summary-item">
-							<i class="fas fa-graduation-cap text-orange"></i>
-							<span
-								>Learning Outcomes (<%= reportStats ?
-								reportStats.learningOutcome : 0 %>)</span
-							>
+							<div class="report-icon bg-orange-light">
+								<i class="fas fa-graduation-cap text-orange"></i>
+							</div>
+							<div class="report-info">
+								<h4>Learning Outcomes</h4>
+								<span class="report-count"
+									><%= reportStats ? reportStats.learningOutcome : 0 %></span
+								>
+							</div>
 						</a>
 						<a href="/dailyattendance" class="report-summary-item">
-							<i class="fas fa-clipboard-check text-indigo"></i>
-							<span
-								>Daily Attendance (<%= reportStats ? reportStats.dailyAttendance
-								: 0 %>)</span
-							>
+							<div class="report-icon bg-indigo-light">
+								<i class="fas fa-clipboard-check text-indigo"></i>
+							</div>
+							<div class="report-info">
+								<h4>Daily Attendance</h4>
+								<span class="report-count"
+									><%= reportStats ? reportStats.dailyAttendance : 0 %></span
+								>
+							</div>
 						</a>
 						<a href="/documentation" class="report-summary-item">
-							<i class="fas fa-book text-success"></i>
-							<span
-								>Documentation (<%= reportStats ? reportStats.documentation : 0
-								%>)</span
-							>
+							<div class="report-icon bg-success-light">
+								<i class="fas fa-book text-success"></i>
+							</div>
+							<div class="report-info">
+								<h4>Documentation</h4>
+								<span class="report-count"
+									><%= reportStats ? reportStats.documentation : 0 %></span
+								>
+							</div>
 						</a>
 						<a href="/timereport" class="report-summary-item">
-							<i class="fas fa-clock text-info"></i>
-							<span
-								>Time Reports (<%= reportStats ? reportStats.timeReports : 0
-								%>)</span
-							>
+							<div class="report-icon bg-info-light">
+								<i class="fas fa-clock text-info"></i>
+							</div>
+							<div class="report-info">
+								<h4>Time Reports</h4>
+								<span class="report-count"
+									><%= reportStats ? reportStats.timeReports : 0 %></span
+								>
+							</div>
 						</a>
 					</div>
 				</div>
 			</div>
+			<% } %>
 		</div>
-		<% } %>
 	</div>
 </div>
 
