@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		fetch("/api/notifications")
 			.then((response) => response.json())
 			.then((data) => {
+				console.log("Fetched notifications:", data);
 				notifications = data;
 				updateNotificationUI();
 			})
@@ -45,26 +46,62 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// Update notification UI
 	function updateNotificationUI() {
+		console.log(
+			"Updating notification UI with",
+			notifications.length,
+			"notifications"
+		);
+
 		// Update badges
-		if (notifications.length > 0) {
+		if (notifications && notifications.length > 0) {
+			const count = notifications.length;
+			console.log("Setting badge count to", count);
+
 			// Desktop badge
 			if (notificationBadge) {
-				notificationBadge.textContent = notifications.length;
+				notificationBadge.textContent = count;
 				notificationBadge.style.display = "block";
+
+				// Force tooltip refresh
+				notificationBadge.removeAttribute("data-tooltip-initialized");
+				notificationBadge.removeAttribute("data-tooltip-active");
 			}
 
 			// Mobile badge
 			if (mobileNotificationBadge) {
-				mobileNotificationBadge.textContent = notifications.length;
+				mobileNotificationBadge.textContent = count;
 				mobileNotificationBadge.style.display = "block";
+
+				// Force tooltip refresh
+				mobileNotificationBadge.removeAttribute("data-tooltip-initialized");
+				mobileNotificationBadge.removeAttribute("data-tooltip-active");
 			}
 
 			// Header badge
 			if (headerNotificationBadge) {
-				headerNotificationBadge.textContent = notifications.length;
+				headerNotificationBadge.textContent = count;
 				headerNotificationBadge.style.display = "block";
+
+				// Force tooltip refresh
+				headerNotificationBadge.removeAttribute("data-tooltip-initialized");
+				headerNotificationBadge.removeAttribute("data-tooltip-active");
+
+				// Trigger a custom event to notify the tooltip system
+				const event = new CustomEvent("notification-count-updated", {
+					detail: { count },
+				});
+				document.dispatchEvent(event);
+
+				console.log(
+					"Header badge updated:",
+					headerNotificationBadge.textContent
+				);
+			} else {
+				console.log("Header notification badge element not found");
 			}
 		} else {
+			console.log("No notifications, hiding badges");
+
 			// Hide badges when no notifications
 			if (notificationBadge) {
 				notificationBadge.style.display = "none";

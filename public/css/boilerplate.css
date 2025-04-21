@@ -25,7 +25,7 @@ body {
 /* Top Header Styles */
 .top-header {
 	background-color: #fff;
-	padding: 8px 15px;
+	padding: 10px 15px;
 	border-bottom: 1px solid #e9ecef;
 	position: sticky;
 	top: 0;
@@ -38,10 +38,31 @@ body {
 	position: relative;
 	padding: 5px;
 	font-size: 1.2rem;
+	margin-right: 5px;
 }
 
 .top-header .notification-btn:hover {
 	color: #2193b0;
+}
+
+.top-header .notification-badge {
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
+	border-radius: 50%;
+	background: #dc3545;
+	color: white;
+	font-size: 0.75rem;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	z-index: 1001;
+	border: 2px solid white;
 }
 
 footer {
