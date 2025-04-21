@@ -18,17 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	);
 	const mobileMarkAllReadBtn = document.getElementById("mobile-mark-all-read");
 
-	// Elements - Header
-	const headerNotificationBtn = document.getElementById(
-		"header-notification-btn"
-	);
-	const headerNotificationBadge = document.getElementById(
-		"header-notification-badge"
-	);
-	const headerNotificationList = document.getElementById(
-		"header-notification-list"
-	);
-	const headerMarkAllReadBtn = document.getElementById("header-mark-all-read");
+	// Header elements removed - notifications now only on profile page
 
 	// Elements - Profile Page
 	const profileNotificationList = document.getElementById(
@@ -85,28 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				mobileNotificationBadge.removeAttribute("data-tooltip-active");
 			}
 
-			// Header badge
-			if (headerNotificationBadge) {
-				headerNotificationBadge.textContent = count;
-				headerNotificationBadge.style.display = "block";
-
-				// Force tooltip refresh
-				headerNotificationBadge.removeAttribute("data-tooltip-initialized");
-				headerNotificationBadge.removeAttribute("data-tooltip-active");
-
-				// Trigger a custom event to notify the tooltip system
-				const event = new CustomEvent("notification-count-updated", {
-					detail: { count },
-				});
-				document.dispatchEvent(event);
-
-				console.log(
-					"Header badge updated:",
-					headerNotificationBadge.textContent
-				);
-			} else {
-				console.log("Header notification badge element not found");
-			}
+			// Header badge removed - notifications now only on profile page
 		} else {
 			console.log("No notifications, hiding badges");
 
@@ -119,15 +88,13 @@ document.addEventListener("DOMContentLoaded", function () {
 				mobileNotificationBadge.style.display = "none";
 			}
 
-			if (headerNotificationBadge) {
-				headerNotificationBadge.style.display = "none";
-			}
+			// Header badge removed
 		}
 
 		// Update notification lists
 		updateNotificationList(notificationList);
 		updateNotificationList(mobileNotificationList);
-		updateNotificationList(headerNotificationList);
+		// Header notification list removed
 		updateNotificationList(profileNotificationList, true); // true for profile page (larger display)
 	}
 
@@ -359,13 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		});
 	}
 
-	if (headerMarkAllReadBtn) {
-		headerMarkAllReadBtn.addEventListener("click", (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			markAllAsRead();
-		});
-	}
+	// Header mark all read button removed
 
 	// Profile page mark all read button
 	if (profileMarkAllReadBtn) {
