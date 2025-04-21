@@ -242,14 +242,21 @@ export const showReport = catchAsync(async (req, res) => {
 		req.user && report.author && report.author._id.equals(req.user._id);
 
 	// Check if the user can edit or delete the report
-	// Only the author can edit/delete, and only if the report is pending and not archived
+	// Only the author can edit if the report is pending and not archived
 	const canEdit = isAuthor && report.status === "pending" && !report.archived;
-	const canDelete = canEdit;
+
+	// Only the author can delete if the report has been exported and is not archived
+	const canDelete = isAuthor && report.hasBeenExported && !report.archived;
 
 	// Add these properties to the report object
 	report.isAuthor = isAuthor;
 	report.canEdit = canEdit;
 	report.canDelete = canDelete;
+
+	// Make sure hasBeenExported is accessible in the template
+	console.log(
+		`Report ${report._id} hasBeenExported: ${report.hasBeenExported}`
+	);
 
 	res.render("reports/weeklyProgress/show", {
 		WeeklyProgressReport: report,
@@ -458,14 +465,21 @@ export const deleteReport = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyprogress");
 	}
 
-	// If report is not pending or is archived, flash error and redirect
-	if (report.status !== "pending" || report.archived) {
-		req.flash(
-			"error",
-			"You cannot delete a report that has been approved, rejected, or archived"
-		);
+	// Check if the report has been exported
+	if (!report.hasBeenExported) {
+		req.flash("error", "You must export the report to PDF before deleting it");
+		return res.redirect(`/weeklyprogress/${id}`);
+	}
+
+	// If report is archived, flash error and redirect
+	if (report.archived) {
+		req.flash("error", "You cannot delete an archived report");
 		return res.redirect("/weeklyprogress");
 	}
+
+	console.log(
+		`Deleting report ${report._id}, hasBeenExported: ${report.hasBeenExported}`
+	);
 
 	try {
 		// Delete the report
@@ -485,12 +499,6 @@ export const deleteReport = catchAsync(async (req, res) => {
 
 export const archiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
-
-	// Check if user is admin
-	if (req.user.role !== "admin") {
-		req.flash("error", "Only administrators can archive reports");
-		return res.redirect(`/weeklyprogress/${id}`);
-	}
 
 	// Find the report by ID
 	const report = await WeeklyProgressReport.findById(id);
@@ -522,12 +530,6 @@ export const archiveReport = catchAsync(async (req, res) => {
 
 export const unarchiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
-
-	// Check if user is admin
-	if (req.user.role !== "admin") {
-		req.flash("error", "Only administrators can unarchive reports");
-		return res.redirect(`/weeklyprogress/${id}`);
-	}
 
 	// Find the report by ID
 	const report = await WeeklyProgressReport.findById(id);
@@ -610,6 +612,11 @@ export const exportReportAsPdf = catchAsync(async (req, res) => {
 		const buffer = await generateWeeklyProgressReportPdf(report);
 
 		console.log(`PDF generated successfully for report ${report._id}`);
+
+		// Mark the report as exported
+		report.hasBeenExported = true;
+		await report.save();
+		console.log(`Report ${report._id} marked as exported`);
 
 		// Set the appropriate headers for a PDF file download
 		res.setHeader(

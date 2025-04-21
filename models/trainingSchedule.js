@@ -70,6 +70,14 @@ const TrainingScheduleSchema = new Schema(
 		archivedReason: {
 			type: String,
 		},
+		needsRevision: {
+			type: Boolean,
+			default: false,
+		},
+		hasBeenExported: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{ timestamps: true }
 );

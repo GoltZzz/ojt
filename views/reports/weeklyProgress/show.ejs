@@ -148,8 +148,7 @@
 	<!-- Action Buttons -->
 	<div class="d-flex justify-content-center mb-5">
 		<div class="d-flex gap-2">
-			<% if (currentUser && currentUser.role === 'admin') { %> <% if
-			(!WeeklyProgressReport.archived) { %>
+			<% if (!WeeklyProgressReport.archived) { %>
 			<button
 				type="button"
 				class="btn btn-secondary"
@@ -163,7 +162,7 @@
 				data-custom-modal-target="unarchiveReportModal">
 				<i class="fas fa-box-open"></i> Unarchive
 			</button>
-			<% } %> <% } %>
+			<% } %>
 
 			<!-- Export to PDF button - only for report authors and non-rejected reports -->
 			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status !==
@@ -173,14 +172,23 @@
 				class="btn btn-info text-white">
 				<i class="fas fa-file-pdf"></i> Export to PDF
 			</a>
-			<% } %> <% if (WeeklyProgressReport.isAuthor &&
-			WeeklyProgressReport.status === 'pending' &&
-			!WeeklyProgressReport.archived) { %>
+			<% } %>
+
+			<!-- Edit button - only for authors of pending reports -->
+			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status ===
+			'pending' && !WeeklyProgressReport.archived) { %>
 			<a
 				href="/weeklyprogress/<%= WeeklyProgressReport._id %>/edit"
 				class="btn btn-primary">
 				<i class="fas fa-edit"></i> Edit
 			</a>
+			<% } %>
+
+			<!-- Delete button - only for authors of exported reports -->
+			<!-- Debug: hasBeenExported: <%= WeeklyProgressReport.hasBeenExported %> -->
+			<% if (WeeklyProgressReport.isAuthor &&
+			WeeklyProgressReport.hasBeenExported && !WeeklyProgressReport.archived) {
+			%>
 			<form
 				action="/weeklyprogress/<%= WeeklyProgressReport._id %>?_method=DELETE"
 				method="POST"

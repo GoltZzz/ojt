@@ -73,6 +73,14 @@ const weeklyReportSchema = new Schema({
 	adminComments: {
 		type: String,
 	},
+	needsRevision: {
+		type: Boolean,
+		default: false,
+	},
+	hasBeenExported: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 export default mongoose.model("WeeklyReport", weeklyReportSchema);
