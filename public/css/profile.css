@@ -14,7 +14,7 @@
 }
 
 .profile-header {
-	background: linear-gradient(135deg, #3498db, #2980b9);
+	background: linear-gradient(45deg, #2193b0, #6dd5ed);
 	color: white;
 	padding: 30px 20px;
 	text-align: center;
@@ -22,7 +22,7 @@
 }
 
 .admin-profile-header {
-	background: linear-gradient(135deg, #e74c3c, #c0392b);
+	background: linear-gradient(45deg, #e74c3c, #c0392b);
 }
 
 .profile-avatar {
@@ -137,11 +137,13 @@
 	border-radius: 10px;
 	margin-bottom: 15px;
 	transition: all 0.3s ease;
+	border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .activity-stat:hover {
 	transform: translateY(-3px);
 	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+	border-color: rgba(33, 147, 176, 0.3);
 }
 
 .stat-icon {
@@ -154,18 +156,25 @@
 	color: white;
 	font-size: 1.5rem;
 	margin-right: 15px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .stat-info h4 {
 	margin: 0;
 	font-size: 1rem;
 	color: #555;
+	font-weight: 600;
 }
 
 .stat-count {
 	font-size: 1.5rem;
 	font-weight: 700;
 	color: #333;
+	transition: all 0.3s ease;
+}
+
+.activity-stat:hover .stat-count {
+	color: #2193b0;
 }
 
 /* Card Header Custom */

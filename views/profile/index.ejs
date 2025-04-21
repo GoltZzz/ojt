@@ -5,15 +5,16 @@
 <div class="dashboard-container">
 	<div class="welcome-section">
 		<h1>My Profile</h1>
-		<p>View and edit your profile information</p>
+		<p>View and manage your profile information and activity</p>
 	</div>
 
 	<div class="row">
-		<% if (user.role === 'admin') { %>
-		<!-- Admin Profile View -->
-		<div class="col-lg-6 mx-auto">
+		<!-- Profile Information Card - Same for both admin and regular users -->
+		<div class="<%= user.role === 'admin' ? 'col-lg-6' : 'col-lg-4' %> mb-4">
 			<div class="profile-card">
-				<div class="profile-header admin-profile-header">
+				<!-- Profile Header with gradient background based on role -->
+				<div
+					class="profile-header <%= user.role === 'admin' ? 'admin-profile-header' : '' %>">
 					<div class="profile-avatar">
 						<% if (user.profileImage && user.profileImage.url) { %>
 						<img
@@ -21,7 +22,8 @@
 							alt="<%= user.username %>"
 							class="profile-img" />
 						<% } else { %>
-						<i class="fas fa-user-shield"></i>
+						<i
+							class="<%= user.role === 'admin' ? 'fas fa-user-shield' : 'fas fa-user-circle' %>"></i>
 						<% } %>
 					</div>
 					<h3 class="profile-name">
@@ -32,29 +34,40 @@
 						fullName %>
 					</h3>
 					<span class="profile-username">@<%= user.username %></span>
-					<span class="profile-role badge bg-danger"> Administrator </span>
+					<span
+						class="profile-role badge <%= user.role === 'admin' ? 'bg-danger' : 'bg-primary' %>">
+						<%= user.role === 'admin' ? 'Administrator' : 'Regular User' %>
+					</span>
 				</div>
+
+				<!-- Profile Body with user information -->
 				<div class="profile-body">
 					<div class="profile-info">
 						<div class="info-item">
-							<span class="info-label"
-								><i class="fas fa-user me-2"></i>Username</span
-							>
+							<span class="info-label">
+								<i class="fas fa-user me-2"></i>Username
+							</span>
 							<span class="info-value"><%= user.username %></span>
 						</div>
 						<div class="info-item">
-							<span class="info-label"
-								><i class="fas fa-id-card me-2"></i>Full Name</span
-							>
+							<span class="info-label">
+								<i class="fas fa-id-card me-2"></i>Full Name
+							</span>
 							<span class="info-value"><%= fullName %></span>
 						</div>
 						<div class="info-item">
-							<span class="info-label"
-								><i class="fas fa-user-shield me-2"></i>Role</span
+							<span class="info-label">
+								<i class="fas fa-user-shield me-2"></i>Role
+							</span>
+							<span class="info-value"
+								><%= user.role === 'admin' ? 'Administrator' : 'Regular User'
+								%></span
 							>
-							<span class="info-value">Administrator</span>
 						</div>
 					</div>
+
+					<!-- Admin Privileges Section (only for admin users) -->
+					<% if (user.role === 'admin') { %>
 					<div class="admin-info mt-4 mb-4">
 						<div class="admin-info-header">
 							<i class="fas fa-shield-alt me-2"></i> Administrator Privileges
@@ -78,69 +91,11 @@
 							</li>
 						</ul>
 					</div>
-					<div class="profile-actions">
-						<a
-							href="#editProfileModal"
-							class="btn btn-primary w-100 mb-2"
-							data-bs-toggle="modal">
-							<i class="fas fa-edit me-2"></i>Edit Profile
-						</a>
-						<a
-							href="/profile/change-password"
-							class="btn btn-outline-secondary w-100">
-							<i class="fas fa-key me-2"></i>Change Password
-						</a>
-					</div>
-				</div>
-			</div>
-		</div>
-		<% } else { %>
-		<!-- Regular User Profile View -->
-		<div class="col-lg-4 mb-4">
-			<div class="profile-card">
-				<div class="profile-header">
-					<div class="profile-avatar">
-						<% if (user.profileImage && user.profileImage.url) { %>
-						<img
-							src="<%= user.profileImage.url %>"
-							alt="<%= user.username %>"
-							class="profile-img" />
-						<% } else { %>
-						<i class="fas fa-user-circle"></i>
-						<% } %>
-					</div>
-					<h3 class="profile-name">
-						<% let fullName = user.firstName; if (user.middleName &&
-						user.middleName.length > 0) { const middleInitial =
-						user.middleName.charAt(0).toUpperCase(); fullName += `
-						${middleInitial}.`; } fullName += ` ${user.lastName}`; %> <%=
-						fullName %>
-					</h3>
-					<span class="profile-username">@<%= user.username %></span>
-					<span class="profile-role badge bg-primary"> <%= user.role %> </span>
-				</div>
-				<div class="profile-body">
-					<div class="profile-info">
-						<div class="info-item">
-							<span class="info-label"
-								><i class="fas fa-user me-2"></i>Username</span
-							>
-							<span class="info-value"><%= user.username %></span>
-						</div>
-						<div class="info-item">
-							<span class="info-label"
-								><i class="fas fa-id-card me-2"></i>Full Name</span
-							>
-							<span class="info-value"><%= fullName %></span>
-						</div>
-						<div class="info-item">
-							<span class="info-label"
-								><i class="fas fa-user-shield me-2"></i>Role</span
-							>
-							<span class="info-value"><%= user.role %></span>
-						</div>
-					</div>
-					<div class="profile-actions mt-4">
+					<% } %>
+
+					<!-- Profile Action Buttons -->
+					<div
+						class="profile-actions <%= user.role === 'admin' ? '' : 'mt-4' %>">
 						<a
 							href="#editProfileModal"
 							class="btn btn-primary w-100 mb-2"
@@ -157,41 +112,104 @@
 			</div>
 		</div>
 
+		<% if (user.role !== 'admin') { %>
+
 		<div class="col-lg-8">
 			<div class="dashboard-card">
 				<h3><i class="fas fa-chart-line me-2"></i>Activity Summary</h3>
 				<div class="activity-summary">
 					<div class="row">
-						<div class="col-md-4">
+						<!-- Original Report Types -->
+						<div class="col-md-4 mb-3">
 							<div class="activity-stat">
 								<div class="stat-icon bg-primary">
 									<i class="fas fa-file-alt"></i>
 								</div>
 								<div class="stat-info">
 									<h4>Weekly Reports</h4>
-									<span class="stat-count">0</span>
+									<span class="stat-count"
+										><%= reportStats ? reportStats.weeklyReports : 0 %></span
+									>
 								</div>
 							</div>
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-4 mb-3">
 							<div class="activity-stat">
 								<div class="stat-icon bg-success">
 									<i class="fas fa-book"></i>
 								</div>
 								<div class="stat-info">
 									<h4>Documentation</h4>
-									<span class="stat-count">0</span>
+									<span class="stat-count"
+										><%= reportStats ? reportStats.documentation : 0 %></span
+									>
 								</div>
 							</div>
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-4 mb-3">
 							<div class="activity-stat">
 								<div class="stat-icon bg-info">
 									<i class="fas fa-clock"></i>
 								</div>
 								<div class="stat-info">
 									<h4>Time Reports</h4>
-									<span class="stat-count">0</span>
+									<span class="stat-count"
+										><%= reportStats ? reportStats.timeReports : 0 %></span
+									>
+								</div>
+							</div>
+						</div>
+
+						<!-- New Report Types -->
+						<div class="col-md-4 mb-3">
+							<div class="activity-stat">
+								<div class="stat-icon bg-purple">
+									<i class="fas fa-tasks"></i>
+								</div>
+								<div class="stat-info">
+									<h4>Weekly Progress</h4>
+									<span class="stat-count"
+										><%= reportStats ? reportStats.weeklyProgress : 0 %></span
+									>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 mb-3">
+							<div class="activity-stat">
+								<div class="stat-icon bg-teal">
+									<i class="fas fa-calendar-alt"></i>
+								</div>
+								<div class="stat-info">
+									<h4>Training Schedules</h4>
+									<span class="stat-count"
+										><%= reportStats ? reportStats.trainingSchedule : 0 %></span
+									>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 mb-3">
+							<div class="activity-stat">
+								<div class="stat-icon bg-orange">
+									<i class="fas fa-graduation-cap"></i>
+								</div>
+								<div class="stat-info">
+									<h4>Learning Outcomes</h4>
+									<span class="stat-count"
+										><%= reportStats ? reportStats.learningOutcome : 0 %></span
+									>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4 mb-3">
+							<div class="activity-stat">
+								<div class="stat-icon bg-indigo">
+									<i class="fas fa-clipboard-check"></i>
+								</div>
+								<div class="stat-info">
+									<h4>Daily Attendance</h4>
+									<span class="stat-count"
+										><%= reportStats ? reportStats.dailyAttendance : 0 %></span
+									>
 								</div>
 							</div>
 						</div>

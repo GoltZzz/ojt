@@ -1,4 +1,11 @@
 import User from "../../models/users.js";
+import WeeklyReport from "../../models/weeklyReports.js";
+import Documentation from "../../models/documentation.js";
+import TimeReport from "../../models/timeReport.js";
+import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
+import TrainingSchedule from "../../models/trainingSchedule.js";
+import LearningOutcome from "../../models/learningOutcomes.js";
+import DailyAttendance from "../../models/dailyAttendance.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { cloudinary } from "../../utils/cloudinary.js";
 
@@ -9,7 +16,56 @@ const renderProfile = catchAsync(async (req, res) => {
 		req.flash("error", "User not found");
 		return res.redirect("/dashboard");
 	}
-	res.render("profile/index", { user });
+
+	// Count user's reports
+	const weeklyReportsCount = await WeeklyReport.countDocuments({
+		author: req.user._id,
+		archived: false,
+	});
+
+	const documentationCount = await Documentation.countDocuments({
+		author: req.user._id,
+		archived: false,
+	});
+
+	const timeReportsCount = await TimeReport.countDocuments({
+		author: req.user._id,
+		archived: false,
+	});
+
+	// Count new report types
+	const weeklyProgressCount = await WeeklyProgressReport.countDocuments({
+		author: req.user._id,
+		archived: false,
+	});
+
+	const trainingScheduleCount = await TrainingSchedule.countDocuments({
+		author: req.user._id,
+		archived: false,
+	});
+
+	const learningOutcomeCount = await LearningOutcome.countDocuments({
+		author: req.user._id,
+		archived: false,
+	});
+
+	const dailyAttendanceCount = await DailyAttendance.countDocuments({
+		author: req.user._id,
+		archived: false,
+	});
+
+	// Prepare report stats
+	const reportStats = {
+		weeklyReports: weeklyReportsCount,
+		documentation: documentationCount,
+		timeReports: timeReportsCount,
+		weeklyProgress: weeklyProgressCount,
+		trainingSchedule: trainingScheduleCount,
+		learningOutcome: learningOutcomeCount,
+		dailyAttendance: dailyAttendanceCount,
+	};
+
+	res.render("profile/index", { user, reportStats });
 });
 
 // Update the user profile
