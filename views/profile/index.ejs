@@ -115,105 +115,147 @@
 		<% if (user.role !== 'admin') { %>
 
 		<div class="col-lg-8">
-			<div class="dashboard-card">
-				<h3><i class="fas fa-chart-line me-2"></i>Activity Summary</h3>
-				<div class="activity-summary">
-					<div class="row">
-						<!-- Original Report Types -->
-						<div class="col-md-4 mb-3">
-							<div class="activity-stat">
-								<div class="stat-icon bg-primary">
-									<i class="fas fa-file-alt"></i>
-								</div>
-								<div class="stat-info">
-									<h4>Weekly Reports</h4>
-									<span class="stat-count"
-										><%= reportStats ? reportStats.weeklyReports : 0 %></span
-									>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="activity-stat">
-								<div class="stat-icon bg-success">
-									<i class="fas fa-book"></i>
-								</div>
-								<div class="stat-info">
-									<h4>Documentation</h4>
-									<span class="stat-count"
-										><%= reportStats ? reportStats.documentation : 0 %></span
-									>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="activity-stat">
-								<div class="stat-icon bg-info">
-									<i class="fas fa-clock"></i>
-								</div>
-								<div class="stat-info">
-									<h4>Time Reports</h4>
-									<span class="stat-count"
-										><%= reportStats ? reportStats.timeReports : 0 %></span
-									>
-								</div>
-							</div>
-						</div>
-
-						<!-- New Report Types -->
-						<div class="col-md-4 mb-3">
-							<div class="activity-stat">
-								<div class="stat-icon bg-purple">
-									<i class="fas fa-tasks"></i>
-								</div>
-								<div class="stat-info">
-									<h4>Weekly Progress</h4>
-									<span class="stat-count"
-										><%= reportStats ? reportStats.weeklyProgress : 0 %></span
-									>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="activity-stat">
-								<div class="stat-icon bg-teal">
-									<i class="fas fa-calendar-alt"></i>
-								</div>
-								<div class="stat-info">
-									<h4>Training Schedules</h4>
-									<span class="stat-count"
-										><%= reportStats ? reportStats.trainingSchedule : 0 %></span
-									>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="activity-stat">
-								<div class="stat-icon bg-orange">
-									<i class="fas fa-graduation-cap"></i>
-								</div>
-								<div class="stat-info">
-									<h4>Learning Outcomes</h4>
-									<span class="stat-count"
-										><%= reportStats ? reportStats.learningOutcome : 0 %></span
-									>
-								</div>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="activity-stat">
-								<div class="stat-icon bg-indigo">
-									<i class="fas fa-clipboard-check"></i>
-								</div>
-								<div class="stat-info">
-									<h4>Daily Attendance</h4>
-									<span class="stat-count"
-										><%= reportStats ? reportStats.dailyAttendance : 0 %></span
-									>
-								</div>
-							</div>
-						</div>
+			<!-- Activity Summary Card -->
+			<div class="dashboard-card mb-4">
+				<div class="card-header-with-actions">
+					<h3><i class="fas fa-chart-line me-2"></i>Activity Summary</h3>
+					<div class="report-actions">
+						<a href="/dashboard" class="btn btn-sm btn-outline-primary">
+							<i class="fas fa-tachometer-alt me-1"></i> Dashboard
+						</a>
 					</div>
+				</div>
+
+				<!-- Report Stats Cards -->
+				<div class="report-stats-grid">
+					<!-- Weekly Reports -->
+					<div class="report-stat-card">
+						<div class="report-stat-header bg-primary">
+							<i class="fas fa-file-alt"></i>
+						</div>
+						<div class="report-stat-body">
+							<div class="report-stat-count">
+								<%= reportStats ? reportStats.weeklyReports : 0 %>
+							</div>
+							<div class="report-stat-title">Weekly Reports</div>
+						</div>
+						<a href="/weeklyreport" class="report-stat-link">View All</a>
+					</div>
+
+					<!-- Weekly Progress -->
+					<div class="report-stat-card">
+						<div class="report-stat-header bg-purple">
+							<i class="fas fa-tasks"></i>
+						</div>
+						<div class="report-stat-body">
+							<div class="report-stat-count">
+								<%= reportStats ? reportStats.weeklyProgress : 0 %>
+							</div>
+							<div class="report-stat-title">Weekly Progress</div>
+						</div>
+						<a href="/weeklyprogress" class="report-stat-link">View All</a>
+					</div>
+
+					<!-- Training Schedules -->
+					<div class="report-stat-card">
+						<div class="report-stat-header bg-teal">
+							<i class="fas fa-calendar-alt"></i>
+						</div>
+						<div class="report-stat-body">
+							<div class="report-stat-count">
+								<%= reportStats ? reportStats.trainingSchedule : 0 %>
+							</div>
+							<div class="report-stat-title">Training Schedules</div>
+						</div>
+						<a href="/trainingschedule" class="report-stat-link">View All</a>
+					</div>
+
+					<!-- Learning Outcomes -->
+					<div class="report-stat-card">
+						<div class="report-stat-header bg-orange">
+							<i class="fas fa-graduation-cap"></i>
+						</div>
+						<div class="report-stat-body">
+							<div class="report-stat-count">
+								<%= reportStats ? reportStats.learningOutcome : 0 %>
+							</div>
+							<div class="report-stat-title">Learning Outcomes</div>
+						</div>
+						<a href="/learningoutcome" class="report-stat-link">View All</a>
+					</div>
+
+					<!-- Daily Attendance -->
+					<div class="report-stat-card">
+						<div class="report-stat-header bg-indigo">
+							<i class="fas fa-clipboard-check"></i>
+						</div>
+						<div class="report-stat-body">
+							<div class="report-stat-count">
+								<%= reportStats ? reportStats.dailyAttendance : 0 %>
+							</div>
+							<div class="report-stat-title">Daily Attendance</div>
+						</div>
+						<a href="/dailyattendance" class="report-stat-link">View All</a>
+					</div>
+
+					<!-- Documentation -->
+					<div class="report-stat-card">
+						<div class="report-stat-header bg-success">
+							<i class="fas fa-book"></i>
+						</div>
+						<div class="report-stat-body">
+							<div class="report-stat-count">
+								<%= reportStats ? reportStats.documentation : 0 %>
+							</div>
+							<div class="report-stat-title">Documentation</div>
+						</div>
+						<a href="/documentation" class="report-stat-link">View All</a>
+					</div>
+
+					<!-- Time Reports -->
+					<div class="report-stat-card">
+						<div class="report-stat-header bg-info">
+							<i class="fas fa-clock"></i>
+						</div>
+						<div class="report-stat-body">
+							<div class="report-stat-count">
+								<%= reportStats ? reportStats.timeReports : 0 %>
+							</div>
+							<div class="report-stat-title">Time Reports</div>
+						</div>
+						<a href="/timereport" class="report-stat-link">View All</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- Quick Actions Card -->
+			<div class="dashboard-card">
+				<h3><i class="fas fa-bolt me-2"></i>Quick Actions</h3>
+				<div class="quick-actions-grid">
+					<a href="/weeklyreport/new" class="quick-action-btn">
+						<div class="quick-action-icon bg-primary">
+							<i class="fas fa-file-alt"></i>
+						</div>
+						<span>New Weekly Report</span>
+					</a>
+					<a href="/weeklyprogress/new" class="quick-action-btn">
+						<div class="quick-action-icon bg-purple">
+							<i class="fas fa-tasks"></i>
+						</div>
+						<span>New Weekly Progress</span>
+					</a>
+					<a href="/trainingschedule/new" class="quick-action-btn">
+						<div class="quick-action-icon bg-teal">
+							<i class="fas fa-calendar-alt"></i>
+						</div>
+						<span>New Training Schedule</span>
+					</a>
+					<a href="/learningoutcome/new" class="quick-action-btn">
+						<div class="quick-action-icon bg-orange">
+							<i class="fas fa-graduation-cap"></i>
+						</div>
+						<span>New Learning Outcome</span>
+					</a>
 				</div>
 			</div>
 		</div>
