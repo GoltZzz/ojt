@@ -19,35 +19,7 @@
 			</button>
 			<div class="collapse navbar-collapse" id="mobileNav">
 				<% if (currentUser) { %>
-				<a href="/profile" class="text-decoration-none">
-					<div class="mobile-user-profile mb-3">
-						<div class="user-avatar">
-							<% if (currentUser.profileImage && currentUser.profileImage.url) {
-							%>
-							<img
-								src="<%= currentUser.profileImage.url %>"
-								alt="<%= currentUser.username %>"
-								class="user-avatar-img" />
-							<% } else { %>
-							<i class="fas fa-user-circle"></i>
-							<% } %>
-						</div>
-						<div class="user-info">
-							<h5 class="user-name">
-								<% let mobileFullName = currentUser.firstName; if
-								(currentUser.middleName && currentUser.middleName.length > 0) {
-								const mobileMiddleInitial =
-								currentUser.middleName.charAt(0).toUpperCase(); mobileFullName
-								+= ` ${mobileMiddleInitial}.`; } mobileFullName += `
-								${currentUser.lastName}`; %> <%= mobileFullName %>
-							</h5>
-							<span
-								class="user-role badge <%= currentUser.role === 'admin' ? 'bg-danger' : 'bg-primary' %>">
-								<%= currentUser.role %>
-							</span>
-						</div>
-					</div>
-				</a>
+				<!-- Mobile user profile removed -->
 				<% } %>
 				<ul class="navbar-nav ms-auto">
 					<li class="nav-item">
@@ -159,33 +131,7 @@
 		</div>
 
 		<% if (currentUser) { %>
-		<a href="/profile" class="text-decoration-none">
-			<div class="user-profile mb-3">
-				<div class="user-avatar">
-					<% if (currentUser.profileImage && currentUser.profileImage.url) { %>
-					<img
-						src="<%= currentUser.profileImage.url %>"
-						alt="<%= currentUser.username %>"
-						class="user-avatar-img" />
-					<% } else { %>
-					<i class="fas fa-user-circle"></i>
-					<% } %>
-				</div>
-				<div class="user-info">
-					<h5 class="user-name">
-						<% let fullName = currentUser.firstName; if (currentUser.middleName
-						&& currentUser.middleName.length > 0) { const middleInitial =
-						currentUser.middleName.charAt(0).toUpperCase(); fullName += `
-						${middleInitial}.`; } fullName += ` ${currentUser.lastName}`; %> <%=
-						fullName %>
-					</h5>
-					<span
-						class="user-role badge <%= currentUser.role === 'admin' ? 'bg-danger' : 'bg-primary' %>">
-						<%= currentUser.role %>
-					</span>
-				</div>
-			</div>
-		</a>
+		<!-- Desktop user profile removed -->
 		<% } %>
 
 		<ul class="nav flex-column">
