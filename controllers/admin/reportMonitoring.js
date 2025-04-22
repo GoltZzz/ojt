@@ -256,6 +256,7 @@ const getReportTypeName = (type) => {
 		case "trainingschedule":
 			return "Training Schedule";
 		case "learningoutcomes":
+		case "learningoutcome":
 			return "Learning Outcome";
 		case "dailyattendance":
 			return "Daily Attendance";

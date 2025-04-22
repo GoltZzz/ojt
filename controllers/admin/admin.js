@@ -731,7 +731,7 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 			{ value: "weeklyreport", label: "Weekly Reports" },
 			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
 			{ value: "trainingschedule", label: "Training Schedules" },
-			{ value: "learningoutcome", label: "Learning Outcomes" },
+			{ value: "learningoutcomes", label: "Learning Outcomes" },
 			{ value: "dailyattendance", label: "Daily Attendance" },
 			{ value: "documentation", label: "Documentation" },
 			{ value: "timereport", label: "Time Reports" },
@@ -814,6 +814,7 @@ const unarchiveReport = catchAsync(async (req, res) => {
 			report = await TrainingSchedule.findById(id).populate("author");
 			break;
 		case "learningoutcome":
+		case "learningoutcomes":
 			report = await LearningOutcome.findById(id).populate("author");
 			break;
 		case "dailyattendance":
@@ -958,6 +959,7 @@ const getReportTypeName = (type) => {
 		case "trainingschedule":
 			return "Training Schedule";
 		case "learningoutcomes":
+		case "learningoutcome":
 			return "Learning Outcome";
 		case "dailyattendance":
 			return "Daily Attendance";
