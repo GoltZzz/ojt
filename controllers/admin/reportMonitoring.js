@@ -5,6 +5,7 @@ import TrainingSchedule from "../../models/trainingSchedule.js";
 import LearningOutcome from "../../models/learningOutcomes.js";
 import DailyAttendance from "../../models/dailyAttendance.js";
 import Notification from "../../models/notification.js";
+import User from "../../models/users.js";
 
 // Get pending reports for all report types
 export const getPendingReports = catchAsync(async (req, res) => {
@@ -116,7 +117,25 @@ export const approveReport = catchAsync(async (req, res) => {
 	if (adminComments) {
 		report.adminComments = adminComments;
 	}
+
+	// If this was a revised report, clear the needsRevision flag
+	if (report.needsRevision) {
+		report.needsRevision = false;
+	}
+
 	await report.save();
+
+	// Mark any related 'revised' notifications as read
+	await Notification.updateMany(
+		{
+			recipient: req.user._id,
+			reportId: report._id,
+			reportType: type,
+			action: "revised",
+			isRead: false,
+		},
+		{ isRead: true }
+	);
 
 	// Create notification for the report author
 	if (report.author) {
@@ -195,6 +214,18 @@ export const rejectReport = catchAsync(async (req, res) => {
 	}
 
 	await report.save();
+
+	// Mark any related 'revised' notifications as read
+	await Notification.updateMany(
+		{
+			recipient: req.user._id,
+			reportId: report._id,
+			reportType: type,
+			action: "revised",
+			isRead: false,
+		},
+		{ isRead: true }
+	);
 
 	// Create notification for the report author
 	if (report.author) {

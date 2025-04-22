@@ -87,7 +87,7 @@
 				</thead>
 				<tbody>
 					<% pendingReports.forEach(report => { %>
-					<tr>
+					<tr<% if (report.isRevised) { %> class="table-info revised-report"<% } %>>
 						<td>
 							<% if (report.reportType === 'weeklyreport') { %>
 								<span class="badge bg-primary">Weekly Report</span>
@@ -107,7 +107,12 @@
 								<span class="badge bg-secondary">Other</span>
 							<% } %>
 						</td>
-						<td><%= report.studentName %></td>
+						<td>
+							<%= report.studentName %>
+							<% if (report.isRevised) { %>
+							<span class="badge bg-warning ms-2" title="This report has been revised by the student">Revised</span>
+							<% } %>
+						</td>
 						<td><%= report.authorFullName || 'Unknown' %></td>
 						<td><%= report.internshipSite %></td>
 						<td>
@@ -281,7 +286,7 @@
 												aria-label="Close"></button>
 										</div>
 										<form
-											action="/admin/reports/<%= report.reportType %>/<%= report._id %>/approve"
+											action="/admin/reports/<%= report.reportType %>/<%= report._id %>/reject"
 											method="POST"
 											id="rejectForm-<%= report.reportType %>-<%= report._id %>">
 											<div class="modal-body">
@@ -404,5 +409,19 @@
 
 .bg-indigo {
 	background: linear-gradient(135deg, #4a69bd, #1e3799);
+}
+
+.revised-report {
+	position: relative;
+}
+
+.revised-report::before {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	background: linear-gradient(135deg, #f39c12, #e67e22);
 }
 </style>

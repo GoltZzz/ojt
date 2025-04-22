@@ -180,7 +180,7 @@ const renderPendingReports = catchAsync(async (req, res) => {
 		sortOptions = { dateSubmitted: -1 };
 	}
 
-	// Helper function to format author names
+	// Helper function to format author names and check for revised reports
 	const formatReportNames = (reports) => {
 		return reports.map((report) => {
 			// Format author name
@@ -194,6 +194,11 @@ const renderPendingReports = catchAsync(async (req, res) => {
 				}
 				fullName += ` ${report.author.lastName}`;
 				report.authorFullName = fullName;
+			}
+
+			// Check if this is a revised report (has needsRevision flag but status is pending)
+			if (report.needsRevision && report.status === "pending") {
+				report.isRevised = true;
 			}
 
 			// Add report type for display
