@@ -6,23 +6,27 @@ export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
 	const {
 		studentName,
-		internshipSite,
 		status,
+		archived,
 		sortBy = "dateSubmitted_desc",
 		page = 1,
 		limit = 10,
 	} = req.query;
 
-	// Always exclude archived reports from the main reports page
-	const filter = { archived: false };
+	// Set up filter object
+	const filter = {};
+
+	// Handle archived filter
+	if (archived === "true") {
+		filter.archived = true;
+	} else if (archived === "false" || !archived) {
+		filter.archived = false;
+	}
+	// If archived is not specified or is an invalid value, show all reports
 
 	// Apply filters if provided
 	if (studentName) {
 		filter.studentName = { $regex: studentName, $options: "i" };
-	}
-
-	if (internshipSite) {
-		filter.internshipSite = { $regex: internshipSite, $options: "i" };
 	}
 
 	if (status) {
@@ -89,6 +93,7 @@ export const index = catchAsync(async (req, res) => {
 		LearningOutcomes,
 		pagination,
 		filters: req.query,
+		currentUrl: req.originalUrl,
 	});
 });
 
@@ -105,50 +110,426 @@ export const renderNewForm = async (req, res) => {
 };
 
 export const createOutcome = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
+	const { learningOutcome } = req.body;
+
+	// Extract entries from the form data
+	const entries = [];
+	if (Array.isArray(learningOutcome.date)) {
+		// Multiple entries
+		for (let i = 0; i < learningOutcome.date.length; i++) {
+			if (
+				learningOutcome.date[i] &&
+				learningOutcome.activity[i] &&
+				learningOutcome.learningOutcome[i]
+			) {
+				entries.push({
+					date: learningOutcome.date[i],
+					activity: learningOutcome.activity[i],
+					learningOutcome: learningOutcome.learningOutcome[i],
+				});
+			}
+		}
+	} else {
+		// Single entry
+		if (
+			learningOutcome.date &&
+			learningOutcome.activity &&
+			learningOutcome.learningOutcome
+		) {
+			entries.push({
+				date: learningOutcome.date,
+				activity: learningOutcome.activity,
+				learningOutcome: learningOutcome.learningOutcome,
+			});
+		}
+	}
+
+	// Create a new learning outcome
+	const newOutcome = new LearningOutcome({
+		studentName: learningOutcome.studentName,
+		entries: entries,
+		author: req.user._id,
+		dateSubmitted: new Date(),
+	});
+
+	// Save the learning outcome
+	await newOutcome.save();
+
 	req.flash("success", "Successfully created a new learning outcome!");
 	res.redirect("/learningoutcomes");
 });
 
 export const showOutcome = catchAsync(async (req, res, next) => {
-	// This is just a placeholder for now
+	const { id } = req.params;
+
+	// Find the learning outcome by ID and populate author and approvedBy fields
+	const outcome = await LearningOutcome.findById(id)
+		.populate("author", "username firstName middleName lastName")
+		.populate("approvedBy", "username");
+
+	// If outcome not found, flash error and redirect
+	if (!outcome) {
+		req.flash("error", "Learning Outcome not found");
+		return res.redirect("/learningoutcomes");
+	}
+
+	// Check if the current user is the author
+	const isAuthor =
+		req.user && outcome.author && outcome.author._id.equals(req.user._id);
+
+	// Check if the current user is an admin
+	const isAdmin = req.user && req.user.role === "admin";
+
+	// Determine if the user can edit or delete the outcome
+	const canEdit = isAuthor && outcome.status === "pending" && !outcome.archived;
+	const canDelete =
+		(isAuthor && outcome.status === "pending" && !outcome.archived) ||
+		(isAdmin && outcome.archived);
+
+	// Format author name
+	let authorFullName = "";
+	if (outcome.author) {
+		authorFullName = outcome.author.firstName;
+		if (outcome.author.middleName && outcome.author.middleName.length > 0) {
+			const middleInitial = outcome.author.middleName.charAt(0).toUpperCase();
+			authorFullName += ` ${middleInitial}.`;
+		}
+		authorFullName += ` ${outcome.author.lastName}`;
+	}
+
+	// Add properties to the outcome object
+	outcome.isAuthor = isAuthor;
+	outcome.canEdit = canEdit;
+	outcome.canDelete = canDelete;
+	outcome.authorFullName = authorFullName;
+
 	res.render("reports/learningOutcomes/show", {
-		LearningOutcome: {
-			_id: req.params.id,
-			studentName: "Sample Student",
-			internshipSite: "Sample Site",
-			dateCreated: new Date().toLocaleDateString(),
-			status: "pending",
-			isAuthor: true,
-			canEdit: true,
-			canDelete: true,
-		},
+		LearningOutcome: outcome,
+		currentUrl: req.originalUrl,
 	});
 });
 
 export const renderEditForm = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
+	const { id } = req.params;
+
+	// Find the learning outcome by ID
+	const outcome = await LearningOutcome.findById(id);
+
+	// If outcome not found, flash error and redirect
+	if (!outcome) {
+		req.flash("error", "Learning Outcome not found");
+		return res.redirect("/learningoutcomes");
+	}
+
+	// Check if the current user is the author
+	const isAuthor = outcome.author.equals(req.user._id);
+
+	// If not the author, flash error and redirect
+	if (!isAuthor) {
+		req.flash("error", "You do not have permission to edit this outcome");
+		return res.redirect("/learningoutcomes");
+	}
+
+	// If the outcome is not pending or is archived, flash error and redirect
+	if (outcome.status !== "pending" || outcome.archived) {
+		req.flash(
+			"error",
+			"You cannot edit an outcome that has been approved, rejected, or archived"
+		);
+		return res.redirect(`/learningoutcomes/${id}`);
+	}
+
+	// Format the user's full name
+	let fullName = req.user.firstName;
+	if (req.user.middleName && req.user.middleName.length > 0) {
+		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+		fullName += ` ${middleInitial}.`;
+	}
+	fullName += ` ${req.user.lastName}`;
+
 	res.render("reports/learningOutcomes/edit", {
-		LearningOutcome: {
-			_id: req.params.id,
-			studentName: "Sample Student",
-			internshipSite: "Sample Site",
-			dateCreated: new Date(),
-		},
-		fullName: "Sample Student",
+		LearningOutcome: outcome,
+		fullName,
 	});
 });
 
 export const updateOutcome = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
+	const { id } = req.params;
+	const { learningOutcome } = req.body;
+
+	// Find the learning outcome by ID
+	const outcome = await LearningOutcome.findById(id);
+
+	// If outcome not found, flash error and redirect
+	if (!outcome) {
+		req.flash("error", "Learning Outcome not found");
+		return res.redirect("/learningoutcomes");
+	}
+
+	// Check if the current user is the author
+	const isAuthor = outcome.author.equals(req.user._id);
+
+	// If not the author, flash error and redirect
+	if (!isAuthor) {
+		req.flash("error", "You do not have permission to edit this outcome");
+		return res.redirect("/learningoutcomes");
+	}
+
+	// If the outcome is not pending or is archived, flash error and redirect
+	if (outcome.status !== "pending" || outcome.archived) {
+		req.flash(
+			"error",
+			"You cannot edit an outcome that has been approved, rejected, or archived"
+		);
+		return res.redirect(`/learningoutcomes/${id}`);
+	}
+
+	// If the outcome was previously rejected, set needsRevision to false
+	if (outcome.status === "rejected" && outcome.needsRevision) {
+		outcome.needsRevision = false;
+		outcome.status = "pending";
+	}
+
+	// Extract entries from the form data
+	const entries = [];
+	if (Array.isArray(learningOutcome.date)) {
+		// Multiple entries
+		for (let i = 0; i < learningOutcome.date.length; i++) {
+			if (
+				learningOutcome.date[i] &&
+				learningOutcome.activity[i] &&
+				learningOutcome.learningOutcome[i]
+			) {
+				// Check if this entry has an ID (existing entry)
+				const entryData = {
+					date: learningOutcome.date[i],
+					activity: learningOutcome.activity[i],
+					learningOutcome: learningOutcome.learningOutcome[i],
+				};
+
+				if (learningOutcome.entryId && learningOutcome.entryId[i]) {
+					entryData._id = learningOutcome.entryId[i];
+				}
+
+				entries.push(entryData);
+			}
+		}
+	} else {
+		// Single entry
+		if (
+			learningOutcome.date &&
+			learningOutcome.activity &&
+			learningOutcome.learningOutcome
+		) {
+			const entryData = {
+				date: learningOutcome.date,
+				activity: learningOutcome.activity,
+				learningOutcome: learningOutcome.learningOutcome,
+			};
+
+			if (learningOutcome.entryId) {
+				entryData._id = learningOutcome.entryId;
+			}
+
+			entries.push(entryData);
+		}
+	}
+
+	// Update the learning outcome
+	outcome.studentName = learningOutcome.studentName;
+	outcome.entries = entries;
+	await outcome.save();
+
 	req.flash("success", "Successfully updated learning outcome!");
-	res.redirect(`/learningoutcomes/${req.params.id}`);
+	res.redirect(`/learningoutcomes/${id}`);
 });
 
 export const deleteOutcome = catchAsync(async (req, res) => {
-	// This is just a placeholder for now
-	req.flash("success", "Successfully deleted learning outcome!");
-	res.redirect("/learningoutcomes");
+	const { id } = req.params;
+	const { password, returnUrl } = req.body;
+
+	// Check if password was provided (except for admin bypass)
+	if (!password && password !== "admin-bypass") {
+		req.flash("error", "Password is required to delete an outcome");
+		return res.redirect(returnUrl || `/learningoutcomes/${id}`);
+	}
+
+	// Find the learning outcome by ID
+	const outcome = await LearningOutcome.findById(id);
+
+	// If outcome not found, flash error and redirect
+	if (!outcome) {
+		req.flash("error", "Learning Outcome not found");
+		return res.redirect(returnUrl || "/learningoutcomes");
+	}
+
+	// Check if the current user is the author
+	const isAuthor = outcome.author.equals(req.user._id);
+
+	// Check if the current user is an admin
+	const isAdmin = req.user.role === "admin";
+
+	// If not the author or admin, flash error and redirect
+	if (!isAuthor && !isAdmin) {
+		req.flash("error", "You do not have permission to delete this outcome");
+		return res.redirect(returnUrl || "/learningoutcomes");
+	}
+
+	// For admin users: check if the outcome is archived
+	if (isAdmin && !outcome.archived) {
+		req.flash("error", "You must archive the outcome before deleting it");
+		return res.redirect(returnUrl || `/learningoutcomes/${id}`);
+	}
+
+	// For regular users: check if the outcome is not pending or is archived
+	if (
+		isAuthor &&
+		!isAdmin &&
+		(outcome.status !== "pending" || outcome.archived)
+	) {
+		req.flash(
+			"error",
+			"You cannot delete an outcome that has been approved, rejected, or archived"
+		);
+		return res.redirect(returnUrl || "/learningoutcomes");
+	}
+
+	// Check if this is an admin bypass or regular password verification
+	if (password === "admin-bypass" && isAdmin) {
+		// Admin bypass - proceed with deletion without password verification
+		console.log(
+			`Admin deleting outcome ${outcome._id}, archived: ${outcome.archived}`
+		);
+
+		try {
+			// Delete the outcome
+			await LearningOutcome.findByIdAndDelete(id);
+
+			req.flash("success", "Successfully deleted learning outcome!");
+			return res.redirect("/admin/archived-reports");
+		} catch (error) {
+			console.error("Error deleting learning outcome:", error);
+			req.flash(
+				"error",
+				"Failed to delete learning outcome. Please try again."
+			);
+			return res.redirect(returnUrl || `/learningoutcomes/${id}`);
+		}
+	} else {
+		// Regular password verification for non-admin users
+		try {
+			// Use passport-local-mongoose's authenticate method to verify the password
+			req.user.authenticate(password, async (err, user, passwordError) => {
+				if (err) {
+					console.error("Authentication error:", err);
+					req.flash("error", "An error occurred during authentication");
+					return res.redirect(returnUrl || `/learningoutcomes/${id}`);
+				}
+
+				if (!user) {
+					req.flash("error", "Incorrect password");
+					return res.redirect(returnUrl || `/learningoutcomes/${id}`);
+				}
+
+				// Password is correct, proceed with deletion
+				console.log(
+					`Deleting outcome ${outcome._id}, archived: ${outcome.archived}`
+				);
+
+				try {
+					// Delete the outcome
+					await LearningOutcome.findByIdAndDelete(id);
+
+					req.flash("success", "Successfully deleted learning outcome!");
+					res.redirect(returnUrl || "/learningoutcomes");
+				} catch (error) {
+					console.error("Error deleting learning outcome:", error);
+					req.flash(
+						"error",
+						"Failed to delete learning outcome. Please try again."
+					);
+					res.redirect(returnUrl || `/learningoutcomes/${id}`);
+				}
+			});
+		} catch (error) {
+			console.error("Error during password verification:", error);
+			req.flash("error", "An error occurred during password verification");
+			res.redirect(returnUrl || `/learningoutcomes/${id}`);
+		}
+	}
+});
+
+export const archiveOutcome = catchAsync(async (req, res) => {
+	const { id } = req.params;
+	const { archiveReason } = req.body;
+
+	// Check if the user is an admin
+	if (req.user.role !== "admin") {
+		req.flash("error", "You do not have permission to archive outcomes");
+		return res.redirect(`/learningoutcomes/${id}`);
+	}
+
+	// Find the learning outcome by ID
+	const outcome = await LearningOutcome.findById(id);
+
+	// If outcome not found, flash error and redirect
+	if (!outcome) {
+		req.flash("error", "Learning Outcome not found");
+		return res.redirect("/learningoutcomes");
+	}
+
+	// Check if the outcome is already archived
+	if (outcome.archived) {
+		req.flash("error", "This outcome is already archived");
+		return res.redirect(`/learningoutcomes/${id}`);
+	}
+
+	// Check if the outcome is approved
+	if (outcome.status !== "approved") {
+		req.flash("error", "Only approved outcomes can be archived");
+		return res.redirect(`/learningoutcomes/${id}`);
+	}
+
+	// Update the outcome to archived status
+	outcome.archived = true;
+	outcome.archivedReason = archiveReason;
+	await outcome.save();
+
+	req.flash("success", "Learning Outcome has been archived");
+	res.redirect("/admin/archived-reports");
+});
+
+export const unarchiveOutcome = catchAsync(async (req, res) => {
+	const { id } = req.params;
+
+	// Check if the user is an admin
+	if (req.user.role !== "admin") {
+		req.flash("error", "You do not have permission to unarchive outcomes");
+		return res.redirect(`/learningoutcomes/${id}`);
+	}
+
+	// Find the learning outcome by ID
+	const outcome = await LearningOutcome.findById(id);
+
+	// If outcome not found, flash error and redirect
+	if (!outcome) {
+		req.flash("error", "Learning Outcome not found");
+		return res.redirect("/learningoutcomes");
+	}
+
+	// Check if the outcome is not archived
+	if (!outcome.archived) {
+		req.flash("error", "This outcome is not archived");
+		return res.redirect(`/learningoutcomes/${id}`);
+	}
+
+	// Update the outcome to unarchived status
+	outcome.archived = false;
+	outcome.archivedReason = undefined;
+	await outcome.save();
+
+	req.flash("success", "Learning Outcome has been unarchived");
+	res.redirect(`/learningoutcomes/${id}`);
 });
 
 export default {
@@ -159,4 +540,6 @@ export default {
 	renderEditForm,
 	updateOutcome,
 	deleteOutcome,
+	archiveOutcome,
+	unarchiveOutcome,
 };

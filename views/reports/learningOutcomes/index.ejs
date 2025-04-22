@@ -1,5 +1,8 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/weeklyReportsIndex.css" />
+<link rel="stylesheet" href="/css/customModal.css" />
+<link rel="stylesheet" href="/css/reportModals.css" />
+<script src="/js/reportTooltips.js" defer></script>
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -12,15 +15,17 @@
             <% } %>
         </div>
     </div>
-
     <!-- Filter Section -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Filter Learning Outcomes</h5>
+    <div class="filter-card mb-4">
+        <div class="filter-header">
+            <h4><i class="fas fa-filter me-2"></i>Filter Reports</h4>
+            <button class="btn btn-sm btn-outline-secondary" id="toggleFilters">
+                <i class="fas fa-chevron-down"></i>
+            </button>
         </div>
-        <div class="card-body">
-            <form action="/learningoutcomes" method="GET" class="row g-3">
-                <div class="col-md-4">
+        <div class="filter-body" id="filterBody">
+            <form id="filterForm" class="row g-3" method="GET" action="/learningoutcomes">
+                <div class="col-md-4 col-lg-3">
                     <label for="studentName" class="form-label">Student Name</label>
                     <input
                         type="text"
@@ -28,34 +33,27 @@
                         id="studentName"
                         name="studentName"
                         value="<%= filters.studentName || '' %>"
-                    />
+                        placeholder="Search by name" />
                 </div>
-                <div class="col-md-4">
-                    <label for="internshipSite" class="form-label">Internship Site</label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        id="internshipSite"
-                        name="internshipSite"
-                        value="<%= filters.internshipSite || '' %>"
-                    />
-                </div>
-                <div class="col-md-4">
+
+                <div class="col-md-4 col-lg-2">
                     <label for="status" class="form-label">Status</label>
                     <select class="form-select" id="status" name="status">
-                        <option value="">All</option>
-                        <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>
-                            Pending
-                        </option>
-                        <option value="approved" <%= filters.status === 'approved' ? 'selected' : '' %>>
-                            Approved
-                        </option>
-                        <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>
-                            Rejected
-                        </option>
+                        <option value="" <%= !filters.status ? 'selected' : '' %>>All Statuses</option>
+                        <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                        <option value="approved" <%= filters.status === 'approved' ? 'selected' : '' %>>Approved</option>
+                        <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 col-lg-2">
+                    <label for="archived" class="form-label">Archive Status</label>
+                    <select class="form-select" id="archived" name="archived">
+                        <option value="" <%= !filters.archived ? 'selected' : '' %>>All Reports</option>
+                        <option value="false" <%= filters.archived === 'false' ? 'selected' : '' %>>Active Only</option>
+                        <option value="true" <%= filters.archived === 'true' ? 'selected' : '' %>>Archived Only</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-lg-2">
                     <label for="sortBy" class="form-label">Sort By</label>
                     <select class="form-select" id="sortBy" name="sortBy">
                         <option value="dateSubmitted_desc" <%= filters.sortBy === 'dateSubmitted_desc' ? 'selected' : '' %>>
@@ -65,111 +63,284 @@
                             Oldest First
                         </option>
                         <option value="studentName_asc" <%= filters.sortBy === 'studentName_asc' ? 'selected' : '' %>>
-                            Student Name (A-Z)
+                            Name (A-Z)
                         </option>
                         <option value="studentName_desc" <%= filters.sortBy === 'studentName_desc' ? 'selected' : '' %>>
-                            Student Name (Z-A)
+                            Name (Z-A)
+                        </option>
+                        <option value="internshipSite_asc" <%= filters.sortBy === 'internshipSite_asc' ? 'selected' : '' %>>
+                            Site (A-Z)
+                        </option>
+                        <option value="internshipSite_desc" <%= filters.sortBy === 'internshipSite_desc' ? 'selected' : '' %>>
+                            Site (Z-A)
                         </option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">
-                        <i class="fas fa-filter"></i> Apply Filters
+                <div class="col-12 mt-3 filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i> Apply Filters
                     </button>
-                    <a href="/learningoutcomes" class="btn btn-secondary">
-                        <i class="fas fa-undo"></i> Reset
+                    <a href="/learningoutcomes" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear Filters
                     </a>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Learning Outcomes Table -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Learning Outcomes</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Internship Site</th>
-                            <th>Title</th>
-                            <th>Status</th>
-                            <th>Date Submitted</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (LearningOutcomes.length === 0) { %>
-                        <tr>
-                            <td colspan="6" class="text-center py-4">
-                                <div class="alert alert-info mb-0">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    No learning outcomes found.
-                                    <% if (currentUser && currentUser.role !== 'admin') { %>
-                                    <a href="/learningoutcomes/new" class="alert-link">Create a new learning outcome</a>.
-                                    <% } %>
-                                </div>
-                            </td>
-                        </tr>
-                        <% } else { %>
-                        <% LearningOutcomes.forEach(outcome => { %>
-                        <tr>
-                            <td><%= outcome.studentName %></td>
-                            <td><%= outcome.internshipSite %></td>
-                            <td><%= outcome.title %></td>
-                            <td>
-                                <% if (outcome.status === 'pending') { %>
-                                <span class="badge bg-warning text-dark">Pending</span>
-                                <% } else if (outcome.status === 'approved') { %>
-                                <span class="badge bg-success">Approved</span>
-                                <% } else if (outcome.status === 'rejected') { %>
-                                <span class="badge bg-danger">Rejected</span>
-                                <% } %>
-                            </td>
-                            <td><%= new Date(outcome.dateSubmitted).toLocaleDateString() %></td>
-                            <td>
-                                <a href="/learningoutcomes/<%= outcome._id %>" class="btn btn-sm btn-info">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        <% }) %>
+    <% if (LearningOutcomes && LearningOutcomes.length) { %>
+    <div class="table-responsive">
+        <table class="table table-hover report-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Entries</th>
+                    <th>Status</th>
+                    <th>Date Submitted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% LearningOutcomes.forEach(outcome => { %>
+                <tr class="<%= outcome.isCurrentUserReport ? 'current-user-report' : '' %>">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <% if (outcome.isCurrentUserReport) { %>
+                            <span
+                                class="your-report-badge"
+                                data-bs-toggle="tooltip"
+                                title="This is your report">
+                                <i class="fas fa-user-check"></i>
+                            </span>
+                            <span class="student-name your-name"><%= outcome.studentName %></span>
+                            <% } else { %>
+                            <span class="student-name"><%= outcome.studentName %></span>
+                            <% } %>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="date-range">
+                            <i class="fas fa-list-alt me-1"></i>
+                            <%= outcome.entries ? outcome.entries.length : 0 %> learning outcome<%= outcome.entries && outcome.entries.length !== 1 ? 's' : '' %>
+                        </span>
+                        <% if (outcome.entries && outcome.entries.length > 0) { %>
+                            <small class="d-block text-muted mt-1">
+                                <i class="far fa-calendar-alt me-1"></i>
+                                Latest: <%= new Date(outcome.entries[outcome.entries.length - 1].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                            </small>
                         <% } %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    </td>
+                    <td>
+                        <div class="status-badge">
+                            <% if (outcome.status === 'approved') { %>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i> Approved
+                            </span>
+                            <% if (outcome.approvedBy) { %>
+                            <small class="d-block text-muted mt-1">
+                                by <%= outcome.approvedBy.username %>
+                            </small>
+                            <% } %>
+                            <% } else if (outcome.status === 'rejected') { %>
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i> Rejected
+                            </span>
+                            <% if (outcome.rejectedBy) { %>
+                            <small class="d-block text-muted mt-1">
+                                by <%= outcome.rejectedBy.username %>
+                            </small>
+                            <% } %>
+                            <% } else { %>
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock me-1"></i> Pending
+                            </span>
+                            <% } %>
+                        </div>
+                        <% if (outcome.archived) { %>
+                        <div class="status-badge mt-1">
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-archive me-1"></i> Archived
+                            </span>
+                        </div>
+                        <% } %>
+                    </td>
+                    <td>
+                        <span class="date-range">
+                            <i class="far fa-calendar-check me-1"></i>
+                            <%= new Date(outcome.dateSubmitted).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a
+                                href="/learningoutcomes/<%= outcome._id %>"
+                                class="btn btn-sm btn-info text-white"
+                                data-bs-toggle="tooltip"
+                                title="View Report">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <% if (outcome.isCurrentUserReport && outcome.status === 'pending' && !outcome.archived) { %>
+                            <a
+                                href="/learningoutcomes/<%= outcome._id %>/edit"
+                                class="btn btn-sm btn-warning text-white"
+                                data-bs-toggle="tooltip"
+                                title="Edit Report">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-danger"
+                                data-bs-toggle="tooltip"
+                                title="Delete Report"
+                                data-custom-modal-target="deleteReportModal<%= outcome._id %>">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <% } %>
+                        </div>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
     </div>
+    <% } else { %>
+    <div class="alert alert-info">
+        <% if (Object.keys(filters || {}).length > 0 && Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit')) { %>
+            No reports found matching your filters. <a href="/learningoutcomes" class="alert-link">Clear filters</a> to see all reports.
+        <% } else { %>
+            No learning outcomes found.
+            <% if (currentUser && currentUser.role !== 'admin') { %>
+                <a href="/learningoutcomes/new" class="alert-link">Create a new learning outcome</a>.
+            <% } %>
+        <% } %>
+    </div>
+    <% } %>
 
-    <!-- Pagination -->
-    <% if (pagination.totalPages > 1) { %>
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div>
-            Showing <%= (pagination.currentPage - 1) * pagination.pageSize + 1 %> to
-            <%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %>
-            of <%= pagination.totalReports %> learning outcomes
+    <!-- Delete Report Modals -->
+    <% if (LearningOutcomes && LearningOutcomes.length) { %>
+        <% LearningOutcomes.forEach(outcome => { %>
+            <% if (outcome.isCurrentUserReport && outcome.status === 'pending' && !outcome.archived) { %>
+                <!-- Delete Report Modal for <%= outcome._id %> -->
+                <div
+                    class="custom-modal-overlay report-modal"
+                    id="deleteReportModal<%= outcome._id %>"
+                    role="dialog"
+                    aria-labelledby="deleteReportModalLabel<%= outcome._id %>">
+                    <div class="custom-modal">
+                        <div class="custom-modal-header bg-danger">
+                            <h5 class="custom-modal-title" id="deleteReportModalLabel<%= outcome._id %>">
+                                <i class="fas fa-lock"></i>
+                                Confirm Password
+                            </h5>
+                            <button type="button" class="custom-modal-close" aria-label="Close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="custom-modal-body">
+                            <div class="custom-modal-content">
+                                <i class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+                                <h4>Please confirm your password to delete this learning outcome</h4>
+                                <p class="text-danger mt-3">
+                                    <strong>This action cannot be undone.</strong>
+                                </p>
+
+                                <div class="form-group mt-3">
+                                    <label for="confirmPassword<%= outcome._id %>" class="form-label">
+                                        <strong>Your Password:</strong>
+                                    </label>
+                                    <input
+                                        type="password"
+                                        class="form-control"
+                                        id="confirmPassword<%= outcome._id %>"
+                                        name="password"
+                                        required
+                                        placeholder="Enter your password to confirm">
+                                    <div class="invalid-feedback">
+                                        Please enter your password.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="custom-modal-footer">
+                            <form
+                                id="passwordConfirmForm<%= outcome._id %>"
+                                action="/learningoutcomes/<%= outcome._id %>?_method=DELETE"
+                                method="POST"
+                                class="d-inline">
+                                <!-- Hidden input to store the password -->
+                                <input
+                                    type="hidden"
+                                    id="hiddenPassword<%= outcome._id %>"
+                                    name="password"
+                                    value="" />
+                                <!-- Hidden input to store the return URL -->
+                                <input
+                                    type="hidden"
+                                    name="returnUrl"
+                                    value="<%= currentUrl %>" />
+                                <button
+                                    type="submit"
+                                    class="custom-modal-btn custom-modal-btn-danger">
+                                    <i class="fas fa-trash me-1"></i> Delete Learning Outcome
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        <% }); %>
+    <% } %>
+
+    <!-- Pagination Controls -->
+    <% if (pagination && pagination.totalPages > 1) { %>
+    <div class="pagination-container mt-4">
+        <div class="pagination-info">
+            Showing <span class="fw-bold"><%= (pagination.currentPage - 1) * pagination.pageSize + 1 %></span> to
+            <span class="fw-bold"><%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %></span> of
+            <span class="fw-bold"><%= pagination.totalReports %></span> reports
         </div>
         <nav aria-label="Page navigation">
-            <ul class="pagination mb-0">
+            <ul class="pagination">
+                <!-- First Page -->
                 <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
-                    <a class="page-link" href="/learningoutcomes?page=<%= pagination.prevPage %>&<%= new URLSearchParams(filters).toString() %>" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
+                    <a class="page-link" href="/learningoutcomes?<%= new URLSearchParams({...filters, page: 1}).toString() %>" aria-label="First">
+                        <i class="fas fa-angle-double-left"></i>
                     </a>
                 </li>
-                <% for(let i = 1; i <= pagination.totalPages; i++) { %>
+                <!-- Previous Page -->
+                <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                    <a class="page-link" href="/learningoutcomes?<%= new URLSearchParams({...filters, page: pagination.prevPage || 1}).toString() %>" aria-label="Previous">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+
+                <!-- Page Numbers -->
+                <%
+                let startPage = Math.max(1, pagination.currentPage - 2);
+                let endPage = Math.min(pagination.totalPages, startPage + 4);
+                if (endPage - startPage < 4) {
+                    startPage = Math.max(1, endPage - 4);
+                }
+                %>
+
+                <% for(let i = startPage; i <= endPage; i++) { %>
                 <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
-                    <a class="page-link" href="/learningoutcomes?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>">
+                    <a class="page-link" href="/learningoutcomes?<%= new URLSearchParams({...filters, page: i}).toString() %>">
                         <%= i %>
                     </a>
                 </li>
                 <% } %>
+
+                <!-- Next Page -->
                 <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
-                    <a class="page-link" href="/learningoutcomes?page=<%= pagination.nextPage %>&<%= new URLSearchParams(filters).toString() %>" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
+                    <a class="page-link" href="/learningoutcomes?<%= new URLSearchParams({...filters, page: pagination.nextPage || pagination.totalPages}).toString() %>" aria-label="Next">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <!-- Last Page -->
+                <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                    <a class="page-link" href="/learningoutcomes?<%= new URLSearchParams({...filters, page: pagination.totalPages}).toString() %>" aria-label="Last">
+                        <i class="fas fa-angle-double-right"></i>
                     </a>
                 </li>
             </ul>
@@ -177,3 +348,55 @@
     </div>
     <% } %>
 </div>
+
+<!-- Custom modal scripts -->
+<script src="/js/reportModals.js"></script>
+<script src="/js/customModal.js"></script>
+
+<!-- Filter Toggle Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleFiltersBtn = document.getElementById('toggleFilters');
+        const filterBody = document.getElementById('filterBody');
+
+        // Check if there are active filters
+        const hasActiveFilters = <%= Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit') ? 'true' : 'false' %>;
+
+        // If no active filters, collapse the filter section by default
+        if (!hasActiveFilters) {
+            filterBody.style.display = 'none';
+            toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-down');
+            toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-up');
+        }
+
+        toggleFiltersBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (filterBody.style.display === 'none') {
+                filterBody.style.display = 'block';
+                toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-up');
+                toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-down');
+            } else {
+                filterBody.style.display = 'none';
+                toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-down');
+                toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-up');
+            }
+        });
+
+        // For password confirmation modals
+        <% if (LearningOutcomes && LearningOutcomes.length) { %>
+            <% LearningOutcomes.forEach(outcome => { %>
+                <% if (outcome.isCurrentUserReport && outcome.status === 'pending' && !outcome.archived) { %>
+                    const passwordInput<%= outcome._id %> = document.getElementById("confirmPassword<%= outcome._id %>");
+                    const hiddenPassword<%= outcome._id %> = document.getElementById("hiddenPassword<%= outcome._id %>");
+                    const passwordForm<%= outcome._id %> = document.getElementById("passwordConfirmForm<%= outcome._id %>");
+
+                    if (passwordForm<%= outcome._id %> && passwordInput<%= outcome._id %> && hiddenPassword<%= outcome._id %>) {
+                        passwordForm<%= outcome._id %>.addEventListener("submit", function() {
+                            hiddenPassword<%= outcome._id %>.value = passwordInput<%= outcome._id %>.value;
+                        });
+                    }
+                <% } %>
+            <% }); %>
+        <% } %>
+    });
+</script>

@@ -1,5 +1,5 @@
 import express from "express";
-import { isLoggedIn } from "../../middleware.js";
+import { isLoggedIn, isAdmin } from "../../middleware.js";
 import isReportAuthor from "../../middleware/isReportAuthor.js";
 import * as learningOutcomes from "../../controllers/users/learningOutcomes.js";
 import { handleValidationErrors } from "../../utils/sanitize.js";
@@ -16,6 +16,12 @@ router.get("/new", isLoggedIn, learningOutcomes.renderNewForm);
 router
 	.route("/:id")
 	.get(isLoggedIn, learningOutcomes.showOutcome)
+	.put(
+		isLoggedIn,
+		isReportAuthor("learningOutcomes"),
+		handleValidationErrors,
+		learningOutcomes.updateOutcome
+	)
 	.delete(
 		isLoggedIn,
 		isReportAuthor("learningOutcomes"),
@@ -29,12 +35,20 @@ router
 		isReportAuthor("learningOutcomes"),
 		learningOutcomes.renderEditForm
 	);
-router
-	.route("/:id/update")
-	.post(
-		isLoggedIn,
-		isReportAuthor("learningOutcomes"),
-		handleValidationErrors,
-		learningOutcomes.updateOutcome
-	);
+
+// Archive and unarchive routes (admin only)
+router.post(
+	"/:id/archive",
+	isLoggedIn,
+	isAdmin,
+	learningOutcomes.archiveOutcome
+);
+
+router.post(
+	"/:id/unarchive",
+	isLoggedIn,
+	isAdmin,
+	learningOutcomes.unarchiveOutcome
+);
+
 export default router;

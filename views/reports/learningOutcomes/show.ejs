@@ -1,0 +1,429 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/weeklyReportsShow.css" />
+<link rel="stylesheet" href="/css/reportModals.css" />
+<link rel="stylesheet" href="/css/customModal.css" />
+<link rel="stylesheet" href="/css/reportButtons.css" />
+
+<div class="container mt-4">
+	<div class="report-header mb-4">
+		<h1>Learning Outcome Details</h1>
+		<div class="report-status">
+			<% if (LearningOutcome.status === 'pending') { %>
+			<span class="badge bg-warning text-dark">Pending Review</span>
+			<% } else if (LearningOutcome.status === 'approved') { %>
+			<span class="badge bg-success">Approved</span>
+			<% } else { %>
+			<span class="badge bg-danger">Rejected</span>
+			<% } %> <% if (LearningOutcome.archived) { %>
+			<span class="badge bg-secondary ms-2">Archived</span>
+			<% } %>
+		</div>
+		<div class="report-meta">
+			<div class="report-info">
+				<span class="label">Student Name:</span>
+				<span class="value"><%= LearningOutcome.studentName %></span>
+			</div>
+			<div class="report-info">
+				<span class="label">Total Entries:</span>
+				<span class="value"
+					><%= LearningOutcome.entries ? LearningOutcome.entries.length : 0
+					%></span
+				>
+			</div>
+			<div class="report-info">
+				<span class="label">Date Submitted:</span>
+				<span class="value"
+					><%= new Date(LearningOutcome.dateSubmitted).toLocaleDateString()
+					%></span
+				>
+			</div>
+			<% if (LearningOutcome.archived && LearningOutcome.archivedReason) { %>
+			<div class="report-info">
+				<span class="label">Archive Reason:</span>
+				<span class="value"><%= LearningOutcome.archivedReason %></span>
+			</div>
+			<% } %>
+		</div>
+	</div>
+
+	<div class="report-content mb-4">
+		<% if (LearningOutcome.entries && LearningOutcome.entries.length > 0) { %>
+		<% LearningOutcome.entries.forEach((entry, index) => { %>
+		<div class="card mb-3">
+			<div
+				class="card-header d-flex justify-content-between align-items-center">
+				<h5>Entry #<%= index + 1 %></h5>
+				<span class="badge bg-info">
+					<i class="fas fa-calendar-alt me-1"></i>
+					<%= new Date(entry.date).toLocaleDateString('en-US', { year:
+					'numeric', month: 'long', day: 'numeric' }) %>
+				</span>
+			</div>
+			<div class="card-body">
+				<div class="mb-3">
+					<h6 class="fw-bold">Activity:</h6>
+					<p><%= entry.activity %></p>
+				</div>
+				<div>
+					<h6 class="fw-bold">Learning Outcome:</h6>
+					<p><%= entry.learningOutcome %></p>
+				</div>
+			</div>
+		</div>
+		<% }); %> <% } else { %>
+		<div class="alert alert-info">
+			<i class="fas fa-info-circle me-2"></i>
+			No learning outcome entries found.
+		</div>
+		<% } %> <% if (LearningOutcome.status === 'rejected' &&
+		LearningOutcome.adminComments) { %>
+		<div class="card mb-3 border-danger">
+			<div class="card-header bg-danger text-white">
+				<h5>Rejection Reason</h5>
+			</div>
+			<div class="card-body">
+				<p><%= LearningOutcome.adminComments %></p>
+			</div>
+		</div>
+		<% } %>
+	</div>
+
+	<div class="action-buttons">
+		<div class="button-group">
+			<!-- Edit button - only for authors of pending reports -->
+			<% if (LearningOutcome.canEdit) { %>
+			<a
+				href="/learningoutcomes/<%= LearningOutcome._id %>/edit"
+				class="btn btn-warning">
+				<i class="fas fa-edit"></i> Edit
+			</a>
+			<% } %>
+
+			<!-- Delete button - for authors of pending reports or admins with archived reports -->
+			<% if (LearningOutcome.canDelete) { %>
+			<button
+				type="button"
+				class="btn btn-danger"
+				data-custom-modal-target="deleteModal">
+				<i class="fas fa-trash"></i> Delete
+			</button>
+			<% } %>
+		</div>
+
+		<div class="button-group">
+			<!-- Admin approval buttons - only for admins with pending reports -->
+			<% if (currentUser.role === 'admin' && LearningOutcome.status ===
+			'pending') { %>
+			<button
+				type="button"
+				class="btn btn-success"
+				data-custom-modal-target="approveModal">
+				<i class="fas fa-check"></i> Approve
+			</button>
+			<button
+				type="button"
+				class="btn btn-danger"
+				data-custom-modal-target="rejectModal">
+				<i class="fas fa-times"></i> Reject
+			</button>
+			<% } %>
+
+			<!-- Archive button - only for admins with approved reports -->
+			<% if (currentUser.role === 'admin' && LearningOutcome.status ===
+			'approved' && !LearningOutcome.archived) { %>
+			<button
+				type="button"
+				class="btn btn-secondary"
+				data-custom-modal-target="archiveModal">
+				<i class="fas fa-archive"></i> Archive
+			</button>
+			<% } %>
+
+			<!-- Unarchive button - only for admins with archived reports -->
+			<% if (currentUser.role === 'admin' && LearningOutcome.archived) { %>
+			<form
+				action="/learningoutcomes/<%= LearningOutcome._id %>/unarchive"
+				method="POST"
+				class="d-inline">
+				<button type="submit" class="btn btn-info">
+					<i class="fas fa-box-open"></i> Unarchive
+				</button>
+			</form>
+			<% } %>
+		</div>
+	</div>
+</div>
+
+<!-- Delete Modal -->
+<% if (LearningOutcome.canDelete) { %>
+<div
+	class="custom-modal-overlay report-modal"
+	id="deleteModal"
+	role="dialog"
+	aria-labelledby="deleteModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-danger">
+			<h5 class="custom-modal-title" id="deleteModalLabel">
+				<i class="fas fa-lock"></i>
+				Confirm Password
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i
+					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+				<h4>Please confirm your password to delete this learning outcome</h4>
+				<p class="text-danger mt-3">
+					<strong>This action cannot be undone.</strong>
+				</p>
+
+				<div class="form-group mt-3">
+					<label for="confirmPassword" class="form-label">
+						<strong>Your Password:</strong>
+					</label>
+					<input
+						type="password"
+						class="form-control"
+						id="confirmPassword"
+						name="password"
+						required
+						placeholder="Enter your password to confirm" />
+					<div class="invalid-feedback">Please enter your password.</div>
+				</div>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				id="passwordConfirmForm"
+				action="/learningoutcomes/<%= LearningOutcome._id %>?_method=DELETE"
+				method="POST"
+				class="d-inline">
+				<!-- Hidden input to store the password -->
+				<input type="hidden" id="hiddenPassword" name="password" value="" />
+				<!-- Hidden input to store the return URL -->
+				<input type="hidden" name="returnUrl" value="<%= currentUrl %>" />
+				<button type="submit" class="custom-modal-btn custom-modal-btn-danger">
+					<i class="fas fa-trash me-1"></i> Delete Learning Outcome
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Approve Modal -->
+<% if (currentUser.role === 'admin' && LearningOutcome.status === 'pending') {
+%>
+<div
+	class="custom-modal-overlay report-modal"
+	id="approveModal"
+	role="dialog"
+	aria-labelledby="approveModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-success">
+			<h5 class="custom-modal-title" id="approveModalLabel">
+				<i class="fas fa-check-circle"></i>
+				Approve Learning Outcome
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<p>Are you sure you want to approve this learning outcome?</p>
+			<form
+				action="/admin/reports/learningoutcome/<%= LearningOutcome._id %>/approve"
+				method="POST"
+				data-custom-message="Learning Outcome has been approved successfully"
+				data-action-type="approve"
+				id="approveForm">
+				<input type="hidden" name="status" value="approved" />
+				<div class="form-group mb-3">
+					<label for="approveComments" class="form-label"
+						>Comments (Optional):</label
+					>
+					<textarea
+						class="form-control"
+						id="approveComments"
+						name="adminComments"
+						rows="4"
+						placeholder="Add any feedback or comments about this learning outcome"
+						maxlength="500"></textarea>
+					<span class="char-counter" id="approveCharCounter"
+						>0/500 characters</span
+					>
+				</div>
+				<div class="d-flex justify-content-end">
+					<button
+						type="button"
+						class="btn btn-secondary me-2 custom-modal-close">
+						Cancel
+					</button>
+					<button type="submit" class="btn btn-success">Approve</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Reject Modal -->
+<% if (currentUser.role === 'admin' && LearningOutcome.status === 'pending') {
+%>
+<div
+	class="custom-modal-overlay report-modal"
+	id="rejectModal"
+	role="dialog"
+	aria-labelledby="rejectModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-danger">
+			<h5 class="custom-modal-title" id="rejectModalLabel">
+				<i class="fas fa-times-circle"></i>
+				Reject Learning Outcome
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-times-circle custom-modal-icon text-danger"></i>
+				<h4>Reject this learning outcome?</h4>
+				<p class="text-muted mb-4">
+					This action will mark the learning outcome as rejected and notify the
+					student.
+				</p>
+
+				<form
+					action="/admin/reports/learningoutcome/<%= LearningOutcome._id %>/approve"
+					method="POST"
+					data-custom-message="Learning Outcome has been rejected"
+					data-action-type="reject"
+					id="rejectForm">
+					<input type="hidden" name="status" value="rejected" />
+					<div class="form-group mb-3">
+						<label for="rejectComments" class="form-label required-field"
+							>Reason for Rejection</label
+						>
+						<textarea
+							class="form-control"
+							id="rejectComments"
+							name="adminComments"
+							rows="4"
+							placeholder="Please provide a detailed explanation of why this learning outcome is being rejected"
+							required
+							maxlength="500"></textarea>
+						<span class="char-counter" id="rejectCharCounter"
+							>0/500 characters</span
+						>
+					</div>
+					<div class="d-flex justify-content-end">
+						<button
+							type="button"
+							class="btn btn-secondary me-2 custom-modal-close">
+							Cancel
+						</button>
+						<button type="submit" class="btn btn-danger">Reject</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Archive Modal -->
+<% if (currentUser.role === 'admin' && LearningOutcome.status === 'approved' &&
+!LearningOutcome.archived) { %>
+<div
+	class="custom-modal-overlay report-modal"
+	id="archiveModal"
+	role="dialog"
+	aria-labelledby="archiveModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-secondary">
+			<h5 class="custom-modal-title" id="archiveModalLabel">
+				<i class="fas fa-archive"></i>
+				Archive Learning Outcome
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<p>Please provide a reason for archiving this learning outcome:</p>
+			<form
+				id="archiveForm"
+				action="/learningoutcomes/<%= LearningOutcome._id %>/archive"
+				method="POST">
+				<div class="mb-3">
+					<label for="archiveReason" class="form-label">Archive Reason</label>
+					<textarea class="form-control" id="archiveReason" rows="3"></textarea>
+					<input type="hidden" id="hiddenArchiveReason" name="archiveReason" />
+				</div>
+				<div class="d-flex justify-content-end">
+					<button
+						type="button"
+						class="btn btn-secondary me-2 custom-modal-close">
+						Cancel
+					</button>
+					<button type="submit" class="btn btn-primary">Archive</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Custom modal script -->
+<script src="/js/customModal.js"></script>
+<script src="/js/reportModals.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// For archive modal
+		const archiveReasonTextarea = document.getElementById("archiveReason");
+		const hiddenArchiveReason = document.getElementById("hiddenArchiveReason");
+		const archiveForm = document.getElementById("archiveForm");
+
+		if (archiveForm && archiveReasonTextarea && hiddenArchiveReason) {
+			archiveForm.addEventListener("submit", function () {
+				hiddenArchiveReason.value = archiveReasonTextarea.value;
+			});
+		}
+
+		// For password confirmation modal
+		const passwordInput = document.getElementById("confirmPassword");
+		const hiddenPassword = document.getElementById("hiddenPassword");
+		const passwordForm = document.getElementById("passwordConfirmForm");
+
+		if (passwordForm && passwordInput && hiddenPassword) {
+			passwordForm.addEventListener("submit", function () {
+				hiddenPassword.value = passwordInput.value;
+			});
+		}
+
+		// Character counters for approval/rejection forms
+		const approveTextarea = document.getElementById("approveComments");
+		const approveCounter = document.getElementById("approveCharCounter");
+		const rejectTextarea = document.getElementById("rejectComments");
+		const rejectCounter = document.getElementById("rejectCharCounter");
+
+		// Setup character counters if elements exist
+		if (approveTextarea && approveCounter) {
+			approveTextarea.addEventListener("input", function () {
+				const currentLength = this.value.length;
+				approveCounter.textContent = `${currentLength}/500 characters`;
+			});
+		}
+
+		if (rejectTextarea && rejectCounter) {
+			rejectTextarea.addEventListener("input", function () {
+				const currentLength = this.value.length;
+				rejectCounter.textContent = `${currentLength}/500 characters`;
+			});
+		}
+	});
+</script>
