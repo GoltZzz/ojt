@@ -186,15 +186,6 @@
 			<% } %>
 
 			<!-- Delete button - only for authors of non-archived reports -->
-			<% if (WeeklyProgressReport.isAuthor && !WeeklyProgressReport.archived) {
-			%>
-			<button
-				type="button"
-				class="btn btn-danger"
-				data-custom-modal-target="passwordConfirmModal">
-				<i class="fas fa-trash"></i> Delete
-			</button>
-			<% } %>
 
 			<!-- Delete button - only for admins when report is archived -->
 			<% if (currentUser && currentUser.role === 'admin' &&
@@ -202,7 +193,7 @@
 			<button
 				type="button"
 				class="btn btn-danger"
-				data-custom-modal-target="passwordConfirmModal">
+				data-custom-modal-target="adminDeleteModal">
 				<i class="fas fa-trash"></i> Delete
 			</button>
 			<% } %>
@@ -387,6 +378,49 @@
 				class="d-inline">
 				<!-- Hidden input to store the password -->
 				<input type="hidden" id="hiddenPassword" name="password" value="" />
+				<button type="submit" class="custom-modal-btn custom-modal-btn-danger">
+					<i class="fas fa-trash me-1"></i> Delete Report
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Admin Delete Modal (no password required) -->
+<div
+	class="custom-modal-overlay report-modal"
+	id="adminDeleteModal"
+	role="dialog"
+	aria-labelledby="adminDeleteModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-danger">
+			<h5 class="custom-modal-title" id="adminDeleteModalLabel">
+				<i class="fas fa-trash"></i>
+				Delete Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i
+					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+				<h4>Are you sure you want to delete this report?</h4>
+				<p class="text-danger mt-3">
+					<strong>This action cannot be undone.</strong>
+				</p>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				action="/weeklyprogress/<%= WeeklyProgressReport._id %>?_method=DELETE"
+				method="POST"
+				data-custom-message="Report has been deleted successfully"
+				data-action-type="delete"
+				class="d-inline delete-form">
+				<!-- Admin doesn't need to enter password -->
+				<input type="hidden" name="password" value="admin-bypass" />
 				<button type="submit" class="custom-modal-btn custom-modal-btn-danger">
 					<i class="fas fa-trash me-1"></i> Delete Report
 				</button>

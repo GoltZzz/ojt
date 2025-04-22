@@ -496,8 +496,8 @@ export const deleteReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 	const { password } = req.body;
 
-	// Check if password was provided
-	if (!password) {
+	// Check if password was provided (except for admin bypass)
+	if (!password && password !== "admin-bypass") {
 		req.flash("error", "Password is required to delete a report");
 		return res.redirect(`/weeklyprogress/${id}`);
 	}
@@ -530,45 +530,68 @@ export const deleteReport = catchAsync(async (req, res) => {
 		return res.redirect(`/weeklyprogress/${id}`);
 	}
 
-	// Verify the user's password
-	try {
-		// Use passport-local-mongoose's authenticate method to verify the password
-		req.user.authenticate(password, async (err, user, passwordError) => {
-			if (err) {
-				console.error("Authentication error:", err);
-				req.flash("error", "An error occurred during authentication");
-				return res.redirect(`/weeklyprogress/${id}`);
-			}
+	// Check if this is an admin bypass or regular password verification
+	if (password === "admin-bypass" && isAdmin) {
+		// Admin bypass - proceed with deletion without password verification
+		console.log(
+			`Admin deleting report ${report._id}, hasBeenExported: ${report.hasBeenExported}, archived: ${report.archived}`
+		);
 
-			if (!user) {
-				req.flash("error", "Incorrect password");
-				return res.redirect(`/weeklyprogress/${id}`);
-			}
+		try {
+			// Delete the report
+			await WeeklyProgressReport.findByIdAndDelete(id);
 
-			// Password is correct, proceed with deletion
-			console.log(
-				`Deleting report ${report._id}, hasBeenExported: ${report.hasBeenExported}, archived: ${report.archived}`
+			req.flash("success", "Successfully deleted weekly progress report!");
+			return res.redirect("/admin/archived-reports");
+		} catch (error) {
+			console.error("Error deleting weekly progress report:", error);
+			req.flash(
+				"error",
+				"Failed to delete weekly progress report. Please try again."
 			);
+			return res.redirect(`/weeklyprogress/${id}`);
+		}
+	} else {
+		// Regular password verification for non-admin users
+		try {
+			// Use passport-local-mongoose's authenticate method to verify the password
+			req.user.authenticate(password, async (err, user, passwordError) => {
+				if (err) {
+					console.error("Authentication error:", err);
+					req.flash("error", "An error occurred during authentication");
+					return res.redirect(`/weeklyprogress/${id}`);
+				}
 
-			try {
-				// Delete the report
-				await WeeklyProgressReport.findByIdAndDelete(id);
+				if (!user) {
+					req.flash("error", "Incorrect password");
+					return res.redirect(`/weeklyprogress/${id}`);
+				}
 
-				req.flash("success", "Successfully deleted weekly progress report!");
-				res.redirect("/weeklyprogress");
-			} catch (error) {
-				console.error("Error deleting weekly progress report:", error);
-				req.flash(
-					"error",
-					"Failed to delete weekly progress report. Please try again."
+				// Password is correct, proceed with deletion
+				console.log(
+					`Deleting report ${report._id}, hasBeenExported: ${report.hasBeenExported}, archived: ${report.archived}`
 				);
-				res.redirect(`/weeklyprogress/${id}`);
-			}
-		});
-	} catch (error) {
-		console.error("Error during password verification:", error);
-		req.flash("error", "An error occurred during password verification");
-		res.redirect(`/weeklyprogress/${id}`);
+
+				try {
+					// Delete the report
+					await WeeklyProgressReport.findByIdAndDelete(id);
+
+					req.flash("success", "Successfully deleted weekly progress report!");
+					res.redirect("/weeklyprogress");
+				} catch (error) {
+					console.error("Error deleting weekly progress report:", error);
+					req.flash(
+						"error",
+						"Failed to delete weekly progress report. Please try again."
+					);
+					res.redirect(`/weeklyprogress/${id}`);
+				}
+			});
+		} catch (error) {
+			console.error("Error during password verification:", error);
+			req.flash("error", "An error occurred during password verification");
+			res.redirect(`/weeklyprogress/${id}`);
+		}
 	}
 });
 

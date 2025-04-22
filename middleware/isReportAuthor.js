@@ -38,6 +38,15 @@ const isReportAuthor = (reportType) => {
 				return res.redirect(redirectPath);
 			}
 
+			// Check if the user is an admin
+			const isAdmin = req.user && req.user.role === "admin";
+
+			// Special case: Admin deleting an archived report
+			if (isAdmin && report.archived && req.method === "DELETE") {
+				// Allow admin to delete archived reports
+				return next();
+			}
+
 			// Check if the current user is the author of the report
 			if (!report.author || !report.author.equals(req.user._id)) {
 				req.flash("error", "You don't have permission to modify this report");

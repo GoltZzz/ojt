@@ -329,8 +329,8 @@ export const deleteReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 	const { password } = req.body;
 
-	// Check if password was provided
-	if (!password) {
+	// Check if password was provided (except for admin bypass)
+	if (!password && password !== "admin-bypass") {
 		req.flash("error", "Password is required to delete a report");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
@@ -362,42 +362,65 @@ export const deleteReport = catchAsync(async (req, res) => {
 
 	// No longer restricting deletion of approved reports for regular users
 
-	// Verify the user's password
-	try {
-		// Use passport-local-mongoose's authenticate method to verify the password
-		req.user.authenticate(password, async (err, user, passwordError) => {
-			if (err) {
-				console.error("Authentication error:", err);
-				req.flash("error", "An error occurred during authentication");
-				return res.redirect(`/weeklyreport/${id}`);
-			}
+	// Check if this is an admin bypass or regular password verification
+	if (password === "admin-bypass" && isAdmin) {
+		// Admin bypass - proceed with deletion without password verification
+		console.log(
+			`Admin deleting report ${report._id}, archived: ${report.archived}`
+		);
 
-			if (!user) {
-				req.flash("error", "Incorrect password");
-				return res.redirect(`/weeklyreport/${id}`);
-			}
+		try {
+			// Delete the report
+			await WeeklyReport.findByIdAndDelete(id);
 
-			// Password is correct, proceed with deletion
-			console.log(
-				`Deleting report ${report._id}, archived: ${report.archived}`
-			);
+			req.flash("success", "Successfully deleted weekly report!");
+			return res.redirect("/admin/archived-reports");
+		} catch (error) {
+			console.error("Error deleting weekly report:", error);
+			req.flash("error", "Failed to delete weekly report. Please try again.");
+			return res.redirect(`/weeklyreport/${id}`);
+		}
+	} else {
+		// Regular password verification for non-admin users
+		try {
+			// Use passport-local-mongoose's authenticate method to verify the password
+			req.user.authenticate(password, async (err, user, passwordError) => {
+				if (err) {
+					console.error("Authentication error:", err);
+					req.flash("error", "An error occurred during authentication");
+					return res.redirect(`/weeklyreport/${id}`);
+				}
 
-			try {
-				// Delete the report
-				await WeeklyReport.findByIdAndDelete(id);
+				if (!user) {
+					req.flash("error", "Incorrect password");
+					return res.redirect(`/weeklyreport/${id}`);
+				}
 
-				req.flash("success", "Successfully deleted weekly report!");
-				res.redirect("/weeklyreport");
-			} catch (error) {
-				console.error("Error deleting weekly report:", error);
-				req.flash("error", "Failed to delete weekly report. Please try again.");
-				res.redirect(`/weeklyreport/${id}`);
-			}
-		});
-	} catch (error) {
-		console.error("Error during password verification:", error);
-		req.flash("error", "An error occurred during password verification");
-		res.redirect(`/weeklyreport/${id}`);
+				// Password is correct, proceed with deletion
+				console.log(
+					`Deleting report ${report._id}, archived: ${report.archived}`
+				);
+
+				try {
+					// Delete the report
+					await WeeklyReport.findByIdAndDelete(id);
+
+					req.flash("success", "Successfully deleted weekly report!");
+					res.redirect("/weeklyreport");
+				} catch (error) {
+					console.error("Error deleting weekly report:", error);
+					req.flash(
+						"error",
+						"Failed to delete weekly report. Please try again."
+					);
+					res.redirect(`/weeklyreport/${id}`);
+				}
+			});
+		} catch (error) {
+			console.error("Error during password verification:", error);
+			req.flash("error", "An error occurred during password verification");
+			res.redirect(`/weeklyreport/${id}`);
+		}
 	}
 });
 
