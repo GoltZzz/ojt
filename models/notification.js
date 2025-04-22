@@ -22,7 +22,6 @@ const notificationSchema = new Schema({
 			"weeklyreport",
 			"weeklyprogress",
 			"trainingschedule",
-			"learningoutcome",
 			"learningoutcomes",
 			"dailyattendance",
 			"documentation",

@@ -307,7 +307,7 @@ const markNotificationAsRead = catchAsync(async (req, res) => {
 		case "trainingschedule":
 			redirectUrl = `/trainingschedule/${reportId}`;
 			break;
-		case "learningoutcome":
+		case "learningoutcomes":
 			redirectUrl = `/learningoutcomes/${reportId}`;
 			break;
 		case "dailyattendance":

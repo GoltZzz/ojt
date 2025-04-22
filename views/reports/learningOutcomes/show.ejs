@@ -224,7 +224,8 @@
 <% } %>
 
 <!-- Approve Modal -->
-<% if (currentUser.role === 'admin' && LearningOutcome.status === 'pending') { %>
+<% if (currentUser.role === 'admin' && LearningOutcome.status === 'pending') {
+%>
 <div
 	class="custom-modal-overlay report-modal"
 	id="approveModal"
@@ -245,11 +246,12 @@
 				<i class="fas fa-check-circle custom-modal-icon text-success"></i>
 				<h4>Approve this learning outcome?</h4>
 				<p class="text-muted mb-4">
-					This action will mark the learning outcome as approved and notify the student.
+					This action will mark the learning outcome as approved and notify the
+					student.
 				</p>
-				
+
 				<form
-					action="/admin/learningoutcomes/<%= LearningOutcome._id %>/approve"
+					action="/admin/reports/learningoutcomes/<%= LearningOutcome._id %>/approve"
 					method="POST"
 					data-custom-message="Learning Outcome has been approved successfully"
 					data-action-type="approve"
@@ -274,7 +276,10 @@
 			</div>
 		</div>
 		<div class="custom-modal-footer">
-			<button type="submit" form="approveForm" class="custom-modal-btn custom-modal-btn-success">
+			<button
+				type="submit"
+				form="approveForm"
+				class="custom-modal-btn custom-modal-btn-success">
 				<i class="fas fa-check me-1"></i> Approve Learning Outcome
 			</button>
 		</div>
@@ -283,7 +288,8 @@
 <% } %>
 
 <!-- Reject Modal -->
-<% if (currentUser.role === 'admin' && LearningOutcome.status === 'pending') { %>
+<% if (currentUser.role === 'admin' && LearningOutcome.status === 'pending') {
+%>
 <div
 	class="custom-modal-overlay report-modal"
 	id="rejectModal"
@@ -307,9 +313,9 @@
 					This action will mark the learning outcome as rejected and notify the
 					student.
 				</p>
-				
+
 				<form
-					action="/admin/learningoutcomes/<%= LearningOutcome._id %>/reject"
+					action="/admin/reports/learningoutcomes/<%= LearningOutcome._id %>/reject"
 					method="POST"
 					data-custom-message="Learning Outcome has been rejected"
 					data-action-type="reject"
@@ -335,7 +341,10 @@
 			</div>
 		</div>
 		<div class="custom-modal-footer">
-			<button type="submit" form="rejectForm" class="custom-modal-btn custom-modal-btn-danger">
+			<button
+				type="submit"
+				form="rejectForm"
+				class="custom-modal-btn custom-modal-btn-danger">
 				<i class="fas fa-times me-1"></i> Reject Learning Outcome
 			</button>
 		</div>

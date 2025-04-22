@@ -512,7 +512,7 @@ export const deleteOutcome = catchAsync(async (req, res) => {
 
 export const archiveOutcome = catchAsync(async (req, res) => {
 	const { id } = req.params;
-	const { archiveReason } = req.body;
+	const { archivedReason } = req.body;
 
 	// Check if the user is an admin
 	if (req.user.role !== "admin") {
@@ -543,7 +543,7 @@ export const archiveOutcome = catchAsync(async (req, res) => {
 
 	// Update the outcome to archived status
 	outcome.archived = true;
-	outcome.archivedReason = archiveReason;
+	outcome.archivedReason = archivedReason;
 	await outcome.save();
 
 	req.flash("success", "Learning Outcome has been archived");

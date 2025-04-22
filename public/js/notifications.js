@@ -323,7 +323,6 @@ document.addEventListener("DOMContentLoaded", function () {
 				return `/weeklyprogress/${reportId}`;
 			case "trainingschedule":
 				return `/trainingschedule/${reportId}`;
-			case "learningoutcome":
 			case "learningoutcomes":
 				return `/learningoutcomes/${reportId}`;
 			case "dailyattendance":

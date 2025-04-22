@@ -1,8 +1,8 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/weeklyReportsShow.css" />
 <link rel="stylesheet" href="/css/reportModals.css" />
-<link rel="stylesheet" href="/css/reportButtons.css" />
 <link rel="stylesheet" href="/css/customModal.css" />
+<link rel="stylesheet" href="/css/reportButtons.css" />
 
 <div class="container mt-4">
 	<div class="report-header mb-4">
@@ -148,14 +148,15 @@
 	</div>
 
 	<!-- Action Buttons -->
-	<div class="report-buttons">
-		<div class="user-actions">
-			<!-- Edit button - only for authors of pending reports -->
-			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status ===
-			'pending' && !WeeklyProgressReport.archived) { %>
+	<div class="action-buttons">
+		<div class="button-group">
+			<!-- Edit button - for authors of pending or rejected reports -->
+			<% if (WeeklyProgressReport.isAuthor && (WeeklyProgressReport.status ===
+			'pending' || WeeklyProgressReport.status === 'rejected') &&
+			!WeeklyProgressReport.archived) { %>
 			<a
 				href="/weeklyprogress/<%= WeeklyProgressReport._id %>/edit"
-				class="report-btn report-btn-warning">
+				class="btn btn-warning">
 				<i class="fas fa-edit"></i> Edit
 			</a>
 			<% } %>
@@ -165,25 +166,25 @@
 			'rejected') { %>
 			<a
 				href="/weeklyprogress/<%= WeeklyProgressReport._id %>/export-pdf"
-				class="report-btn report-btn-primary">
+				class="btn btn-primary">
 				<i class="fas fa-file-pdf"></i> Export to PDF
 			</a>
 			<% } %>
 		</div>
 
-		<div class="admin-actions">
+		<div class="button-group">
 			<!-- Admin approval buttons - only for admins with pending reports -->
 			<% if (currentUser && currentUser.role === 'admin' &&
 			WeeklyProgressReport.status === 'pending') { %>
 			<button
 				type="button"
-				class="report-btn report-btn-success"
+				class="btn btn-success"
 				data-custom-modal-target="approveModal">
 				<i class="fas fa-check"></i> Approve
 			</button>
 			<button
 				type="button"
-				class="report-btn report-btn-danger"
+				class="btn btn-danger"
 				data-custom-modal-target="rejectModal">
 				<i class="fas fa-times"></i> Reject
 			</button>
@@ -194,7 +195,7 @@
 			!WeeklyProgressReport.archived) { %>
 			<button
 				type="button"
-				class="report-btn report-btn-secondary"
+				class="btn btn-secondary"
 				data-custom-modal-target="archiveReportModal">
 				<i class="fas fa-archive"></i> Archive
 			</button>
@@ -205,7 +206,7 @@
 			WeeklyProgressReport.archived) { %>
 			<button
 				type="button"
-				class="report-btn report-btn-secondary"
+				class="btn btn-success"
 				data-custom-modal-target="unarchiveReportModal">
 				<i class="fas fa-box-open"></i> Unarchive
 			</button>
@@ -216,7 +217,7 @@
 			WeeklyProgressReport.archived) { %>
 			<button
 				type="button"
-				class="report-btn report-btn-danger"
+				class="btn btn-danger"
 				data-custom-modal-target="adminDeleteModal">
 				<i class="fas fa-trash"></i> Delete
 			</button>
@@ -232,7 +233,7 @@
 	role="dialog"
 	aria-labelledby="archiveReportModalLabel">
 	<div class="custom-modal">
-		<div class="custom-modal-header archive-header">
+		<div class="custom-modal-header bg-secondary">
 			<h5 class="custom-modal-title" id="archiveReportModalLabel">
 				<i class="fas fa-archive"></i>
 				Archive Report
@@ -243,15 +244,15 @@
 		</div>
 		<div class="custom-modal-body">
 			<div class="custom-modal-content">
-				<i class="fas fa-archive custom-modal-icon text-secondary"></i>
-				<h4>Archive this report?</h4>
+				<i class="fas fa-file-archive custom-modal-icon text-secondary"></i>
+				<h4>Are you sure you want to archive this report?</h4>
 				<p class="text-muted mb-4">
 					This action will move the report to the archive section.
 				</p>
 
 				<div class="form-group">
 					<label for="archiveReason" class="form-label">
-						Reason for archiving (optional):
+						<strong>Reason for archiving (optional):</strong>
 					</label>
 					<textarea
 						class="form-control"
@@ -260,29 +261,28 @@
 						rows="3"
 						placeholder="Enter a reason for archiving this report"></textarea>
 				</div>
-
-				<div class="custom-modal-footer">
-					<form
-						id="archiveForm"
-						action="/weeklyprogress/<%= WeeklyProgressReport._id %>/archive"
-						method="POST"
-						data-custom-message="Report has been archived successfully"
-						data-action-type="archive"
-						class="d-inline">
-						<!-- Hidden textarea to store the archive reason -->
-						<input
-							type="hidden"
-							id="hiddenArchiveReason"
-							name="archivedReason"
-							value="" />
-						<button
-							type="submit"
-							class="custom-modal-btn custom-modal-btn-secondary">
-							<i class="fas fa-archive me-1"></i> Archive Report
-						</button>
-					</form>
-				</div>
 			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				id="archiveForm"
+				action="/weeklyprogress/<%= WeeklyProgressReport._id %>/archive"
+				method="POST"
+				data-custom-message="Report has been archived successfully"
+				data-action-type="archive"
+				class="d-inline">
+				<!-- Hidden textarea to store the archive reason -->
+				<input
+					type="hidden"
+					id="hiddenArchiveReason"
+					name="archivedReason"
+					value="" />
+				<button
+					type="submit"
+					class="custom-modal-btn custom-modal-btn-secondary">
+					<i class="fas fa-archive me-1"></i> Archive Report
+				</button>
+			</form>
 		</div>
 	</div>
 </div>
