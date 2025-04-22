@@ -148,7 +148,8 @@
 	<!-- Action Buttons -->
 	<div class="d-flex justify-content-center mb-5">
 		<div class="d-flex gap-2">
-			<% if (!WeeklyProgressReport.archived) { %>
+			<% if (currentUser && currentUser.role === 'admin') { %> <% if
+			(!WeeklyProgressReport.archived) { %>
 			<button
 				type="button"
 				class="btn btn-secondary"
@@ -162,7 +163,7 @@
 				data-custom-modal-target="unarchiveReportModal">
 				<i class="fas fa-box-open"></i> Unarchive
 			</button>
-			<% } %>
+			<% } %> <% } %>
 
 			<!-- Export to PDF button - only for report authors and non-rejected reports -->
 			<% if (WeeklyProgressReport.isAuthor && WeeklyProgressReport.status !==
@@ -184,10 +185,20 @@
 			</a>
 			<% } %>
 
-			<!-- Delete button - only for authors of non-archived reports or admins of archived reports -->
-			<% if ((WeeklyProgressReport.isAuthor && !WeeklyProgressReport.archived)
-			|| (currentUser && currentUser.role === 'admin' &&
-			WeeklyProgressReport.archived)) { %>
+			<!-- Delete button - only for authors of non-archived reports -->
+			<% if (WeeklyProgressReport.isAuthor && !WeeklyProgressReport.archived) {
+			%>
+			<button
+				type="button"
+				class="btn btn-danger"
+				data-custom-modal-target="passwordConfirmModal">
+				<i class="fas fa-trash"></i> Delete
+			</button>
+			<% } %>
+
+			<!-- Delete button - only for admins when report is archived -->
+			<% if (currentUser && currentUser.role === 'admin' &&
+			WeeklyProgressReport.archived) { %>
 			<button
 				type="button"
 				class="btn btn-danger"
