@@ -301,6 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			case "trainingschedule":
 				return "Training Schedule";
 			case "learningoutcome":
+			case "learningoutcomes":
 				return "Learning Outcome";
 			case "dailyattendance":
 				return "Daily Attendance";
@@ -323,6 +324,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			case "trainingschedule":
 				return `/trainingschedule/${reportId}`;
 			case "learningoutcome":
+			case "learningoutcomes":
 				return `/learningoutcomes/${reportId}`;
 			case "dailyattendance":
 				return `/dailyattendance/${reportId}`;

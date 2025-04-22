@@ -23,6 +23,7 @@ const notificationSchema = new Schema({
 			"weeklyprogress",
 			"trainingschedule",
 			"learningoutcome",
+			"learningoutcomes",
 			"dailyattendance",
 			"documentation",
 			"timereport",

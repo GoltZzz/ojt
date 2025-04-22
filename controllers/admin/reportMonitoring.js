@@ -215,6 +215,7 @@ const getReportTypeName = (type) => {
 			return "Weekly Progress Report";
 		case "trainingschedule":
 			return "Training Schedule";
+		case "learningoutcome":
 		case "learningoutcomes":
 			return "Learning Outcome";
 		case "dailyattendance":

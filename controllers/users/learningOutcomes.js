@@ -377,7 +377,7 @@ export const updateOutcome = catchAsync(async (req, res) => {
 				recipient: admin._id,
 				message: `${userFullName} has done a revision on learning outcome you rejected. Do you want to view it?`,
 				type: "info",
-				reportType: "learningoutcome",
+				reportType: "learningoutcomes",
 				reportId: outcome._id,
 				action: "revised",
 			});
