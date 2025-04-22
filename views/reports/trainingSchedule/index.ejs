@@ -224,8 +224,8 @@
                 <div class="custom-modal">
                     <div class="custom-modal-header bg-danger">
                         <h5 class="custom-modal-title" id="deleteScheduleModalLabel<%= schedule._id %>">
-                            <i class="fas fa-trash"></i>
-                            Delete Schedule
+                            <i class="fas fa-lock"></i>
+                            Confirm Password
                         </h5>
                         <button type="button" class="custom-modal-close" aria-label="Close">
                             <i class="fas fa-times"></i>
@@ -234,19 +234,40 @@
                     <div class="custom-modal-body">
                         <div class="custom-modal-content">
                             <i class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
-                            <h4>Are you sure you want to delete this training schedule?</h4>
+                            <h4>Please confirm your password to delete this schedule</h4>
                             <p class="text-danger mt-3">
                                 <strong>This action cannot be undone.</strong>
                             </p>
+
+                            <div class="form-group mt-3">
+                                <label for="confirmPassword<%= schedule._id %>" class="form-label">
+                                    <strong>Your Password:</strong>
+                                </label>
+                                <input
+                                    type="password"
+                                    class="form-control"
+                                    id="confirmPassword<%= schedule._id %>"
+                                    name="password"
+                                    required
+                                    placeholder="Enter your password to confirm">
+                                <div class="invalid-feedback">
+                                    Please enter your password.
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="custom-modal-footer">
                         <form
+                            id="passwordConfirmForm<%= schedule._id %>"
                             action="/trainingschedule/<%= schedule._id %>?_method=DELETE"
                             method="POST"
-                            data-custom-message="Schedule has been deleted successfully"
-                            data-action-type="delete"
                             class="d-inline">
+                            <!-- Hidden input to store the password -->
+                            <input
+                                type="hidden"
+                                id="hiddenPassword<%= schedule._id %>"
+                                name="password"
+                                value="" />
                             <button
                                 type="submit"
                                 class="custom-modal-btn custom-modal-btn-danger">
@@ -294,3 +315,23 @@
 <!-- Custom modal scripts -->
 <script src="/js/reportModals.js"></script>
 <script src="/js/customModal.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // For password confirmation modals
+        <% if (TrainingSchedules && TrainingSchedules.length) { %>
+            <% TrainingSchedules.forEach(schedule => { %>
+                <% if (schedule.isCurrentUserReport && schedule.status === 'pending' && !schedule.archived) { %>
+                    const passwordInput<%= schedule._id %> = document.getElementById("confirmPassword<%= schedule._id %>");
+                    const hiddenPassword<%= schedule._id %> = document.getElementById("hiddenPassword<%= schedule._id %>");
+                    const passwordForm<%= schedule._id %> = document.getElementById("passwordConfirmForm<%= schedule._id %>");
+
+                    if (passwordForm<%= schedule._id %> && passwordInput<%= schedule._id %> && hiddenPassword<%= schedule._id %>) {
+                        passwordForm<%= schedule._id %>.addEventListener("submit", function () {
+                            hiddenPassword<%= schedule._id %>.value = passwordInput<%= schedule._id %>.value;
+                        });
+                    }
+                <% } %>
+            <% }) %>
+        <% } %>
+    });
+</script>

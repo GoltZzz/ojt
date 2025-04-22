@@ -245,18 +245,15 @@ export const showReport = catchAsync(async (req, res) => {
 	// Only the author can edit if the report is pending and not archived
 	const canEdit = isAuthor && report.status === "pending" && !report.archived;
 
-	// Only the author can delete if the report has been exported and is not archived
-	const canDelete = isAuthor && report.hasBeenExported && !report.archived;
+	// Only the author can delete if the report is not archived
+	const canDelete = isAuthor && !report.archived;
 
 	// Add these properties to the report object
 	report.isAuthor = isAuthor;
 	report.canEdit = canEdit;
 	report.canDelete = canDelete;
 
-	// Make sure hasBeenExported is accessible in the template
-	console.log(
-		`Report ${report._id} hasBeenExported: ${report.hasBeenExported}`
-	);
+	// No longer checking hasBeenExported status
 
 	res.render("reports/weeklyProgress/show", {
 		WeeklyProgressReport: report,
@@ -445,6 +442,13 @@ export const updateReport = catchAsync(async (req, res) => {
 
 export const deleteReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
+	const { password } = req.body;
+
+	// Check if password was provided
+	if (!password) {
+		req.flash("error", "Password is required to delete a report");
+		return res.redirect(`/weeklyprogress/${id}`);
+	}
 
 	// Find the report by ID
 	const report = await WeeklyProgressReport.findById(id);
@@ -455,44 +459,63 @@ export const deleteReport = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyprogress");
 	}
 
-	// Check if the current user is the author of the report
+	// Check if the current user is the author of the report or an admin
 	const isAuthor =
 		req.user && report.author && report.author.equals(req.user._id);
+	const isAdmin = req.user && req.user.role === "admin";
 
-	// If not the author, flash error and redirect
-	if (!isAuthor) {
+	// If not the author or admin, flash error and redirect
+	if (!isAuthor && !isAdmin) {
 		req.flash("error", "You do not have permission to delete this report");
 		return res.redirect("/weeklyprogress");
 	}
 
-	// Check if the report has been exported
-	if (!report.hasBeenExported) {
-		req.flash("error", "You must export the report to PDF before deleting it");
+	// No longer requiring export before deletion
+
+	// For admin users: check if the report is archived
+	if (isAdmin && !report.archived) {
+		req.flash("error", "You must archive the report before deleting it");
 		return res.redirect(`/weeklyprogress/${id}`);
 	}
 
-	// If report is archived, flash error and redirect
-	if (report.archived) {
-		req.flash("error", "You cannot delete an archived report");
-		return res.redirect("/weeklyprogress");
-	}
-
-	console.log(
-		`Deleting report ${report._id}, hasBeenExported: ${report.hasBeenExported}`
-	);
-
+	// Verify the user's password
 	try {
-		// Delete the report
-		await WeeklyProgressReport.findByIdAndDelete(id);
+		// Use passport-local-mongoose's authenticate method to verify the password
+		req.user.authenticate(password, async (err, user, passwordError) => {
+			if (err) {
+				console.error("Authentication error:", err);
+				req.flash("error", "An error occurred during authentication");
+				return res.redirect(`/weeklyprogress/${id}`);
+			}
 
-		req.flash("success", "Successfully deleted weekly progress report!");
-		res.redirect("/weeklyprogress");
+			if (!user) {
+				req.flash("error", "Incorrect password");
+				return res.redirect(`/weeklyprogress/${id}`);
+			}
+
+			// Password is correct, proceed with deletion
+			console.log(
+				`Deleting report ${report._id}, hasBeenExported: ${report.hasBeenExported}, archived: ${report.archived}`
+			);
+
+			try {
+				// Delete the report
+				await WeeklyProgressReport.findByIdAndDelete(id);
+
+				req.flash("success", "Successfully deleted weekly progress report!");
+				res.redirect("/weeklyprogress");
+			} catch (error) {
+				console.error("Error deleting weekly progress report:", error);
+				req.flash(
+					"error",
+					"Failed to delete weekly progress report. Please try again."
+				);
+				res.redirect(`/weeklyprogress/${id}`);
+			}
+		});
 	} catch (error) {
-		console.error("Error deleting weekly progress report:", error);
-		req.flash(
-			"error",
-			"Failed to delete weekly progress report. Please try again."
-		);
+		console.error("Error during password verification:", error);
+		req.flash("error", "An error occurred during password verification");
 		res.redirect(`/weeklyprogress/${id}`);
 	}
 });
@@ -500,8 +523,14 @@ export const deleteReport = catchAsync(async (req, res) => {
 export const archiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 
+	// Check if user is admin
+	if (req.user.role !== "admin") {
+		req.flash("error", "Only administrators can archive reports");
+		return res.redirect(`/weeklyprogress/${id}`);
+	}
+
 	// Find the report by ID
-	const report = await WeeklyProgressReport.findById(id);
+	const report = await WeeklyProgressReport.findById(id).populate("author");
 
 	// If report not found, flash error and redirect
 	if (!report) {
@@ -509,12 +538,36 @@ export const archiveReport = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyprogress");
 	}
 
+	// Check if the report is approved
+	if (report.status !== "approved") {
+		req.flash("error", "Only approved reports can be archived");
+		return res.redirect(`/weeklyprogress/${id}`);
+	}
+
 	try {
 		// Archive the report
 		report.archived = true;
 		report.archivedReason =
-			req.body.archivedReason || "Manually archived by user";
+			req.body.archivedReason || "Manually archived by admin";
 		await report.save();
+
+		// Create notification for the report author
+		if (report.author) {
+			const notification = new Notification({
+				recipient: report.author._id,
+				message: `Your Weekly Progress Report has been archived by an administrator${
+					req.body.archivedReason
+						? " with reason: " + req.body.archivedReason
+						: ""
+				}.`,
+				type: "info",
+				reportType: "weeklyprogress",
+				reportId: report._id,
+				action: "archived",
+			});
+
+			await notification.save();
+		}
 
 		req.flash("success", "Successfully archived weekly progress report!");
 		res.redirect("/admin/archived-reports");
@@ -531,8 +584,14 @@ export const archiveReport = catchAsync(async (req, res) => {
 export const unarchiveReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 
+	// Check if user is admin
+	if (req.user.role !== "admin") {
+		req.flash("error", "Only administrators can unarchive reports");
+		return res.redirect(`/weeklyprogress/${id}`);
+	}
+
 	// Find the report by ID
-	const report = await WeeklyProgressReport.findById(id);
+	const report = await WeeklyProgressReport.findById(id).populate("author");
 
 	// If report not found, flash error and redirect
 	if (!report) {
@@ -545,6 +604,20 @@ export const unarchiveReport = catchAsync(async (req, res) => {
 		report.archived = false;
 		report.archivedReason = "";
 		await report.save();
+
+		// Create notification for the report author
+		if (report.author) {
+			const notification = new Notification({
+				recipient: report.author._id,
+				message: `Your Weekly Progress Report has been unarchived by an administrator.`,
+				type: "info",
+				reportType: "weeklyprogress",
+				reportId: report._id,
+				action: "unarchived",
+			});
+
+			await notification.save();
+		}
 
 		req.flash("success", "Successfully unarchived weekly progress report!");
 		res.redirect("/weeklyprogress");

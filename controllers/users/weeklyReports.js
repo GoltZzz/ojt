@@ -186,10 +186,8 @@ export const showReport = catchAsync(async (req, res, next) => {
 	WeeklyReports.canEdit =
 		WeeklyReports.isAuthor && WeeklyReports.status === "pending";
 
-	// Add a flag to indicate if the report can be deleted (is pending or rejected and user is author)
-	WeeklyReports.canDelete =
-		WeeklyReports.isAuthor &&
-		(WeeklyReports.status === "pending" || WeeklyReports.status === "rejected");
+	// Add a flag to indicate if the report can be deleted (user is author and report is not archived)
+	WeeklyReports.canDelete = WeeklyReports.isAuthor && !WeeklyReports.archived;
 
 	res.render("reports/show", { WeeklyReports });
 });
@@ -273,6 +271,13 @@ export const updateReport = catchAsync(async (req, res) => {
 
 export const deleteReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
+	const { password } = req.body;
+
+	// Check if password was provided
+	if (!password) {
+		req.flash("error", "Password is required to delete a report");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
 
 	// First find the report to check permissions
 	const report = await WeeklyReport.findById(id);
@@ -282,22 +287,62 @@ export const deleteReport = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyreport");
 	}
 
-	// Double-check that the current user is the author
-	if (!report.author || !report.author.equals(req.user._id)) {
+	// Check if the current user is the author of the report or an admin
+	const isAuthor =
+		req.user && report.author && report.author.equals(req.user._id);
+	const isAdmin = req.user && req.user.role === "admin";
+
+	// If not the author or admin, flash error and redirect
+	if (!isAuthor && !isAdmin) {
 		req.flash("error", "You don't have permission to delete this report");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	// Check if the report is already approved (rejected reports can be deleted)
-	if (report.status === "approved") {
-		req.flash("error", "You cannot delete an approved report");
+	// For admin users: check if the report is archived
+	if (isAdmin && !report.archived) {
+		req.flash("error", "You must archive the report before deleting it");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	// Now delete the report
-	await WeeklyReport.findByIdAndDelete(id);
-	req.flash("success", "Successfully deleted weekly report!");
-	res.redirect("/weeklyreport");
+	// No longer restricting deletion of approved reports for regular users
+
+	// Verify the user's password
+	try {
+		// Use passport-local-mongoose's authenticate method to verify the password
+		req.user.authenticate(password, async (err, user, passwordError) => {
+			if (err) {
+				console.error("Authentication error:", err);
+				req.flash("error", "An error occurred during authentication");
+				return res.redirect(`/weeklyreport/${id}`);
+			}
+
+			if (!user) {
+				req.flash("error", "Incorrect password");
+				return res.redirect(`/weeklyreport/${id}`);
+			}
+
+			// Password is correct, proceed with deletion
+			console.log(
+				`Deleting report ${report._id}, archived: ${report.archived}`
+			);
+
+			try {
+				// Delete the report
+				await WeeklyReport.findByIdAndDelete(id);
+
+				req.flash("success", "Successfully deleted weekly report!");
+				res.redirect("/weeklyreport");
+			} catch (error) {
+				console.error("Error deleting weekly report:", error);
+				req.flash("error", "Failed to delete weekly report. Please try again.");
+				res.redirect(`/weeklyreport/${id}`);
+			}
+		});
+	} catch (error) {
+		console.error("Error during password verification:", error);
+		req.flash("error", "An error occurred during password verification");
+		res.redirect(`/weeklyreport/${id}`);
+	}
 });
 
 export const archiveReport = catchAsync(async (req, res) => {

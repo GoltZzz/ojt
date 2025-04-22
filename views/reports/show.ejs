@@ -419,7 +419,7 @@
 	</div>
 </div>
 
-<!-- Delete Report Modal -->
+<!-- Password Confirmation Modal for Delete -->
 <% if (WeeklyReports.canDelete) { %>
 <div
 	class="custom-modal-overlay report-modal"
@@ -429,8 +429,8 @@
 	<div class="custom-modal">
 		<div class="custom-modal-header bg-danger">
 			<h5 class="custom-modal-title" id="deleteReportModalLabel">
-				<i class="fas fa-trash"></i>
-				Delete Report
+				<i class="fas fa-lock"></i>
+				Confirm Password
 			</h5>
 			<button type="button" class="custom-modal-close" aria-label="Close">
 				<i class="fas fa-times"></i>
@@ -440,19 +440,34 @@
 			<div class="custom-modal-content">
 				<i
 					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
-				<h4>Are you sure you want to delete this report?</h4>
+				<h4>Please confirm your password to delete this report</h4>
 				<p class="text-danger mt-3">
 					<strong>This action cannot be undone.</strong>
 				</p>
+
+				<div class="form-group mt-3">
+					<label for="confirmPassword" class="form-label">
+						<strong>Your Password:</strong>
+					</label>
+					<input
+						type="password"
+						class="form-control"
+						id="confirmPassword"
+						name="password"
+						required
+						placeholder="Enter your password to confirm" />
+					<div class="invalid-feedback">Please enter your password.</div>
+				</div>
 			</div>
 		</div>
 		<div class="custom-modal-footer">
 			<form
+				id="passwordConfirmForm"
 				action="/weeklyreport/<%= WeeklyReports._id %>?_method=DELETE"
 				method="POST"
-				data-custom-message="Report has been deleted successfully"
-				data-action-type="delete"
 				class="d-inline">
+				<!-- Hidden input to store the password -->
+				<input type="hidden" id="hiddenPassword" name="password" value="" />
 				<button type="submit" class="custom-modal-btn custom-modal-btn-danger">
 					<i class="fas fa-trash me-1"></i> Delete Report
 				</button>
@@ -465,3 +480,17 @@
 <!-- Custom modal scripts -->
 <script src="/js/reportModals.js"></script>
 <script src="/js/customModal.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// For password confirmation modal
+		const passwordInput = document.getElementById("confirmPassword");
+		const hiddenPassword = document.getElementById("hiddenPassword");
+		const passwordForm = document.getElementById("passwordConfirmForm");
+
+		if (passwordForm && passwordInput && hiddenPassword) {
+			passwordForm.addEventListener("submit", function () {
+				hiddenPassword.value = passwordInput.value;
+			});
+		}
+	});
+</script>

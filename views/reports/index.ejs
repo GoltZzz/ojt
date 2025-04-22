@@ -324,8 +324,8 @@
 				<div class="custom-modal">
 					<div class="custom-modal-header bg-danger">
 						<h5 class="custom-modal-title" id="deleteReportModalLabel<%= report._id %>">
-							<i class="fas fa-trash"></i>
-							Delete Report
+							<i class="fas fa-lock"></i>
+							Confirm Password
 						</h5>
 						<button type="button" class="custom-modal-close" aria-label="Close">
 							<i class="fas fa-times"></i>
@@ -334,19 +334,40 @@
 					<div class="custom-modal-body">
 						<div class="custom-modal-content">
 							<i class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
-							<h4>Are you sure you want to delete this report?</h4>
+							<h4>Please confirm your password to delete this report</h4>
 							<p class="text-danger mt-3">
 								<strong>This action cannot be undone.</strong>
 							</p>
+
+							<div class="form-group mt-3">
+								<label for="confirmPassword<%= report._id %>" class="form-label">
+									<strong>Your Password:</strong>
+								</label>
+								<input
+									type="password"
+									class="form-control"
+									id="confirmPassword<%= report._id %>"
+									name="password"
+									required
+									placeholder="Enter your password to confirm">
+								<div class="invalid-feedback">
+									Please enter your password.
+								</div>
+							</div>
 						</div>
 					</div>
 					<div class="custom-modal-footer">
 						<form
+							id="passwordConfirmForm<%= report._id %>"
 							action="/weeklyreport/<%= report._id %>?_method=DELETE"
 							method="POST"
-							data-custom-message="Report has been deleted successfully"
-							data-action-type="delete"
 							class="d-inline">
+							<!-- Hidden input to store the password -->
+							<input
+								type="hidden"
+								id="hiddenPassword<%= report._id %>"
+								name="password"
+								value="" />
 							<button
 								type="submit"
 								class="custom-modal-btn custom-modal-btn-danger">
@@ -363,3 +384,23 @@
 <!-- Custom modal scripts -->
 <script src="/js/reportModals.js"></script>
 <script src="/js/customModal.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// For password confirmation modals
+		<% if (WeeklyReports && WeeklyReports.length) { %>
+			<% WeeklyReports.forEach(report => { %>
+				<% if (report.isCurrentUserReport && report.status === 'pending') { %>
+					const passwordInput<%= report._id %> = document.getElementById("confirmPassword<%= report._id %>");
+					const hiddenPassword<%= report._id %> = document.getElementById("hiddenPassword<%= report._id %>");
+					const passwordForm<%= report._id %> = document.getElementById("passwordConfirmForm<%= report._id %>");
+
+					if (passwordForm<%= report._id %> && passwordInput<%= report._id %> && hiddenPassword<%= report._id %>) {
+						passwordForm<%= report._id %>.addEventListener("submit", function () {
+							hiddenPassword<%= report._id %>.value = passwordInput<%= report._id %>.value;
+						});
+					}
+				<% } %>
+			<% }) %>
+		<% } %>
+	});
+</script>

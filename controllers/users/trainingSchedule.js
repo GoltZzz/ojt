@@ -407,46 +407,93 @@ export const updateSchedule = catchAsync(async (req, res) => {
 
 export const deleteSchedule = catchAsync(async (req, res) => {
 	const { id } = req.params;
+	const { password } = req.body;
 
+	// Check if password was provided
+	if (!password) {
+		req.flash("error", "Password is required to delete a schedule");
+		return res.redirect(`/trainingschedule/${id}`);
+	}
+
+	// Find the schedule by ID
+	const schedule = await TrainingSchedule.findById(id);
+
+	// If schedule not found, flash error and redirect
+	if (!schedule) {
+		req.flash("error", "Training Schedule not found");
+		return res.redirect("/trainingschedule");
+	}
+
+	// Check if the current user is the author of the schedule or an admin
+	const isAuthor =
+		req.user &&
+		schedule.author &&
+		schedule.author.toString() === req.user._id.toString();
+	const isAdmin = req.user && req.user.role === "admin";
+
+	// If not the author or admin, flash error and redirect
+	if (!isAuthor && !isAdmin) {
+		req.flash("error", "You do not have permission to delete this schedule");
+		return res.redirect("/trainingschedule");
+	}
+
+	// For admin users: check if the schedule is archived
+	if (isAdmin && !schedule.archived) {
+		req.flash("error", "You must archive the schedule before deleting it");
+		return res.redirect(`/trainingschedule/${id}`);
+	}
+
+	// For regular users: check if the schedule is not pending or is archived
+	if (
+		isAuthor &&
+		!isAdmin &&
+		(schedule.status !== "pending" || schedule.archived)
+	) {
+		req.flash(
+			"error",
+			"You cannot delete a schedule that has been approved, rejected, or archived"
+		);
+		return res.redirect("/trainingschedule");
+	}
+
+	// Verify the user's password
 	try {
-		// Find the schedule by ID
-		const schedule = await TrainingSchedule.findById(id);
+		// Use passport-local-mongoose's authenticate method to verify the password
+		req.user.authenticate(password, async (err, user, passwordError) => {
+			if (err) {
+				console.error("Authentication error:", err);
+				req.flash("error", "An error occurred during authentication");
+				return res.redirect(`/trainingschedule/${id}`);
+			}
 
-		// If schedule not found, flash error and redirect
-		if (!schedule) {
-			req.flash("error", "Training Schedule not found");
-			return res.redirect("/trainingschedule");
-		}
+			if (!user) {
+				req.flash("error", "Incorrect password");
+				return res.redirect(`/trainingschedule/${id}`);
+			}
 
-		// Check if the current user is the author of the schedule
-		const isAuthor =
-			req.user &&
-			schedule.author &&
-			schedule.author.toString() === req.user._id.toString();
-
-		// If not the author, flash error and redirect
-		if (!isAuthor) {
-			req.flash("error", "You do not have permission to delete this schedule");
-			return res.redirect("/trainingschedule");
-		}
-
-		// If schedule is not pending or is archived, flash error and redirect
-		if (schedule.status !== "pending" || schedule.archived) {
-			req.flash(
-				"error",
-				"You cannot delete a schedule that has been approved, rejected, or archived"
+			// Password is correct, proceed with deletion
+			console.log(
+				`Deleting schedule ${schedule._id}, archived: ${schedule.archived}`
 			);
-			return res.redirect("/trainingschedule");
-		}
 
-		// Delete the schedule
-		await TrainingSchedule.findByIdAndDelete(id);
+			try {
+				// Delete the schedule
+				await TrainingSchedule.findByIdAndDelete(id);
 
-		req.flash("success", "Successfully deleted training schedule!");
-		res.redirect("/trainingschedule");
+				req.flash("success", "Successfully deleted training schedule!");
+				res.redirect("/trainingschedule");
+			} catch (error) {
+				console.error("Error deleting training schedule:", error);
+				req.flash(
+					"error",
+					"Failed to delete training schedule. Please try again."
+				);
+				res.redirect(`/trainingschedule/${id}`);
+			}
+		});
 	} catch (error) {
-		console.error("Error deleting training schedule:", error);
-		req.flash("error", "Failed to delete training schedule. Please try again.");
+		console.error("Error during password verification:", error);
+		req.flash("error", "An error occurred during password verification");
 		res.redirect(`/trainingschedule/${id}`);
 	}
 });
