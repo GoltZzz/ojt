@@ -185,8 +185,6 @@
 			</a>
 			<% } %>
 
-			<!-- Delete button - only for authors of non-archived reports -->
-
 			<!-- Delete button - only for admins when report is archived -->
 			<% if (currentUser && currentUser.role === 'admin' &&
 			WeeklyProgressReport.archived) { %>
