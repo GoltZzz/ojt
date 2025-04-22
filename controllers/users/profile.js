@@ -6,6 +6,7 @@ import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
 import TrainingSchedule from "../../models/trainingSchedule.js";
 import LearningOutcome from "../../models/learningOutcomes.js";
 import DailyAttendance from "../../models/dailyAttendance.js";
+import Notification from "../../models/notification.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { cloudinary } from "../../utils/cloudinary.js";
 
@@ -95,6 +96,18 @@ const renderProfile = catchAsync(async (req, res) => {
 			status: "pending",
 		});
 
+		// Get notifications for revised reports
+		const revisedReportNotifications = await Notification.find({
+			recipient: req.user._id,
+			action: "revised",
+			isRead: false,
+		})
+			.sort({ createdAt: -1 })
+			.populate({
+				path: "reportId",
+				select: "_id studentName internshipSite weekNumber",
+			});
+
 		const pendingReportsCount =
 			pendingWeeklyReports +
 			pendingWeeklyProgress +
@@ -160,6 +173,7 @@ const renderProfile = catchAsync(async (req, res) => {
 			pendingReportsCount,
 			totalReportsCount,
 			archivedReportsCount,
+			revisedReportNotifications,
 		});
 	}
 });
@@ -256,9 +270,66 @@ const updatePassword = catchAsync(async (req, res) => {
 	res.redirect("/profile");
 });
 
+// Mark a notification as read
+const markNotificationAsRead = catchAsync(async (req, res) => {
+	const { id } = req.params;
+
+	// Find the notification and update it
+	const notification = await Notification.findById(id);
+
+	if (!notification) {
+		req.flash("error", "Notification not found");
+		return res.redirect("/profile");
+	}
+
+	// Check if the notification belongs to the current user
+	if (!notification.recipient.equals(req.user._id)) {
+		req.flash("error", "You don't have permission to update this notification");
+		return res.redirect("/profile");
+	}
+
+	// Mark as read
+	notification.isRead = true;
+	await notification.save();
+
+	// Redirect to the appropriate report page based on the report type
+	const reportType = notification.reportType;
+	const reportId = notification.reportId;
+
+	let redirectUrl;
+	switch (reportType) {
+		case "weeklyreport":
+			redirectUrl = `/weeklyreport/${reportId}`;
+			break;
+		case "weeklyprogress":
+			redirectUrl = `/weeklyprogress/${reportId}`;
+			break;
+		case "trainingschedule":
+			redirectUrl = `/trainingschedule/${reportId}`;
+			break;
+		case "learningoutcome":
+			redirectUrl = `/learningoutcomes/${reportId}`;
+			break;
+		case "dailyattendance":
+			redirectUrl = `/dailyattendance/${reportId}`;
+			break;
+		case "documentation":
+			redirectUrl = `/documentation/${reportId}`;
+			break;
+		case "timereport":
+			redirectUrl = `/timereport/${reportId}`;
+			break;
+		default:
+			redirectUrl = "/profile";
+	}
+
+	res.redirect(redirectUrl);
+});
+
 export default {
 	renderProfile,
 	updateProfile,
 	renderChangePassword,
 	updatePassword,
+	markNotificationAsRead,
 };

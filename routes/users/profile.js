@@ -24,4 +24,11 @@ router
 	.get(isLoggedIn, profileController.renderChangePassword)
 	.post(isLoggedIn, profileController.updatePassword);
 
+// Notification routes
+router.post(
+	"/notifications/:id/mark-as-read",
+	isLoggedIn,
+	profileController.markNotificationAsRead
+);
+
 export default router;

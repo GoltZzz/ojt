@@ -1,6 +1,8 @@
 import catchAsync from "../../utils/catchAsync.js";
 import ExpressError from "../../utils/ExpressError.js";
 import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
+import Notification from "../../models/notification.js";
+import User from "../../models/users.js";
 import {
 	validateWeeklyProgressReport,
 	sanitizeWeeklyProgressReport,
@@ -242,11 +244,15 @@ export const showReport = catchAsync(async (req, res) => {
 		req.user && report.author && report.author._id.equals(req.user._id);
 
 	// Check if the user can edit or delete the report
-	// Only the author can edit if the report is pending and not archived
-	const canEdit = isAuthor && report.status === "pending" && !report.archived;
+	// Only the author can edit if the report is pending or rejected and not archived
+	const canEdit =
+		isAuthor &&
+		(report.status === "pending" || report.status === "rejected") &&
+		!report.archived;
 
-	// Only the author can delete if the report is not archived
-	const canDelete = isAuthor && !report.archived;
+	// Only the author can delete if the report is not archived and not rejected
+	const canDelete =
+		isAuthor && !report.archived && report.status !== "rejected";
 
 	// Add these properties to the report object
 	report.isAuthor = isAuthor;
@@ -282,11 +288,11 @@ export const renderEditForm = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyprogress");
 	}
 
-	// If report is not pending or is archived, flash error and redirect
-	if (report.status !== "pending" || report.archived) {
+	// If report is approved or archived, flash error and redirect
+	if (report.status === "approved" || report.archived) {
 		req.flash(
 			"error",
-			"You cannot edit a report that has been approved, rejected, or archived"
+			"You cannot edit a report that has been approved or archived"
 		);
 		return res.redirect("/weeklyprogress");
 	}
@@ -327,14 +333,17 @@ export const updateReport = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyprogress");
 	}
 
-	// If report is not pending or is archived, flash error and redirect
-	if (report.status !== "pending" || report.archived) {
+	// If report is approved or archived, flash error and redirect
+	if (report.status === "approved" || report.archived) {
 		req.flash(
 			"error",
-			"You cannot edit a report that has been approved, rejected, or archived"
+			"You cannot edit a report that has been approved or archived"
 		);
 		return res.redirect("/weeklyprogress");
 	}
+
+	// Store the original status to check if this is a revision of a rejected report
+	const isRejectedReport = report.status === "rejected";
 
 	try {
 		// Extract data from the request body
@@ -403,23 +412,66 @@ export const updateReport = catchAsync(async (req, res) => {
 		// Sanitize the report data
 		const sanitizedData = sanitizeWeeklyProgressReport(reportData);
 
-		// Update the report with sanitized data
-		await WeeklyProgressReport.findByIdAndUpdate(id, {
-			internshipSite: sanitizedData.internshipSite,
-			weekNumber: sanitizedData.weekNumber,
-			weekStartDate: sanitizedData.weekStartDate,
-			weekEndDate: sanitizedData.weekEndDate,
-			dutiesPerformed: sanitizedData.dutiesPerformed,
-			newTrainings: sanitizedData.newTrainings,
-			accomplishments: sanitizedData.accomplishments,
-			problemsEncountered: sanitizedData.problemsEncountered,
-			problemSolutions: sanitizedData.problemSolutions,
-			goalsForNextWeek: sanitizedData.goalsForNextWeek,
-			supervisorName: sanitizedData.supervisorName,
-			supervisorRole: sanitizedData.supervisorRole,
-		});
+		// If this is a rejected report being revised, set status back to pending
+		if (isRejectedReport) {
+			sanitizedData.status = "pending";
+		}
 
-		req.flash("success", "Successfully updated weekly progress report!");
+		// Update the report with sanitized data
+		const updatedReport = await WeeklyProgressReport.findByIdAndUpdate(
+			id,
+			{
+				internshipSite: sanitizedData.internshipSite,
+				weekNumber: sanitizedData.weekNumber,
+				weekStartDate: sanitizedData.weekStartDate,
+				weekEndDate: sanitizedData.weekEndDate,
+				dutiesPerformed: sanitizedData.dutiesPerformed,
+				newTrainings: sanitizedData.newTrainings,
+				accomplishments: sanitizedData.accomplishments,
+				problemsEncountered: sanitizedData.problemsEncountered,
+				problemSolutions: sanitizedData.problemSolutions,
+				goalsForNextWeek: sanitizedData.goalsForNextWeek,
+				supervisorName: sanitizedData.supervisorName,
+				supervisorRole: sanitizedData.supervisorRole,
+				status: sanitizedData.status || report.status,
+			},
+			{ new: true }
+		);
+
+		// If this was a revision of a rejected report, send notification to all admins
+		if (isRejectedReport) {
+			// Format the user's full name for the notification
+			let userFullName = req.user.firstName;
+			if (req.user.middleName && req.user.middleName.length > 0) {
+				const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+				userFullName += ` ${middleInitial}.`;
+			}
+			userFullName += ` ${req.user.lastName}`;
+
+			// Find all admin users
+			const adminUsers = await User.find({ role: "admin" });
+
+			// Create a notification for each admin
+			for (const admin of adminUsers) {
+				const notification = new Notification({
+					recipient: admin._id,
+					message: `${userFullName} has done a revision on weekly progress report you rejected. Do you want to view it?`,
+					type: "info",
+					reportType: "weeklyprogress",
+					reportId: updatedReport._id,
+					action: "revised",
+				});
+				await notification.save();
+			}
+
+			req.flash(
+				"success",
+				"Your revised report has been submitted for review!"
+			);
+		} else {
+			req.flash("success", "Successfully updated weekly progress report!");
+		}
+
 		res.redirect(`/weeklyprogress/${id}`);
 	} catch (error) {
 		console.error("Error updating weekly progress report:", error);

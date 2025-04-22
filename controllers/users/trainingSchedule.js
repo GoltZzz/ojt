@@ -1,6 +1,8 @@
 import catchAsync from "../../utils/catchAsync.js";
 import ExpressError from "../../utils/ExpressError.js";
 import TrainingSchedule from "../../models/trainingSchedule.js";
+import Notification from "../../models/notification.js";
+import User from "../../models/users.js";
 import { generateTrainingSchedulePdf } from "../../utils/pdfGenerators/index.js";
 
 export const index = catchAsync(async (req, res) => {
@@ -248,10 +250,14 @@ export const showSchedule = catchAsync(async (req, res, next) => {
 		schedule.author._id.toString() === req.user._id.toString();
 
 	// Check if the user can edit or delete the schedule
-	// Only the author can edit/delete, and only if the schedule is pending and not archived
+	// Only the author can edit if the schedule is pending or rejected and not archived
 	const canEdit =
-		isAuthor && schedule.status === "pending" && !schedule.archived;
-	const canDelete = canEdit;
+		isAuthor &&
+		(schedule.status === "pending" || schedule.status === "rejected") &&
+		!schedule.archived;
+	// Only the author can delete if the schedule is not archived and not rejected
+	const canDelete =
+		isAuthor && !schedule.archived && schedule.status !== "rejected";
 
 	// Format author name
 	let authorFullName = "";
@@ -301,11 +307,11 @@ export const renderEditForm = catchAsync(async (req, res) => {
 		return res.redirect("/trainingschedule");
 	}
 
-	// If schedule is not pending or is archived, flash error and redirect
-	if (schedule.status !== "pending" || schedule.archived) {
+	// If schedule is approved or archived, flash error and redirect
+	if (schedule.status === "approved" || schedule.archived) {
 		req.flash(
 			"error",
-			"You cannot edit a schedule that has been approved, rejected, or archived"
+			"You cannot edit a schedule that has been approved or archived"
 		);
 		return res.redirect("/trainingschedule");
 	}
@@ -349,14 +355,17 @@ export const updateSchedule = catchAsync(async (req, res) => {
 			return res.redirect("/trainingschedule");
 		}
 
-		// If schedule is not pending or is archived, flash error and redirect
-		if (schedule.status !== "pending" || schedule.archived) {
+		// If schedule is approved or archived, flash error and redirect
+		if (schedule.status === "approved" || schedule.archived) {
 			req.flash(
 				"error",
-				"You cannot edit a schedule that has been approved, rejected, or archived"
+				"You cannot edit a schedule that has been approved or archived"
 			);
 			return res.redirect("/trainingschedule");
 		}
+
+		// Store the original status to check if this is a revision of a rejected schedule
+		const isRejectedSchedule = schedule.status === "rejected";
 
 		// Extract data from the request body
 		const {
@@ -371,8 +380,8 @@ export const updateSchedule = catchAsync(async (req, res) => {
 			additionalNotes,
 		} = req.body;
 
-		// Update the schedule
-		await TrainingSchedule.findByIdAndUpdate(id, {
+		// If this is a rejected schedule being revised, set status back to pending
+		let updateData = {
 			internshipSite,
 			startDate,
 			endDate,
@@ -382,9 +391,53 @@ export const updateSchedule = catchAsync(async (req, res) => {
 			timeline,
 			expectedOutput,
 			additionalNotes,
-		});
+		};
 
-		req.flash("success", "Successfully updated training schedule!");
+		if (isRejectedSchedule) {
+			updateData.status = "pending";
+		}
+
+		// Update the schedule
+		const updatedSchedule = await TrainingSchedule.findByIdAndUpdate(
+			id,
+			updateData,
+			{ new: true }
+		);
+
+		// If this was a revision of a rejected schedule, send notification to all admins
+		if (isRejectedSchedule) {
+			// Format the user's full name for the notification
+			let userFullName = req.user.firstName;
+			if (req.user.middleName && req.user.middleName.length > 0) {
+				const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+				userFullName += ` ${middleInitial}.`;
+			}
+			userFullName += ` ${req.user.lastName}`;
+
+			// Find all admin users
+			const adminUsers = await User.find({ role: "admin" });
+
+			// Create a notification for each admin
+			for (const admin of adminUsers) {
+				const notification = new Notification({
+					recipient: admin._id,
+					message: `${userFullName} has done a revision on training schedule you rejected. Do you want to view it?`,
+					type: "info",
+					reportType: "trainingschedule",
+					reportId: updatedSchedule._id,
+					action: "revised",
+				});
+				await notification.save();
+			}
+
+			req.flash(
+				"success",
+				"Your revised schedule has been submitted for review!"
+			);
+		} else {
+			req.flash("success", "Successfully updated training schedule!");
+		}
+
 		res.redirect(`/trainingschedule/${id}`);
 	} catch (error) {
 		console.error("Error updating training schedule:", error);
