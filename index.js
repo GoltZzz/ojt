@@ -116,7 +116,7 @@ app.use("/admin", adminRoutes);
 // for admin API routes
 app.use("/api/admin", adminApiRoutes);
 // for admin report monitoring routes
-app.use("/admin", reportMonitoringRoutes);
+app.use("/admin/reports", reportMonitoringRoutes);
 // for documentation routes
 app.use("/documentation", documentationRoutes);
 // for time report routes

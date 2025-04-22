@@ -47,9 +47,7 @@ router
 	.route("/archived-reports")
 	.get(isLoggedIn, isAdmin, adminController.renderArchivedReports);
 
-router
-	.route("/reports/:type/:id/approve")
-	.post(isLoggedIn, isAdmin, adminController.approveReport);
+// Approve route moved to reportMonitoring.js
 
 router
 	.route("/reports/:type/:id/unarchive")

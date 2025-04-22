@@ -531,81 +531,7 @@ const renderAllReports = catchAsync(async (req, res) => {
 	});
 });
 
-const approveReport = catchAsync(async (req, res) => {
-	const { id, type } = req.params;
-	const { status, adminComments } = req.body;
-
-	let report;
-	let redirectUrl = "/admin/pending-reports";
-
-	// Find the appropriate report type
-	switch (type) {
-		case "weeklyreport":
-			report = await WeeklyReport.findById(id).populate("author");
-			break;
-		case "weeklyprogress":
-			report = await WeeklyProgressReport.findById(id).populate("author");
-			break;
-		case "trainingschedule":
-			report = await TrainingSchedule.findById(id).populate("author");
-			break;
-		case "learningoutcomes":
-			report = await LearningOutcome.findById(id).populate("author");
-			break;
-		case "dailyattendance":
-			report = await DailyAttendance.findById(id).populate("author");
-			break;
-		case "documentation":
-			report = await Documentation.findById(id).populate("author");
-			break;
-		case "timereport":
-			report = await TimeReport.findById(id).populate("author");
-			break;
-		default:
-			req.flash("error", "Invalid report type");
-			return res.redirect(redirectUrl);
-	}
-
-	if (!report) {
-		req.flash("error", "Report not found");
-		return res.redirect(redirectUrl);
-	}
-
-	// Update report status
-	report.status = status || "approved";
-	report.approvedBy = req.user._id;
-	report.approvalDate = new Date();
-	report.adminComments = adminComments;
-
-	await report.save();
-
-	// Create notification for the report author
-	if (report.author) {
-		const action = report.status === "approved" ? "approved" : "rejected";
-		const notificationType =
-			report.status === "approved" ? "success" : "danger";
-		const reportName = getReportTypeName(type);
-
-		const notification = new Notification({
-			recipient: report.author._id,
-			message: `Your ${reportName} has been ${action} by an administrator${
-				adminComments ? " with comments" : ""
-			}.`,
-			type: notificationType,
-			reportType: type,
-			reportId: report._id,
-			action: action,
-		});
-
-		await notification.save();
-	}
-
-	req.flash(
-		"success",
-		`Report ${report.status === "approved" ? "approved" : "rejected"}`
-	);
-	res.redirect(redirectUrl);
-});
+// approveReport function moved to reportMonitoring.js
 
 const renderArchivedReports = catchAsync(async (req, res) => {
 	const {
@@ -1045,7 +971,6 @@ export default {
 	toggleUserRole,
 	renderPendingReports,
 	renderAllReports,
-	approveReport,
 	renderArchivedReports,
 	deleteUser,
 	unarchiveReport,

@@ -1,4 +1,5 @@
 import catchAsync from "../../utils/catchAsync.js";
+import WeeklyReport from "../../models/weeklyReports.js";
 import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
 import TrainingSchedule from "../../models/trainingSchedule.js";
 import LearningOutcome from "../../models/learningOutcomes.js";
@@ -78,6 +79,10 @@ export const approveReport = catchAsync(async (req, res) => {
 
 	// Find the appropriate report type
 	switch (type) {
+		case "weeklyreport":
+			report = await WeeklyReport.findById(id).populate("author");
+			redirectUrl = "/admin/pending-reports";
+			break;
 		case "weeklyprogress":
 			report = await WeeklyProgressReport.findById(id).populate("author");
 			redirectUrl = "/admin/pending-reports";
@@ -149,6 +154,10 @@ export const rejectReport = catchAsync(async (req, res) => {
 
 	// Find the appropriate report type
 	switch (type) {
+		case "weeklyreport":
+			report = await WeeklyReport.findById(id).populate("author");
+			redirectUrl = "/admin/pending-reports";
+			break;
 		case "weeklyprogress":
 			report = await WeeklyProgressReport.findById(id).populate("author");
 			redirectUrl = "/admin/pending-reports";
