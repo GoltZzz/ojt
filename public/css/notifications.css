@@ -153,22 +153,26 @@
 	height: 8px;
 	border-radius: 50%;
 	background-color: #dc3545;
-	display: none;
+	display: inline-block;
 	animation: pulse-dot 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+	box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
 }
 
 @keyframes pulse-dot {
 	0% {
 		transform: scale(0.8);
 		opacity: 0.8;
+		box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
 	}
 	50% {
 		transform: scale(1.2);
 		opacity: 1;
+		box-shadow: 0 0 0 5px rgba(220, 53, 69, 0);
 	}
 	100% {
 		transform: scale(0.8);
 		opacity: 0.8;
+		box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
 	}
 }
 
