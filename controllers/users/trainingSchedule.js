@@ -256,9 +256,9 @@ export const showSchedule = catchAsync(async (req, res, next) => {
 		isAuthor &&
 		(schedule.status === "pending" || schedule.status === "rejected") &&
 		!schedule.archived;
-	// Only the author can delete if the schedule is not archived and not rejected
+	// Only the author can delete if the schedule is not archived, not rejected, and not approved
 	const canDelete =
-		isAuthor && !schedule.archived && schedule.status !== "rejected";
+		isAuthor && !schedule.archived && schedule.status === "pending";
 
 	// Format author name
 	let authorFullName = "";
@@ -505,7 +505,7 @@ export const deleteSchedule = catchAsync(async (req, res) => {
 	) {
 		req.flash(
 			"error",
-			"You cannot delete a schedule that has been approved, rejected, or archived"
+			"You can only delete schedules that are pending and not archived"
 		);
 		return res.redirect(returnUrl || "/trainingschedule");
 	}
