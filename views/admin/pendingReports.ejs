@@ -527,13 +527,13 @@
 												<button
 													class="btn btn-sm btn-success"
 													data-bs-toggle="modal"
-													data-bs-target="#approveModal-learningoutcome-<%= outcome._id %>">
+													data-bs-target="#approveModal-learningoutcomes-<%= outcome._id %>">
 													<i class="fas fa-check"></i> Approve
 												</button>
 												<button
 													class="btn btn-sm btn-danger"
 													data-bs-toggle="modal"
-													data-bs-target="#rejectModal-learningoutcome-<%= outcome._id %>">
+													data-bs-target="#rejectModal-learningoutcomes-<%= outcome._id %>">
 													<i class="fas fa-times"></i> Reject
 												</button>
 											</td>
@@ -542,7 +542,7 @@
 										<!-- Approve Modal -->
 										<div
 											class="modal fade"
-											id="approveModal-learningoutcome-<%= outcome._id %>"
+											id="approveModal-learningoutcomes-<%= outcome._id %>"
 											tabindex="-1"
 											aria-labelledby="approveModalLabel-<%= outcome._id %>"
 											aria-hidden="true">
@@ -594,7 +594,7 @@
 										<!-- Reject Modal -->
 										<div
 											class="modal fade"
-											id="rejectModal-learningoutcome-<%= outcome._id %>"
+											id="rejectModal-learningoutcomes-<%= outcome._id %>"
 											tabindex="-1"
 											aria-labelledby="rejectModalLabel-<%= outcome._id %>"
 											aria-hidden="true">

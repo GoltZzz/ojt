@@ -239,13 +239,13 @@ const renderPendingReports = catchAsync(async (req, res) => {
 		pendingReports = [...pendingReports, ...trainingSchedules];
 	}
 
-	if (reportType === "all" || reportType === "learningoutcome") {
+	if (reportType === "all" || reportType === "learningoutcomes") {
 		const learningOutcomes = await LearningOutcome.find(filter)
 			.populate("author")
 			.sort(sortOptions);
 
 		learningOutcomes.forEach((report) => {
-			report.reportType = "learningoutcome";
+			report.reportType = "learningoutcomes";
 		});
 		pendingReports = [...pendingReports, ...learningOutcomes];
 	}
@@ -310,7 +310,7 @@ const renderPendingReports = catchAsync(async (req, res) => {
 			{ value: "weeklyreport", label: "Weekly Reports" },
 			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
 			{ value: "trainingschedule", label: "Training Schedules" },
-			{ value: "learningoutcome", label: "Learning Outcomes" },
+			{ value: "learningoutcomes", label: "Learning Outcomes" },
 			{ value: "dailyattendance", label: "Daily Attendance" },
 			{ value: "documentation", label: "Documentation" },
 			{ value: "timereport", label: "Time Reports" },
@@ -448,14 +448,14 @@ const renderAllReports = catchAsync(async (req, res) => {
 		allReports = [...allReports, ...trainingSchedules];
 	}
 
-	if (reportType === "all" || reportType === "learningoutcome") {
+	if (reportType === "all" || reportType === "learningoutcomes") {
 		const learningOutcomes = await LearningOutcome.find(filter)
 			.populate("author")
 			.populate("approvedBy")
 			.sort(sortOptions);
 
 		learningOutcomes.forEach((report) => {
-			report.reportType = "learningoutcome";
+			report.reportType = "learningoutcomes";
 		});
 		allReports = [...allReports, ...learningOutcomes];
 	}
@@ -523,7 +523,7 @@ const renderAllReports = catchAsync(async (req, res) => {
 			{ value: "weeklyreport", label: "Weekly Reports" },
 			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
 			{ value: "trainingschedule", label: "Training Schedules" },
-			{ value: "learningoutcome", label: "Learning Outcomes" },
+			{ value: "learningoutcomes", label: "Learning Outcomes" },
 			{ value: "dailyattendance", label: "Daily Attendance" },
 			{ value: "documentation", label: "Documentation" },
 			{ value: "timereport", label: "Time Reports" },
@@ -549,7 +549,7 @@ const approveReport = catchAsync(async (req, res) => {
 		case "trainingschedule":
 			report = await TrainingSchedule.findById(id).populate("author");
 			break;
-		case "learningoutcome":
+		case "learningoutcomes":
 			report = await LearningOutcome.findById(id).populate("author");
 			break;
 		case "dailyattendance":
@@ -725,14 +725,14 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 		archivedReports = [...archivedReports, ...trainingSchedules];
 	}
 
-	if (reportType === "all" || reportType === "learningoutcome") {
+	if (reportType === "all" || reportType === "learningoutcomes") {
 		const learningOutcomes = await LearningOutcome.find(filter)
 			.populate("author")
 			.populate("approvedBy")
 			.sort(sortOptions);
 
 		learningOutcomes.forEach((report) => {
-			report.reportType = "learningoutcome";
+			report.reportType = "learningoutcomes";
 		});
 		archivedReports = [...archivedReports, ...learningOutcomes];
 	}
@@ -1026,7 +1026,7 @@ const getReportTypeName = (type) => {
 			return "Weekly Progress Report";
 		case "trainingschedule":
 			return "Training Schedule";
-		case "learningoutcome":
+		case "learningoutcomes":
 			return "Learning Outcome";
 		case "dailyattendance":
 			return "Daily Attendance";
