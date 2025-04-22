@@ -218,7 +218,7 @@
 					</p>
 
 					<form
-						action="/admin/reports/<%= WeeklyReports._id %>/approve"
+						action="/admin/reports/weeklyreport/<%= WeeklyReports._id %>/approve"
 						method="POST"
 						data-custom-message="Report has been approved successfully"
 						data-action-type="approve"
@@ -278,7 +278,7 @@
 					</p>
 
 					<form
-						action="/admin/reports/<%= WeeklyReports._id %>/approve"
+						action="/admin/reports/weeklyreport/<%= WeeklyReports._id %>/approve"
 						method="POST"
 						data-custom-message="Report has been rejected"
 						data-action-type="reject"
@@ -398,7 +398,7 @@
 		</div>
 		<div class="custom-modal-footer">
 			<form
-				action="/admin/reports/<%= WeeklyReports._id %>/unarchive"
+				action="/admin/reports/weeklyreport/<%= WeeklyReports._id %>/unarchive"
 				method="POST"
 				data-custom-message="Report has been unarchived successfully"
 				data-action-type="unarchive"
