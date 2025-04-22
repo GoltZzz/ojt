@@ -1,6 +1,8 @@
 import WeeklyReport from "../models/weeklyReports.js";
 import WeeklyProgressReport from "../models/weeklyProgressReports.js";
 import TrainingSchedule from "../models/trainingSchedule.js";
+import DailyAttendance from "../models/dailyAttendance.js";
+import LearningOutcomes from "../models/learningOutcomes.js";
 import ExpressError from "../utils/ExpressError.js";
 
 // Middleware to check if the current user is the author of the report
@@ -21,6 +23,12 @@ const isReportAuthor = (reportType) => {
 			} else if (reportType === "trainingSchedule") {
 				report = await TrainingSchedule.findById(id);
 				redirectPath = "/trainingschedule";
+			} else if (reportType === "dailyAttendance") {
+				report = await DailyAttendance.findById(id);
+				redirectPath = "/dailyattendance";
+			} else if (reportType === "learningOutcomes") {
+				report = await LearningOutcomes.findById(id);
+				redirectPath = "/learningoutcomes";
 			} else {
 				return next(new ExpressError("Invalid report type", 400));
 			}
@@ -36,12 +44,9 @@ const isReportAuthor = (reportType) => {
 				return res.redirect(`${redirectPath}/${id}`);
 			}
 
-			// If the report is already approved or rejected, don't allow edits
-			if (report.status !== "pending") {
-				req.flash(
-					"error",
-					"You cannot modify a report that has been processed"
-				);
+			// If the report is approved, don't allow edits (rejected reports can be edited)
+			if (report.status === "approved") {
+				req.flash("error", "You cannot modify an approved report");
 				return res.redirect(`${redirectPath}/${id}`);
 			}
 

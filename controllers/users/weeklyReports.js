@@ -1,7 +1,7 @@
 import catchAsync from "../../utils/catchAsync.js";
 import WeeklyReport from "../../models/weeklyReports.js";
 import Notification from "../../models/notification.js";
-import ExpressError from "../../utils/ExpressError.js";
+import User from "../../models/users.js";
 import { generateWeeklyReportPdf } from "../../utils/pdfGenerators/index.js";
 
 export const index = catchAsync(async (req, res) => {
@@ -182,12 +182,18 @@ export const showReport = catchAsync(async (req, res, next) => {
 		req.user &&
 		WeeklyReports.author._id.toString() === req.user._id.toString();
 
-	// Add a flag to indicate if the report can be edited (is pending and user is author)
-	WeeklyReports.canEdit =
-		WeeklyReports.isAuthor && WeeklyReports.status === "pending";
+	// Add a flag to indicate if the report can be deleted (user is author, report is not archived, and not rejected)
+	WeeklyReports.canDelete =
+		WeeklyReports.isAuthor &&
+		!WeeklyReports.archived &&
+		WeeklyReports.status !== "rejected";
 
-	// Add a flag to indicate if the report can be deleted (user is author and report is not archived)
-	WeeklyReports.canDelete = WeeklyReports.isAuthor && !WeeklyReports.archived;
+	// Add a flag to indicate if the report can be edited (user is author, report is pending or rejected, and not archived)
+	WeeklyReports.canEdit =
+		WeeklyReports.isAuthor &&
+		(WeeklyReports.status === "pending" ||
+			WeeklyReports.status === "rejected") &&
+		!WeeklyReports.archived;
 
 	res.render("reports/show", { WeeklyReports });
 });
@@ -207,9 +213,15 @@ export const renderEditForm = catchAsync(async (req, res) => {
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	// Check if the report is already approved or rejected
-	if (WeeklyReports.status !== "pending") {
-		req.flash("error", "You cannot edit a report that has been processed");
+	// Check if the report is already approved (rejected reports can be edited)
+	if (WeeklyReports.status === "approved") {
+		req.flash("error", "You cannot edit an approved report");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Check if the report is archived
+	if (WeeklyReports.archived) {
+		req.flash("error", "You cannot edit an archived report");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
@@ -241,11 +253,20 @@ export const updateReport = catchAsync(async (req, res) => {
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	// Check if the report is already approved or rejected
-	if (report.status !== "pending") {
-		req.flash("error", "You cannot update a report that has been processed");
+	// Check if the report is already approved (rejected reports can be updated)
+	if (report.status === "approved") {
+		req.flash("error", "You cannot update an approved report");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
+
+	// Check if the report is archived
+	if (report.archived) {
+		req.flash("error", "You cannot update an archived report");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Store the original status to check if this is a revision of a rejected report
+	const isRejectedReport = report.status === "rejected";
 
 	// Format the user's full name to ensure it's consistent
 	let fullName = req.user.firstName;
@@ -259,13 +280,48 @@ export const updateReport = catchAsync(async (req, res) => {
 	// This ensures the student name cannot be changed even if someone tries to manipulate the form
 	req.body.studentName = fullName;
 
+	// If this is a rejected report being revised, set status back to pending
+	if (isRejectedReport) {
+		req.body.status = "pending";
+	}
+
 	// Now update the report
 	const WeeklyReports = await WeeklyReport.findByIdAndUpdate(id, req.body, {
 		new: true,
 		runValidators: true,
 	});
 
-	req.flash("success", "Successfully updated weekly report!");
+	// If this was a revision of a rejected report, send notification to all admins
+	if (isRejectedReport) {
+		// Format the user's full name for the notification
+		let userFullName = req.user.firstName;
+		if (req.user.middleName && req.user.middleName.length > 0) {
+			const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+			userFullName += ` ${middleInitial}.`;
+		}
+		userFullName += ` ${req.user.lastName}`;
+
+		// Find all admin users
+		const adminUsers = await User.find({ role: "admin" });
+
+		// Create a notification for each admin
+		for (const admin of adminUsers) {
+			const notification = new Notification({
+				recipient: admin._id,
+				message: `${userFullName} has done a revision on weekly report you rejected. Do you want to view it?`,
+				type: "info",
+				reportType: "weeklyreport",
+				reportId: WeeklyReports._id,
+				action: "revised",
+			});
+			await notification.save();
+		}
+
+		req.flash("success", "Your revised report has been submitted for review!");
+	} else {
+		req.flash("success", "Successfully updated weekly report!");
+	}
+
 	res.redirect(`/weeklyreport/${WeeklyReports._id}`);
 });
 
