@@ -51,4 +51,7 @@ router.post(
 	learningOutcomes.unarchiveOutcome
 );
 
+// Export to PDF route
+router.get("/:id/export-pdf", isLoggedIn, learningOutcomes.exportOutcomeAsPdf);
+
 export default router;

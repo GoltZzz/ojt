@@ -8,12 +8,14 @@
 import { generateWeeklyReportPdf } from "./weeklyReportPdfGenerator.js";
 import { generateWeeklyProgressReportPdf } from "./weeklyProgressReportPdfGenerator.js";
 import { generateTrainingSchedulePdf } from "./trainingSchedulePdfGenerator.js";
+import { generateLearningOutcomePdf } from "./learningOutcomePdfGenerator.js";
 
 // Export all PDF generator functions
 export {
 	generateWeeklyReportPdf,
 	generateWeeklyProgressReportPdf,
 	generateTrainingSchedulePdf,
+	generateLearningOutcomePdf,
 };
 
 // Default export for convenience
@@ -21,4 +23,5 @@ export default {
 	generateWeeklyReportPdf,
 	generateWeeklyProgressReportPdf,
 	generateTrainingSchedulePdf,
+	generateLearningOutcomePdf,
 };

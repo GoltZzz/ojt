@@ -1,6 +1,9 @@
 import catchAsync from "../../utils/catchAsync.js";
 import ExpressError from "../../utils/ExpressError.js";
 import LearningOutcome from "../../models/learningOutcomes.js";
+import Notification from "../../models/notification.js";
+import User from "../../models/users.js";
+import { generateLearningOutcomePdf } from "../../utils/pdfGenerators/index.js";
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
@@ -181,7 +184,10 @@ export const showOutcome = catchAsync(async (req, res, next) => {
 	const isAdmin = req.user && req.user.role === "admin";
 
 	// Determine if the user can edit or delete the outcome
-	const canEdit = isAuthor && outcome.status === "pending" && !outcome.archived;
+	const canEdit =
+		isAuthor &&
+		(outcome.status === "pending" || outcome.status === "rejected") &&
+		!outcome.archived;
 	const canDelete =
 		(isAuthor && outcome.status === "pending" && !outcome.archived) ||
 		(isAdmin && outcome.archived);
@@ -230,14 +236,16 @@ export const renderEditForm = catchAsync(async (req, res) => {
 		return res.redirect("/learningoutcomes");
 	}
 
-	// If the outcome is not pending or is archived, flash error and redirect
-	if (outcome.status !== "pending" || outcome.archived) {
+	// If the outcome is approved or archived, flash error and redirect
+	if (outcome.status === "approved" || outcome.archived) {
 		req.flash(
 			"error",
-			"You cannot edit an outcome that has been approved, rejected, or archived"
+			"You cannot edit an outcome that has been approved or archived"
 		);
 		return res.redirect(`/learningoutcomes/${id}`);
 	}
+
+	// Allow editing if the outcome is pending or rejected
 
 	// Format the user's full name
 	let fullName = req.user.firstName;
@@ -275,14 +283,17 @@ export const updateOutcome = catchAsync(async (req, res) => {
 		return res.redirect("/learningoutcomes");
 	}
 
-	// If the outcome is not pending or is archived, flash error and redirect
-	if (outcome.status !== "pending" || outcome.archived) {
+	// If the outcome is approved or archived, flash error and redirect
+	if (outcome.status === "approved" || outcome.archived) {
 		req.flash(
 			"error",
-			"You cannot edit an outcome that has been approved, rejected, or archived"
+			"You cannot edit an outcome that has been approved or archived"
 		);
 		return res.redirect(`/learningoutcomes/${id}`);
 	}
+
+	// Store the original status to check if this is a revision of a rejected report
+	const isRejectedReport = outcome.status === "rejected";
 
 	// If the outcome was previously rejected, set needsRevision to false
 	if (outcome.status === "rejected" && outcome.needsRevision) {
@@ -338,9 +349,49 @@ export const updateOutcome = catchAsync(async (req, res) => {
 	// Update the learning outcome
 	outcome.studentName = learningOutcome.studentName;
 	outcome.entries = entries;
+
+	// If this is a rejected report being revised, set status back to pending
+	if (isRejectedReport) {
+		outcome.status = "pending";
+		outcome.needsRevision = false;
+	}
+
 	await outcome.save();
 
-	req.flash("success", "Successfully updated learning outcome!");
+	// If this was a revision of a rejected report, send notification to all admins
+	if (isRejectedReport) {
+		// Format the user's full name for the notification
+		let userFullName = req.user.firstName;
+		if (req.user.middleName && req.user.middleName.length > 0) {
+			const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+			userFullName += ` ${middleInitial}.`;
+		}
+		userFullName += ` ${req.user.lastName}`;
+
+		// Find all admin users
+		const adminUsers = await User.find({ role: "admin" });
+
+		// Create a notification for each admin
+		for (const admin of adminUsers) {
+			const notification = new Notification({
+				recipient: admin._id,
+				message: `${userFullName} has done a revision on learning outcome you rejected. Do you want to view it?`,
+				type: "info",
+				reportType: "learningoutcome",
+				reportId: outcome._id,
+				action: "revised",
+			});
+			await notification.save();
+		}
+
+		req.flash(
+			"success",
+			"Your revised learning outcome has been submitted for review!"
+		);
+	} else {
+		req.flash("success", "Successfully updated learning outcome!");
+	}
+
 	res.redirect(`/learningoutcomes/${id}`);
 });
 
@@ -532,6 +583,95 @@ export const unarchiveOutcome = catchAsync(async (req, res) => {
 	res.redirect(`/learningoutcomes/${id}`);
 });
 
+export const exportOutcomeAsPdf = catchAsync(async (req, res) => {
+	const { id } = req.params;
+	console.log(`Starting PDF export for learning outcome ID: ${id}`);
+
+	try {
+		// Find the learning outcome with populated fields
+		const outcome = await LearningOutcome.findById(id)
+			.populate("approvedBy", "username firstName middleName lastName")
+			.populate("author", "username firstName middleName lastName");
+
+		if (!outcome) {
+			console.log(`Learning outcome not found with ID: ${id}`);
+			req.flash("error", "Cannot find that learning outcome!");
+			return res.redirect("/learningoutcomes");
+		}
+
+		console.log(
+			`Found learning outcome: ${outcome._id}, status: ${outcome.status}`
+		);
+
+		// Check if the current user is authorized to export this outcome
+		// Only the author can export the outcome
+		const isAuthor =
+			outcome.author && req.user && outcome.author._id.equals(req.user._id);
+
+		if (!isAuthor) {
+			console.log(
+				`User ${req.user._id} is not the author of learning outcome ${outcome._id}`
+			);
+			req.flash("error", "Only the report owner can export to PDF");
+			return res.redirect(`/learningoutcomes/${id}`);
+		}
+
+		// Check if the outcome status is not approved
+		if (outcome.status !== "approved") {
+			console.log(
+				`Learning outcome ${outcome._id} is not approved, cannot export to PDF`
+			);
+			req.flash(
+				"error",
+				"Only approved learning outcomes can be exported to PDF"
+			);
+			return res.redirect(`/learningoutcomes/${id}`);
+		}
+
+		// Validate outcome data before generating PDF
+		if (
+			!outcome.studentName ||
+			!outcome.entries ||
+			outcome.entries.length === 0
+		) {
+			console.error(
+				`Learning outcome ${outcome._id} is missing required fields`
+			);
+			req.flash(
+				"error",
+				"Learning outcome is missing required information for PDF export"
+			);
+			return res.redirect(`/learningoutcomes/${id}`);
+		}
+
+		console.log(`Generating PDF for learning outcome ${outcome._id}`);
+
+		// Generate the PDF file
+		const buffer = await generateLearningOutcomePdf(outcome);
+
+		console.log(
+			`PDF generated successfully for learning outcome ${outcome._id}`
+		);
+
+		// Set the appropriate headers for a PDF file download
+		res.setHeader(
+			"Content-Disposition",
+			`attachment; filename=learning-outcome-${id}.pdf`
+		);
+		res.setHeader("Content-Type", "application/pdf");
+
+		// Send the buffer as the response
+		res.send(buffer);
+	} catch (error) {
+		console.error(`PDF generation error for learning outcome ${id}:`, error);
+		req.flash(
+			"error",
+			`Error generating PDF: ${error.message}. Please try again.`
+		);
+		return res.redirect(`/learningoutcomes/${id}`);
+	}
+});
+
 export default {
 	index,
 	renderNewForm,
@@ -542,4 +682,5 @@ export default {
 	deleteOutcome,
 	archiveOutcome,
 	unarchiveOutcome,
+	exportOutcomeAsPdf,
 };

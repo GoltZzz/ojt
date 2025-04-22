@@ -99,6 +99,17 @@
 			</a>
 			<% } %>
 
+			<!-- Export to PDF button - only for report authors and approved reports -->
+			<% if (LearningOutcome.author && currentUser &&
+			LearningOutcome.author._id.equals(currentUser._id) &&
+			LearningOutcome.status === 'approved') { %>
+			<a
+				href="/learningoutcomes/<%= LearningOutcome._id %>/export-pdf"
+				class="btn btn-primary">
+				<i class="fas fa-file-pdf"></i> Export to PDF
+			</a>
+			<% } %>
+
 			<!-- Delete button - for authors of pending reports or admins with archived reports -->
 			<% if (LearningOutcome.canDelete) { %>
 			<button
@@ -235,7 +246,7 @@
 		<div class="custom-modal-body">
 			<p>Are you sure you want to approve this learning outcome?</p>
 			<form
-				action="/admin/reports/learningoutcome/<%= LearningOutcome._id %>/approve"
+				action="/admin/learningoutcomes/<%= LearningOutcome._id %>/approve"
 				method="POST"
 				data-custom-message="Learning Outcome has been approved successfully"
 				data-action-type="approve"
@@ -257,11 +268,6 @@
 					>
 				</div>
 				<div class="d-flex justify-content-end">
-					<button
-						type="button"
-						class="btn btn-secondary me-2 custom-modal-close">
-						Cancel
-					</button>
 					<button type="submit" class="btn btn-success">Approve</button>
 				</div>
 			</form>
@@ -298,7 +304,7 @@
 				</p>
 
 				<form
-					action="/admin/reports/learningoutcome/<%= LearningOutcome._id %>/approve"
+					action="/admin/learningoutcomes/<%= LearningOutcome._id %>/reject"
 					method="POST"
 					data-custom-message="Learning Outcome has been rejected"
 					data-action-type="reject"
@@ -321,11 +327,6 @@
 						>
 					</div>
 					<div class="d-flex justify-content-end">
-						<button
-							type="button"
-							class="btn btn-secondary me-2 custom-modal-close">
-							Cancel
-						</button>
 						<button type="submit" class="btn btn-danger">Reject</button>
 					</div>
 				</form>

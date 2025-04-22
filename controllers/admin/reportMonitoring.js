@@ -86,7 +86,7 @@ export const approveReport = catchAsync(async (req, res) => {
 			report = await TrainingSchedule.findById(id).populate("author");
 			redirectUrl = "/admin/pending-reports";
 			break;
-		case "learningoutcome":
+		case "learningoutcomes":
 			report = await LearningOutcome.findById(id).populate("author");
 			redirectUrl = "/admin/pending-reports";
 			break;
@@ -157,7 +157,7 @@ export const rejectReport = catchAsync(async (req, res) => {
 			report = await TrainingSchedule.findById(id).populate("author");
 			redirectUrl = "/admin/pending-reports";
 			break;
-		case "learningoutcome":
+		case "learningoutcomes":
 			report = await LearningOutcome.findById(id).populate("author");
 			redirectUrl = "/admin/pending-reports";
 			break;
@@ -179,6 +179,12 @@ export const rejectReport = catchAsync(async (req, res) => {
 	report.status = "rejected";
 	report.adminComments = adminComments;
 	report.needsRevision = true; // Flag that this report needs revision
+
+	// Make sure the needsRevision flag is set for all report types
+	if (type === "learningoutcomes" && !report.hasOwnProperty("needsRevision")) {
+		report.needsRevision = true;
+	}
+
 	await report.save();
 
 	// Create notification for the report author
@@ -209,7 +215,7 @@ const getReportTypeName = (type) => {
 			return "Weekly Progress Report";
 		case "trainingschedule":
 			return "Training Schedule";
-		case "learningoutcome":
+		case "learningoutcomes":
 			return "Learning Outcome";
 		case "dailyattendance":
 			return "Daily Attendance";

@@ -561,7 +561,7 @@
 															aria-label="Close"></button>
 													</div>
 													<form
-														action="/admin/learningoutcome/<%= outcome._id %>/approve"
+														action="/admin/reports/learningoutcomes/<%= outcome._id %>/approve"
 														method="POST">
 														<div class="modal-body">
 															<p>
@@ -582,12 +582,6 @@
 															</div>
 														</div>
 														<div class="modal-footer">
-															<button
-																type="button"
-																class="btn btn-secondary"
-																data-bs-dismiss="modal">
-																Cancel
-															</button>
 															<button type="submit" class="btn btn-success">
 																Approve
 															</button>
@@ -619,7 +613,7 @@
 															aria-label="Close"></button>
 													</div>
 													<form
-														action="/admin/learningoutcome/<%= outcome._id %>/reject"
+														action="/admin/reports/learningoutcomes/<%= outcome._id %>/reject"
 														method="POST">
 														<div class="modal-body">
 															<p>
@@ -641,12 +635,6 @@
 															</div>
 														</div>
 														<div class="modal-footer">
-															<button
-																type="button"
-																class="btn btn-secondary"
-																data-bs-dismiss="modal">
-																Cancel
-															</button>
 															<button type="submit" class="btn btn-danger">
 																Reject
 															</button>

@@ -55,6 +55,10 @@ const LearningOutcomeSchema = new Schema(
 		archivedReason: {
 			type: String,
 		},
+		needsRevision: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{ timestamps: true }
 );
