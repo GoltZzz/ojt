@@ -7,11 +7,6 @@
 <div class="container mt-4">
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<h1>Training Schedule Form</h1>
-		<div class="d-flex gap-2">
-			<a href="/trainingschedule" class="btn btn-outline-secondary">
-				<i class="fas fa-arrow-left"></i> Back to List
-			</a>
-		</div>
 	</div>
 
 	<!-- Status Badge -->
@@ -182,6 +177,23 @@
 		</div>
 
 		<div class="button-group">
+			<!-- Admin approval buttons - only for admins with pending schedules -->
+			<% if (currentUser && currentUser.role === 'admin' &&
+			TrainingSchedule.status === 'pending') { %>
+			<button
+				type="button"
+				class="btn btn-success"
+				data-custom-modal-target="approveModal">
+				<i class="fas fa-check"></i> Approve
+			</button>
+			<button
+				type="button"
+				class="btn btn-danger"
+				data-custom-modal-target="rejectModal">
+				<i class="fas fa-times"></i> Reject
+			</button>
+			<% } %>
+
 			<!-- Archive/Unarchive buttons - only for admins -->
 			<% if (currentUser && currentUser.role === 'admin') { %> <% if
 			(TrainingSchedule.archived) { %>
@@ -368,6 +380,130 @@
 </div>
 <% } %>
 
+<!-- Approve Modal -->
+<% if (currentUser && currentUser.role === 'admin' && TrainingSchedule.status
+=== 'pending') { %>
+<div
+	class="custom-modal-overlay report-modal"
+	id="approveModal"
+	role="dialog"
+	aria-labelledby="approveModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header approve-header">
+			<h5 class="custom-modal-title" id="approveModalLabel">
+				<i class="fas fa-check"></i>
+				Approve Schedule
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-check-circle custom-modal-icon text-success"></i>
+				<h4>Approve this schedule?</h4>
+				<p class="text-muted mb-4">
+					This action will mark the schedule as approved and notify the student.
+				</p>
+
+				<form
+					action="/admin/reports/trainingschedule/<%= TrainingSchedule._id %>/approve"
+					method="POST"
+					data-custom-message="Schedule has been approved successfully"
+					data-action-type="approve"
+					id="approveForm">
+					<input type="hidden" name="status" value="approved" />
+					<div class="form-group">
+						<label for="approveComments" class="form-label">
+							Comments (Optional):
+						</label>
+						<textarea
+							class="form-control"
+							id="approveComments"
+							name="adminComments"
+							rows="4"
+							placeholder="Add any feedback or comments about this schedule"
+							maxlength="500"></textarea>
+						<span class="char-counter" id="approveCharCounter"
+							>0/500 characters</span
+						>
+					</div>
+
+					<div class="custom-modal-footer">
+						<button
+							type="submit"
+							class="custom-modal-btn custom-modal-btn-success">
+							<i class="fas fa-check me-2"></i> Approve Schedule
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Reject Modal -->
+<div
+	class="custom-modal-overlay report-modal"
+	id="rejectModal"
+	role="dialog"
+	aria-labelledby="rejectModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header reject-header">
+			<h5 class="custom-modal-title" id="rejectModalLabel">
+				<i class="fas fa-times"></i>
+				Reject Schedule
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-times-circle custom-modal-icon text-danger"></i>
+				<h4>Reject this schedule?</h4>
+				<p class="text-muted mb-4">
+					This action will mark the schedule as rejected and notify the student.
+				</p>
+
+				<form
+					action="/admin/reports/trainingschedule/<%= TrainingSchedule._id %>/reject"
+					method="POST"
+					data-custom-message="Schedule has been rejected"
+					data-action-type="reject"
+					id="rejectForm">
+					<input type="hidden" name="status" value="rejected" />
+					<div class="form-group">
+						<label for="rejectComments" class="form-label required-field">
+							Reason for Rejection
+						</label>
+						<textarea
+							class="form-control"
+							id="rejectComments"
+							name="adminComments"
+							rows="4"
+							placeholder="Please provide a detailed explanation of why this schedule is being rejected"
+							required
+							maxlength="500"></textarea>
+						<span class="char-counter" id="rejectCharCounter"
+							>0/500 characters</span
+						>
+					</div>
+
+					<div class="custom-modal-footer">
+						<button
+							type="submit"
+							class="custom-modal-btn custom-modal-btn-danger">
+							<i class="fas fa-times me-2"></i> Reject Schedule
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<% } %>
+
 <!-- Custom modal scripts -->
 <script src="/js/reportModals.js"></script>
 <script src="/js/customModal.js"></script>
@@ -392,6 +528,24 @@
 		if (passwordForm && passwordInput && hiddenPassword) {
 			passwordForm.addEventListener("submit", function () {
 				hiddenPassword.value = passwordInput.value;
+			});
+		}
+
+		// For character counters in approve/reject modals
+		const approveComments = document.getElementById("approveComments");
+		const approveCharCounter = document.getElementById("approveCharCounter");
+		const rejectComments = document.getElementById("rejectComments");
+		const rejectCharCounter = document.getElementById("rejectCharCounter");
+
+		if (approveComments && approveCharCounter) {
+			approveComments.addEventListener("input", function () {
+				approveCharCounter.textContent = `${this.value.length}/500 characters`;
+			});
+		}
+
+		if (rejectComments && rejectCharCounter) {
+			rejectComments.addEventListener("input", function () {
+				rejectCharCounter.textContent = `${this.value.length}/500 characters`;
 			});
 		}
 	});

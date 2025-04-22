@@ -100,109 +100,170 @@
         </div>
     </div>
 
-    <!-- Schedules Table -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">Training Schedule Forms</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Student Name</th>
-                            <th>Internship Site</th>
-                            <th>Week Period</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (TrainingSchedules.length === 0) { %>
-                        <tr>
-                            <td colspan="6" class="text-center py-4">
-                                <div class="alert alert-info mb-0">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    No training schedules found.
-                                    <% if (currentUser && currentUser.role !== 'admin') { %>
-                                    <a href="/trainingschedule/new" class="alert-link">Create a new schedule</a>.
-                                    <% } %>
-                                </div>
-                            </td>
-                        </tr>
+    <% if (TrainingSchedules && TrainingSchedules.length) { %>
+    <div class="table-responsive">
+        <table class="table table-hover report-table">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Internship Site</th>
+                    <th>Week Period</th>
+                    <th>Supervisor</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% TrainingSchedules.forEach(schedule => { %>
+                <tr class="<%= schedule.isCurrentUserReport ? 'current-user-report' : '' %>">
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <% if (schedule.isCurrentUserReport) { %>
+                            <span
+                                class="your-report-badge"
+                                data-bs-toggle="tooltip"
+                                title="This is your schedule">
+                                <i class="fas fa-user-check"></i>
+                            </span>
+                            <span class="student-name your-name"><%= schedule.studentName %></span>
+                            <% } else { %>
+                            <span class="student-name"><%= schedule.studentName %></span>
+                            <% } %>
+                        </div>
+                    </td>
+                    <td><%= schedule.internshipSite %></td>
+                    <td>
+                        <span class="date-range">
+                            <i class="far fa-calendar-alt me-1"></i>
+                            <%= new Date(schedule.startDate).toLocaleDateString() %> -
+                            <%= new Date(schedule.endDate).toLocaleDateString() %>
+                        </span>
+                    </td>
+                    <td><%= schedule.trainer %></td>
+                    <td>
+                        <% if (schedule.status === 'approved') { %>
+                        <div class="status-badge">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i> Approved
+                            </span>
+                            <% if (schedule.approvedBy) { %>
+                            <small class="d-block text-muted mt-1">
+                                by <%= schedule.approvedBy.username %>
+                            </small>
+                            <% } %>
+                        </div>
+                        <% } else if (schedule.status === 'rejected') { %>
+                        <div class="status-badge">
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i> Rejected
+                            </span>
+                            <% if (schedule.approvedBy) { %>
+                            <small class="d-block text-muted mt-1">
+                                by <%= schedule.approvedBy.username %>
+                            </small>
+                            <% } %>
+                        </div>
                         <% } else { %>
-                        <% TrainingSchedules.forEach(schedule => { %>
-                        <tr>
-                            <td><%= schedule.studentName %></td>
-                            <td><%= schedule.internshipSite %></td>
-                            <td>
-                                <span class="date-range">
-                                    <i class="far fa-calendar-alt me-1"></i>
-                                    <%= new Date(schedule.startDate).toLocaleDateString() %> -
-                                    <%= new Date(schedule.endDate).toLocaleDateString() %>
-                                </span>
-                            </td>
-                            <td>
-                                <% if (schedule.status === 'pending') { %>
-                                <span class="badge bg-warning text-dark">Pending</span>
-                                <% } else if (schedule.status === 'approved') { %>
-                                <span class="badge bg-success">Approved</span>
-                                <% } else if (schedule.status === 'rejected') { %>
-                                <span class="badge bg-danger">Rejected</span>
-                                <% } %>
-                                <% if (schedule.archived) { %>
-                                <span class="badge bg-secondary mt-1">Archived</span>
-                                <% } %>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <a href="/trainingschedule/<%= schedule._id %>" class="btn btn-sm btn-info text-white" data-bs-toggle="tooltip" title="View Schedule">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <% if (schedule.isCurrentUserReport && schedule.status === 'pending' && !schedule.archived) { %>
-                                    <a href="/trainingschedule/<%= schedule._id %>/edit" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Edit Schedule">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Delete Schedule" data-custom-modal-target="deleteScheduleModal<%= schedule._id %>">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                    <% } %>
-                                </div>
-                            </td>
-                        </tr>
-                        <% }) %>
+                        <div class="status-badge">
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock me-1"></i> Pending
+                            </span>
+                        </div>
                         <% } %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                        <% if (schedule.archived) { %>
+                        <div class="status-badge mt-1">
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-archive me-1"></i> Archived
+                            </span>
+                        </div>
+                        <% } %>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/trainingschedule/<%= schedule._id %>" class="btn btn-sm btn-info text-white" data-bs-toggle="tooltip" title="View Schedule">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <% if (schedule.isCurrentUserReport && schedule.status === 'pending' && !schedule.archived) { %>
+                            <a href="/trainingschedule/<%= schedule._id %>/edit" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Edit Schedule">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Delete Schedule" data-custom-modal-target="deleteScheduleModal<%= schedule._id %>">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <% } %>
+                        </div>
+                    </td>
+                </tr>
+                        <% }) %>
+            </tbody>
+        </table>
     </div>
+    <% } else { %>
+    <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>
+        <% if (Object.keys(filters || {}).length > 0 && Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit')) { %>
+            No schedules found matching your filters. <a href="/trainingschedule" class="alert-link">Clear filters</a> to see all schedules.
+        <% } else { %>
+            No training schedules found.
+            <% if (currentUser && currentUser.role !== 'admin') { %>
+                <a href="/trainingschedule/new" class="alert-link">Create a new schedule</a>.
+            <% } %>
+        <% } %>
+    </div>
+    <% } %>
 
-    <!-- Pagination -->
-    <% if (pagination.totalPages > 1) { %>
-    <div class="d-flex justify-content-between align-items-center mt-4">
-        <div>
-            Showing <%= (pagination.currentPage - 1) * pagination.pageSize + 1 %> to
-            <%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %>
-            of <%= pagination.totalReports %> schedules
+    <!-- Pagination Controls -->
+    <% if (pagination && pagination.totalPages > 1) { %>
+    <div class="pagination-container mt-4">
+        <div class="pagination-info">
+            Showing <span class="fw-bold"><%= (pagination.currentPage - 1) * pagination.pageSize + 1 %></span> to
+            <span class="fw-bold"><%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %></span> of
+            <span class="fw-bold"><%= pagination.totalReports %></span> schedules
         </div>
         <nav aria-label="Page navigation">
-            <ul class="pagination mb-0">
+            <ul class="pagination">
+                <!-- First Page -->
                 <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
-                    <a class="page-link" href="/trainingschedule?page=<%= pagination.prevPage %>&<%= new URLSearchParams(filters).toString() %>" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
+                    <a class="page-link" href="/trainingschedule?<%= new URLSearchParams({...filters, page: 1}).toString() %>" aria-label="First">
+                        <i class="fas fa-angle-double-left"></i>
                     </a>
                 </li>
-                <% for(let i = 1; i <= pagination.totalPages; i++) { %>
-                <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
-                    <a class="page-link" href="/trainingschedule?page=<%= i %>&<%= new URLSearchParams(filters).toString() %>">
-                        <%= i %>
+                <!-- Previous Page -->
+                <li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                    <a class="page-link" href="/trainingschedule?<%= new URLSearchParams({...filters, page: pagination.prevPage}).toString() %>" aria-label="Previous">
+                        <i class="fas fa-angle-left"></i>
                     </a>
                 </li>
+
+                <!-- Page Numbers -->
+                <%
+                    let startPage = Math.max(1, pagination.currentPage - 2);
+                    let endPage = Math.min(pagination.totalPages, startPage + 4);
+
+                    // Adjust start page if we're near the end
+                    if (endPage - startPage < 4) {
+                        startPage = Math.max(1, endPage - 4);
+                    }
+
+                    for (let i = startPage; i <= endPage; i++) {
+                %>
+                    <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="/trainingschedule?<%= new URLSearchParams({...filters, page: i}).toString() %>">
+                            <%= i %>
+                        </a>
+                    </li>
                 <% } %>
+
+                <!-- Next Page -->
                 <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
-                    <a class="page-link" href="/trainingschedule?page=<%= pagination.nextPage %>&<%= new URLSearchParams(filters).toString() %>" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
+                    <a class="page-link" href="/trainingschedule?<%= new URLSearchParams({...filters, page: pagination.nextPage}).toString() %>" aria-label="Next">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <!-- Last Page -->
+                <li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+                    <a class="page-link" href="/trainingschedule?<%= new URLSearchParams({...filters, page: pagination.totalPages}).toString() %>" aria-label="Last">
+                        <i class="fas fa-angle-double-right"></i>
                     </a>
                 </li>
             </ul>
@@ -268,6 +329,11 @@
                                 id="hiddenPassword<%= schedule._id %>"
                                 name="password"
                                 value="" />
+                            <!-- Hidden input to store the return URL -->
+                            <input
+                                type="hidden"
+                                name="returnUrl"
+                                value="<%= currentUrl %>" />
                             <button
                                 type="submit"
                                 class="custom-modal-btn custom-modal-btn-danger">

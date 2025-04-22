@@ -113,6 +113,7 @@ export const index = catchAsync(async (req, res) => {
 		WeeklyProgressReports,
 		pagination,
 		filters: req.query,
+		currentUrl: req.originalUrl,
 	});
 });
 
@@ -494,12 +495,12 @@ export const updateReport = catchAsync(async (req, res) => {
 
 export const deleteReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
-	const { password } = req.body;
+	const { password, returnUrl } = req.body;
 
 	// Check if password was provided (except for admin bypass)
 	if (!password && password !== "admin-bypass") {
 		req.flash("error", "Password is required to delete a report");
-		return res.redirect(`/weeklyprogress/${id}`);
+		return res.redirect(returnUrl || `/weeklyprogress/${id}`);
 	}
 
 	// Find the report by ID
@@ -508,7 +509,7 @@ export const deleteReport = catchAsync(async (req, res) => {
 	// If report not found, flash error and redirect
 	if (!report) {
 		req.flash("error", "Weekly Progress Report not found");
-		return res.redirect("/weeklyprogress");
+		return res.redirect(returnUrl || "/weeklyprogress");
 	}
 
 	// Check if the current user is the author of the report or an admin
@@ -519,7 +520,7 @@ export const deleteReport = catchAsync(async (req, res) => {
 	// If not the author or admin, flash error and redirect
 	if (!isAuthor && !isAdmin) {
 		req.flash("error", "You do not have permission to delete this report");
-		return res.redirect("/weeklyprogress");
+		return res.redirect(returnUrl || "/weeklyprogress");
 	}
 
 	// No longer requiring export before deletion
@@ -527,7 +528,7 @@ export const deleteReport = catchAsync(async (req, res) => {
 	// For admin users: check if the report is archived
 	if (isAdmin && !report.archived) {
 		req.flash("error", "You must archive the report before deleting it");
-		return res.redirect(`/weeklyprogress/${id}`);
+		return res.redirect(returnUrl || `/weeklyprogress/${id}`);
 	}
 
 	// Check if this is an admin bypass or regular password verification
@@ -549,7 +550,7 @@ export const deleteReport = catchAsync(async (req, res) => {
 				"error",
 				"Failed to delete weekly progress report. Please try again."
 			);
-			return res.redirect(`/weeklyprogress/${id}`);
+			return res.redirect(returnUrl || `/weeklyprogress/${id}`);
 		}
 	} else {
 		// Regular password verification for non-admin users
@@ -559,12 +560,12 @@ export const deleteReport = catchAsync(async (req, res) => {
 				if (err) {
 					console.error("Authentication error:", err);
 					req.flash("error", "An error occurred during authentication");
-					return res.redirect(`/weeklyprogress/${id}`);
+					return res.redirect(returnUrl || `/weeklyprogress/${id}`);
 				}
 
 				if (!user) {
 					req.flash("error", "Incorrect password");
-					return res.redirect(`/weeklyprogress/${id}`);
+					return res.redirect(returnUrl || `/weeklyprogress/${id}`);
 				}
 
 				// Password is correct, proceed with deletion
@@ -577,20 +578,20 @@ export const deleteReport = catchAsync(async (req, res) => {
 					await WeeklyProgressReport.findByIdAndDelete(id);
 
 					req.flash("success", "Successfully deleted weekly progress report!");
-					res.redirect("/weeklyprogress");
+					res.redirect(returnUrl || "/weeklyprogress");
 				} catch (error) {
 					console.error("Error deleting weekly progress report:", error);
 					req.flash(
 						"error",
 						"Failed to delete weekly progress report. Please try again."
 					);
-					res.redirect(`/weeklyprogress/${id}`);
+					res.redirect(returnUrl || `/weeklyprogress/${id}`);
 				}
 			});
 		} catch (error) {
 			console.error("Error during password verification:", error);
 			req.flash("error", "An error occurred during password verification");
-			res.redirect(`/weeklyprogress/${id}`);
+			res.redirect(returnUrl || `/weeklyprogress/${id}`);
 		}
 	}
 });

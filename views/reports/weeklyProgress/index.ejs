@@ -103,8 +103,8 @@
                     <th>Student Name</th>
                     <th>Internship Site</th>
                     <th>Week Period</th>
+                    <th>Supervisor</th>
                     <th>Status</th>
-                    <th>Date Submitted</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -134,29 +134,45 @@
                             <%= new Date(report.weekEndDate).toLocaleDateString() %>
                         </span>
                     </td>
+                    <td><%= report.supervisorName %></td>
                     <td>
+                        <% if (report.status === 'approved') { %>
                         <div class="status-badge">
-                            <% if (report.status === 'approved') { %>
                             <span class="badge bg-success">
                                 <i class="fas fa-check-circle me-1"></i> Approved
                             </span>
-                            <% } else if (report.status === 'rejected') { %>
+                            <% if (report.approvedBy) { %>
+                            <small class="d-block text-muted mt-1">
+                                by <%= report.approvedBy.username %>
+                            </small>
+                            <% } %>
+                        </div>
+                        <% } else if (report.status === 'rejected') { %>
+                        <div class="status-badge">
                             <span class="badge bg-danger">
                                 <i class="fas fa-times-circle me-1"></i> Rejected
                             </span>
-                            <% } else { %>
+                            <% if (report.approvedBy) { %>
+                            <small class="d-block text-muted mt-1">
+                                by <%= report.approvedBy.username %>
+                            </small>
+                            <% } %>
+                        </div>
+                        <% } else { %>
+                        <div class="status-badge">
                             <span class="badge bg-warning">
                                 <i class="fas fa-clock me-1"></i> Pending
                             </span>
-                            <% } %>
-                            <% if (report.archived) { %>
-                            <span class="badge bg-secondary mt-1">
+                        </div>
+                        <% } %>
+                        <% if (report.archived) { %>
+                        <div class="status-badge mt-1">
+                            <span class="badge bg-secondary">
                                 <i class="fas fa-archive me-1"></i> Archived
                             </span>
-                            <% } %>
                         </div>
+                        <% } %>
                     </td>
-                    <td><%= new Date(report.dateSubmitted).toLocaleDateString() %></td>
                     <td>
                         <div class="action-buttons">
                             <a
@@ -321,6 +337,11 @@
                                 id="hiddenPassword<%= report._id %>"
                                 name="password"
                                 value="" />
+                            <!-- Hidden input to store the return URL -->
+                            <input
+                                type="hidden"
+                                name="returnUrl"
+                                value="<%= currentUrl %>" />
                             <button
                                 type="submit"
                                 class="custom-modal-btn custom-modal-btn-danger">

@@ -157,6 +157,7 @@ export const index = catchAsync(async (req, res) => {
 		TrainingSchedules,
 		pagination,
 		filters: req.query,
+		currentUrl: req.originalUrl,
 	});
 });
 
@@ -460,12 +461,12 @@ export const updateSchedule = catchAsync(async (req, res) => {
 
 export const deleteSchedule = catchAsync(async (req, res) => {
 	const { id } = req.params;
-	const { password } = req.body;
+	const { password, returnUrl } = req.body;
 
 	// Check if password was provided
 	if (!password) {
 		req.flash("error", "Password is required to delete a schedule");
-		return res.redirect(`/trainingschedule/${id}`);
+		return res.redirect(returnUrl || `/trainingschedule/${id}`);
 	}
 
 	// Find the schedule by ID
@@ -474,7 +475,7 @@ export const deleteSchedule = catchAsync(async (req, res) => {
 	// If schedule not found, flash error and redirect
 	if (!schedule) {
 		req.flash("error", "Training Schedule not found");
-		return res.redirect("/trainingschedule");
+		return res.redirect(returnUrl || "/trainingschedule");
 	}
 
 	// Check if the current user is the author of the schedule or an admin
@@ -487,13 +488,13 @@ export const deleteSchedule = catchAsync(async (req, res) => {
 	// If not the author or admin, flash error and redirect
 	if (!isAuthor && !isAdmin) {
 		req.flash("error", "You do not have permission to delete this schedule");
-		return res.redirect("/trainingschedule");
+		return res.redirect(returnUrl || "/trainingschedule");
 	}
 
 	// For admin users: check if the schedule is archived
 	if (isAdmin && !schedule.archived) {
 		req.flash("error", "You must archive the schedule before deleting it");
-		return res.redirect(`/trainingschedule/${id}`);
+		return res.redirect(returnUrl || `/trainingschedule/${id}`);
 	}
 
 	// For regular users: check if the schedule is not pending or is archived
@@ -506,7 +507,7 @@ export const deleteSchedule = catchAsync(async (req, res) => {
 			"error",
 			"You cannot delete a schedule that has been approved, rejected, or archived"
 		);
-		return res.redirect("/trainingschedule");
+		return res.redirect(returnUrl || "/trainingschedule");
 	}
 
 	// Verify the user's password
@@ -516,12 +517,12 @@ export const deleteSchedule = catchAsync(async (req, res) => {
 			if (err) {
 				console.error("Authentication error:", err);
 				req.flash("error", "An error occurred during authentication");
-				return res.redirect(`/trainingschedule/${id}`);
+				return res.redirect(returnUrl || `/trainingschedule/${id}`);
 			}
 
 			if (!user) {
 				req.flash("error", "Incorrect password");
-				return res.redirect(`/trainingschedule/${id}`);
+				return res.redirect(returnUrl || `/trainingschedule/${id}`);
 			}
 
 			// Password is correct, proceed with deletion
@@ -534,20 +535,20 @@ export const deleteSchedule = catchAsync(async (req, res) => {
 				await TrainingSchedule.findByIdAndDelete(id);
 
 				req.flash("success", "Successfully deleted training schedule!");
-				res.redirect("/trainingschedule");
+				res.redirect(returnUrl || "/trainingschedule");
 			} catch (error) {
 				console.error("Error deleting training schedule:", error);
 				req.flash(
 					"error",
 					"Failed to delete training schedule. Please try again."
 				);
-				res.redirect(`/trainingschedule/${id}`);
+				res.redirect(returnUrl || `/trainingschedule/${id}`);
 			}
 		});
 	} catch (error) {
 		console.error("Error during password verification:", error);
 		req.flash("error", "An error occurred during password verification");
-		res.redirect(`/trainingschedule/${id}`);
+		res.redirect(returnUrl || `/trainingschedule/${id}`);
 	}
 });
 
