@@ -132,8 +132,16 @@
 					<td>
 						<span class="date-range">
 							<i class="far fa-calendar-alt me-1"></i>
-							<%= report.weekStartDate.toLocaleDateString() %> - <%=
-							report.weekEndDate.toLocaleDateString() %>
+								<% if (report.weekStartDate) { %>
+									<%= new Date(report.weekStartDate).toLocaleDateString() %>
+								<% } else { %>
+									N/A
+								<% } %> - 
+								<% if (report.weekEndDate) { %>
+									<%= new Date(report.weekEndDate).toLocaleDateString() %>
+								<% } else { %>
+									N/A
+								<% } %>
 						</span>
 					</td>
 					<td><%= report.supervisorName %></td>

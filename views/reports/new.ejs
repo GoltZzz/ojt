@@ -9,138 +9,34 @@
 	<form
 		action="/weeklyreport"
 		method="POST"
-		novalidate
+		enctype="multipart/form-data"
 		class="validated-form needs-validation">
 		<div class="mb-3">
-			<label for="studentName" class="form-label"
-				>Student Name
-				<small class="text-muted">(auto-filled from your profile)</small></label
-			>
-			<div class="input-group">
-				<span class="input-group-text"><i class="fas fa-user"></i></span>
-				<input
-					type="text"
-					class="form-control bg-light"
-					id="studentName"
-					name="studentName"
-					value="<%= fullName %>"
-					readonly
-					required />
-				<span
-					class="input-group-text"
-					data-bs-toggle="tooltip"
-					title="This field is automatically filled with your full name and cannot be changed">
-					<i class="fas fa-lock"></i>
-				</span>
-			</div>
-			<small class="form-text text-muted"
-				>This field is automatically filled with your full name and cannot be
-				changed.</small
-			>
-		</div>
-		<div class="mb-3">
-			<label for="internshipSite" class="form-label">Internship Site</label>
+			<label for="photos" class="form-label">Add Photos</label>
 			<input
-				type="text"
+				type="file"
 				class="form-control"
-				id="internshipSite"
-				name="internshipSite"
+				id="photos"
+				name="photos"
+				accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+				multiple
 				required />
-		</div>
-		<div class="row">
-			<div class="col-md-6 mb-3">
-				<label for="weekStartDate" class="form-label">Week Start Date</label>
-				<input
-					type="date"
-					class="form-control"
-					id="weekStartDate"
-					name="weekStartDate"
-					required />
-			</div>
-			<div class="col-md-6 mb-3">
-				<label for="weekEndDate" class="form-label">Week End Date</label>
-				<input
-					type="date"
-					class="form-control"
-					id="weekEndDate"
-					name="weekEndDate"
-					required />
+			<div class="form-text">
+				You can upload multiple images (JPG, JPEG, PNG). Max size per image:
+				10MB.
 			</div>
 		</div>
-
-		<!-- Daily Records -->
-		<div id="dailyRecords" novalidate>
-			<% ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day,
-			index) => { %>
-			<div class="card mb-3">
-				<div class="card-header"><%= day %></div>
-				<div class="card-body">
-					<div class="row">
-						<div class="col-md-3">
-							<label>Morning Time In</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeIn][morning]" />
-						</div>
-						<div class="col-md-3">
-							<label>Morning Time Out</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeOut][morning]"
-								value="12:00"
-								readonly
-								style="background-color: #e9ecef" />
-						</div>
-						<div class="col-md-3">
-							<label>Afternoon Time In</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeIn][afternoon]"
-								value="01:00"
-								readonly
-								style="background-color: #e9ecef" />
-						</div>
-						<div class="col-md-3">
-							<label>Afternoon Time Out</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeOut][afternoon]" />
-						</div>
-						<div class="col-12 mt-2">
-							<label>Accomplishments</label>
-							<textarea
-								class="form-control"
-								name="dailyRecords[<%= index %>][accomplishments]"
-								placeholder="Enter your accomplishments for the day (optional)"></textarea>
-						</div>
-					</div>
-				</div>
-			</div>
-			<% }) %>
-		</div>
-
 		<div class="mb-3">
-			<label for="supervisorName" class="form-label">Supervisor Name</label>
+			<label for="docxFile" class="form-label">Add DOCX File</label>
 			<input
-				type="text"
+				type="file"
 				class="form-control"
-				id="supervisorName"
-				name="supervisorName"
+				id="docxFile"
+				name="docxFile"
+				accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 				required />
+			<div class="form-text">Upload a single DOCX file. Max size: 10MB.</div>
 		</div>
-
-		<div class="mb-3">
-			<p class="text-center font-italic">
-				"I CERTIFY on my honor that the above is a true and correct report of
-				the hours of work performed, record of which was made daily at the time
-				of arrival at and departure from office."
-			</p>
-		</div>
-
 		<div class="text-center">
 			<button type="submit" class="btn btn-primary">Submit Report</button>
 		</div>

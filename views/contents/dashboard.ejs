@@ -132,8 +132,11 @@
 							<div class="report-meta">
 								<span class="report-date">
 									<i class="far fa-calendar-alt"></i>
-									<%= report.weekStartDate.toLocaleDateString() %> - <%=
-									report.weekEndDate.toLocaleDateString() %>
+									<% if (report.weekStartDate) { %> <%= new
+									Date(report.weekStartDate).toLocaleDateString() %> <% } else {
+									%> N/A <% } %> - <% if (report.weekEndDate) { %> <%= new
+									Date(report.weekEndDate).toLocaleDateString() %> <% } else {
+									%> N/A <% } %>
 								</span>
 								<span class="report-status <%= report.status %>">
 									<%= report.status.charAt(0).toUpperCase() +

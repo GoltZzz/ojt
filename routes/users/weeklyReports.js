@@ -6,6 +6,7 @@ import {
 	validateWeeklyReport,
 	handleValidationErrors,
 } from "../../utils/sanitize.js";
+import { weeklyReportUpload } from "../../utils/cloudinary.js";
 
 const router = express.Router();
 
@@ -14,8 +15,10 @@ router
 	.get(isLoggedIn, weeklyReports.index)
 	.post(
 		isLoggedIn,
-		validateWeeklyReport,
-		handleValidationErrors,
+		weeklyReportUpload.fields([
+			{ name: "photos", maxCount: 10 },
+			{ name: "docxFile", maxCount: 1 },
+		]),
 		weeklyReports.createReport
 	);
 

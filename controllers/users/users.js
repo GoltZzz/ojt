@@ -1,39 +1,60 @@
 import User from "../../models/users.js";
 import { cloudinary } from "../../utils/cloudinary.js";
+import multer from "multer";
+import xlsx from "xlsx";
+import bcrypt from "bcrypt";
 
-const renderRegister = async (_, res) => {
-	res.render("forms/register");
-};
+// Multer setup for Excel uploads
+const upload = multer({ dest: "uploads/" });
 
-const createUser = async (req, res, next) => {
+// Bulk register students via Excel upload
+const bulkRegister = async (req, res) => {
 	try {
-		const { username, password } = req.body;
-		const user = new User(req.body);
-
-		// Handle profile image if uploaded
-		if (req.file) {
-			user.profileImage = {
-				url: req.file.path,
-				publicId: req.file.filename,
-			};
+		if (!req.file) {
+			return res.status(400).json({ error: "No file uploaded" });
 		}
+		const workbook = xlsx.readFile(req.file.path);
+		const sheetName = workbook.SheetNames[0];
+		const sheet = workbook.Sheets[sheetName];
+		const rows = xlsx.utils.sheet_to_json(sheet);
 
-		const userCount = await User.countDocuments({});
-		if (userCount === 0) {
-			user.role = "admin";
-		}
+		const created = [];
+		for (const row of rows) {
+			const { studentIdNumber, studentName, internshipSite, course, password } =
+				row;
+			if (
+				!studentIdNumber ||
+				!studentName ||
+				!internshipSite ||
+				!course ||
+				!password
+			)
+				continue;
 
-		const registeredUser = await User.register(user, password);
-		await registeredUser.save();
-		req.flash("success", `Welcome ${username} to OJT`);
-		return res.redirect("/login");
-	} catch (error) {
-		// If there was an error and we uploaded an image, delete it from Cloudinary
-		if (req.file && req.file.path) {
-			await cloudinary.uploader.destroy(req.file.filename);
+			const [lastName, ...rest] = studentName.split(",");
+			const [firstName, ...middleArr] = rest.join("").trim().split(" ");
+			const middleName = middleArr.join(" ") || undefined;
+			const username = studentIdNumber;
+			const hash = await bcrypt.hash(password, 10);
+
+			const user = new User({
+				username,
+				firstName: firstName || "",
+				middleName: middleName || "",
+				lastName: lastName ? lastName.trim() : "",
+				role: "user",
+			});
+			user.setPassword
+				? await user.setPassword(password)
+				: (user.password = hash);
+			await user.save();
+			created.push(username);
 		}
-		req.flash("error", error.message);
-		return res.redirect("/register");
+		return res
+			.status(200)
+			.json({ message: `Imported ${created.length} students`, users: created });
+	} catch (err) {
+		return res.status(500).json({ error: err.message });
 	}
 };
 
@@ -68,4 +89,9 @@ const logout = async (req, res, next) => {
 	});
 };
 
-export default { renderRegister, createUser, renderLogin, login, logout };
+export default {
+	bulkRegister,
+	renderLogin,
+	login,
+	logout,
+};

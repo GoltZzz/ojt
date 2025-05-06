@@ -124,22 +124,40 @@ export const renderNewForm = async (req, res) => {
 };
 
 export const createReport = catchAsync(async (req, res) => {
-	// Format the user's full name to ensure it's consistent
-	let fullName = req.user.firstName;
-	if (req.user.middleName && req.user.middleName.length > 0) {
-		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
-		fullName += ` ${middleInitial}.`;
+	const photos =
+		req.files && req.files.photos
+			? req.files.photos.map((file) => ({
+					filename: file.filename,
+					path: file.path,
+					mimetype: file.mimetype,
+					size: file.size,
+			  }))
+			: [];
+	const docxFile =
+		req.files && req.files.docxFile && req.files.docxFile[0]
+			? {
+					filename: req.files.docxFile[0].filename,
+					path: req.files.docxFile[0].path,
+					mimetype: req.files.docxFile[0].mimetype,
+					size: req.files.docxFile[0].size,
+			  }
+			: null;
+
+	if (photos.length === 0 || !docxFile) {
+		req.flash("error", "You must upload at least one photo and one DOCX file.");
+		return res.redirect("/weeklyreport/new");
 	}
-	fullName += ` ${req.user.lastName}`;
 
-	// Override the studentName in the request body with the formatted full name
-	// This ensures the student name is always set to the user's full name
-	req.body.studentName = fullName;
-
-	const WeeklyReports = new WeeklyReport(req.body);
-	WeeklyReports.author = req.user._id;
+	const WeeklyReports = new WeeklyReport({
+		author: req.user._id,
+		photos,
+		docxFile,
+	});
 	await WeeklyReports.save();
-	req.flash("success", "Successfully created a new weekly report!");
+	req.flash(
+		"success",
+		"Successfully uploaded photos and DOCX file for the weekly report!"
+	);
 	res.redirect(`/weeklyreport/${WeeklyReports._id}`);
 });
 
@@ -154,9 +172,12 @@ export const showReport = catchAsync(async (req, res, next) => {
 		return res.redirect("/weeklyreport");
 	}
 	// Make sure archived status is available in the template
-	WeeklyReports.weekStartDate =
-		WeeklyReports.weekStartDate.toLocaleDateString();
-	WeeklyReports.weekEndDate = WeeklyReports.weekEndDate.toLocaleDateString();
+	WeeklyReports.weekStartDate = WeeklyReports.weekStartDate
+		? WeeklyReports.weekStartDate.toLocaleDateString()
+		: undefined;
+	WeeklyReports.weekEndDate = WeeklyReports.weekEndDate
+		? WeeklyReports.weekEndDate.toLocaleDateString()
+		: undefined;
 	if (WeeklyReports.dailyRecords) {
 		const defaultTimeIn = { morning: "N/A", afternoon: "01:00" };
 		const defaultTimeOut = { morning: "12:00", afternoon: "N/A" };

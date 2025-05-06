@@ -25,24 +25,24 @@ const weeklyReportSchema = new Schema({
 	},
 	studentName: {
 		type: String,
-		required: true,
+		// required: true, // Now optional for upload-only flow
 	},
 	internshipSite: {
 		type: String,
-		required: true,
+		// required: true, // Now optional for upload-only flow
 	},
 	weekStartDate: {
 		type: Date,
-		required: true,
+		// required: true, // Now optional for upload-only flow
 	},
 	weekEndDate: {
 		type: Date,
-		required: true,
+		// required: true, // Now optional for upload-only flow
 	},
 	dailyRecords: [dailyRecordSchema],
 	supervisorName: {
 		type: String,
-		required: true,
+		// required: true, // Now optional for upload-only flow
 	},
 	supervisorSignature: String,
 	studentSignature: String,
@@ -80,6 +80,26 @@ const weeklyReportSchema = new Schema({
 	hasBeenExported: {
 		type: Boolean,
 		default: false,
+	},
+	file: {
+		filename: String,
+		path: String,
+		mimetype: String,
+		size: Number,
+	},
+	photos: [
+		{
+			filename: String,
+			path: String,
+			mimetype: String,
+			size: Number,
+		},
+	],
+	docxFile: {
+		filename: String,
+		path: String,
+		mimetype: String,
+		size: Number,
 	},
 });
 
