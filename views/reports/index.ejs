@@ -80,6 +80,8 @@
 						<option value="studentName_desc" <%= filters?.sortBy === 'studentName_desc' ? 'selected' : '' %>>Name (Z-A)</option>
 						<option value="internshipSite_asc" <%= filters?.sortBy === 'internshipSite_asc' ? 'selected' : '' %>>Site (A-Z)</option>
 						<option value="internshipSite_desc" <%= filters?.sortBy === 'internshipSite_desc' ? 'selected' : '' %>>Site (Z-A)</option>
+						<option value="weekNumber_asc" <%= filters?.sortBy === 'weekNumber_asc' ? 'selected' : '' %>>Week Number (Ascending)</option>
+						<option value="weekNumber_desc" <%= filters?.sortBy === 'weekNumber_desc' ? 'selected' : '' %>>Week Number (Descending)</option>
 					</select>
 				</div>
 				<div class="col-12 mt-3 filter-actions">
@@ -101,8 +103,8 @@
 				<tr>
 					<th>Student Name</th>
 					<th>Internship Site</th>
-					<th>Week Period</th>
-					<th>Supervisor</th>
+					<th>Week</th>
+					<th>Period</th>
 					<th>Status</th>
 					<th>Actions</th>
 				</tr>
@@ -129,22 +131,12 @@
 						</div>
 					</td>
 					<td><%= report.internshipSite %></td>
-					<td>
-						<span class="date-range">
-							<i class="far fa-calendar-alt me-1"></i>
-								<% if (report.weekStartDate) { %>
-									<%= new Date(report.weekStartDate).toLocaleDateString() %>
-								<% } else { %>
-									N/A
-								<% } %> - 
-								<% if (report.weekEndDate) { %>
-									<%= new Date(report.weekEndDate).toLocaleDateString() %>
-								<% } else { %>
-									N/A
-								<% } %>
-						</span>
-					</td>
-					<td><%= report.supervisorName %></td>
+						<td>Week <%= report.weekNumber %></td>
+						<td>
+							<span class="text-nowrap">
+								<%= report.formattedWeekPeriod %>
+							</span>
+						</td>
 					<td>
 						<% if (report.status === 'approved') { %>
 						<div class="status-badge">
@@ -192,23 +184,15 @@
 								title="View Report">
 								<i class="fas fa-eye"></i>
 							</a>
-							<% if (report.isCurrentUserReport && report.status === 'pending')
-							{ %>
-							<a
-								href="/weeklyreport/<%= report._id %>/edit"
-								class="btn btn-sm btn-warning"
-								data-bs-toggle="tooltip"
-								title="Edit Report">
-								<i class="fas fa-edit"></i>
-							</a>
-							<button
-								type="button"
-								class="btn btn-sm btn-danger"
-								data-bs-toggle="tooltip"
-								title="Delete Report"
-								data-custom-modal-target="deleteReportModal<%= report._id %>">
-								<i class="fas fa-trash"></i>
-							</button>
+							<% if (report.isCurrentUserReport && (report.status === 'pending' || report.status === 'rejected') && !report.archived) { %>
+								<a href="/weeklyreport/<%= report._id %>/edit" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Edit Report">
+									<i class="fas fa-edit"></i>
+								</a>
+							<% } %>
+							<% if (report.isCurrentUserReport && report.status === 'pending' && !report.archived) { %>
+								<button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Delete Report" data-custom-modal-target="deleteReportModal<%= report._id %>">
+									<i class="fas fa-trash"></i>
+								</button>
 							<% } %>
 						</div>
 					</td>
@@ -393,22 +377,25 @@
 <script src="/js/reportModals.js"></script>
 <script src="/js/customModal.js"></script>
 <script>
-	document.addEventListener("DOMContentLoaded", function () {
-		// For password confirmation modals
-		<% if (WeeklyReports && WeeklyReports.length) { %>
-			<% WeeklyReports.forEach(report => { %>
-				<% if (report.isCurrentUserReport && report.status === 'pending') { %>
-					const passwordInput<%= report._id %> = document.getElementById("confirmPassword<%= report._id %>");
-					const hiddenPassword<%= report._id %> = document.getElementById("hiddenPassword<%= report._id %>");
-					const passwordForm<%= report._id %> = document.getElementById("passwordConfirmForm<%= report._id %>");
+document.addEventListener("DOMContentLoaded", function () {
+    // For each delete modal, set up the password confirmation
+    <% if (WeeklyReports && WeeklyReports.length) { %>
+        <% WeeklyReports.forEach(function(report) { %>
+            <% if (report.isCurrentUserReport && report.status === 'pending') { %>
+                (function() {
+                    const modalId = '<%= report._id %>';
+                    const passwordInput = document.getElementById(`confirmPassword${modalId}`);
+                    const hiddenPassword = document.getElementById(`hiddenPassword${modalId}`);
+                    const passwordForm = document.getElementById(`passwordConfirmForm${modalId}`);
 
-					if (passwordForm<%= report._id %> && passwordInput<%= report._id %> && hiddenPassword<%= report._id %>) {
-						passwordForm<%= report._id %>.addEventListener("submit", function () {
-							hiddenPassword<%= report._id %>.value = passwordInput<%= report._id %>.value;
-						});
-					}
-				<% } %>
-			<% }) %>
-		<% } %>
-	});
+                    if (passwordForm && passwordInput && hiddenPassword) {
+                        passwordForm.addEventListener("submit", function () {
+                            hiddenPassword.value = passwordInput.value;
+                        });
+                    }
+                })();
+            <% } %>
+        <% }); %>
+    <% } %>
+});
 </script>

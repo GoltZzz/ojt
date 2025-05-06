@@ -20,28 +20,38 @@ const bulkRegister = async (req, res) => {
 
 		const created = [];
 		for (const row of rows) {
-			const { studentIdNumber, studentName, internshipSite, course, password } =
-				row;
+			console.log("Excel Row:", row);
+			const internshipSite = row["internshipSite"]
+				? String(row["internshipSite"]).trim()
+				: "";
+			console.log("Extracted internshipSite:", internshipSite);
+			const {
+				studentIdNumber,
+				FirstName,
+				LastName,
+				MiddleName,
+				course,
+				password,
+			} = row;
 			if (
 				!studentIdNumber ||
-				!studentName ||
+				!FirstName ||
+				!LastName ||
 				!internshipSite ||
 				!course ||
 				!password
 			)
 				continue;
 
-			const [lastName, ...rest] = studentName.split(",");
-			const [firstName, ...middleArr] = rest.join("").trim().split(" ");
-			const middleName = middleArr.join(" ") || undefined;
 			const username = studentIdNumber;
 			const hash = await bcrypt.hash(password, 10);
 
 			const user = new User({
 				username,
-				firstName: firstName || "",
-				middleName: middleName || "",
-				lastName: lastName ? lastName.trim() : "",
+				firstName: FirstName || "",
+				middleName: MiddleName || "",
+				lastName: LastName || "",
+				internshipSite,
 				role: "user",
 			});
 			user.setPassword

@@ -138,6 +138,8 @@ router.post(
 						firstName: toTrimmedString(row.FirstName),
 						middleName: toTrimmedString(row.MiddleName),
 						lastName: toTrimmedString(row.LastName),
+						internshipSite: toTrimmedString(row.internshipSite),
+						course: toTrimmedString(row.course),
 						role: "user",
 					});
 

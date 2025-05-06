@@ -22,27 +22,39 @@ const weeklyReportSchema = new Schema({
 	author: {
 		type: Schema.Types.ObjectId,
 		ref: "User",
+		required: true,
 	},
 	studentName: {
 		type: String,
-		// required: true, // Now optional for upload-only flow
+		required: true,
 	},
 	internshipSite: {
 		type: String,
-		// required: true, // Now optional for upload-only flow
+		required: true,
+	},
+	weekNumber: {
+		type: Number,
+		required: true,
+		min: 1,
 	},
 	weekStartDate: {
 		type: Date,
-		// required: true, // Now optional for upload-only flow
+		required: true,
 	},
 	weekEndDate: {
 		type: Date,
-		// required: true, // Now optional for upload-only flow
+		required: true,
+		validate: {
+			validator: function (endDate) {
+				return endDate >= this.weekStartDate;
+			},
+			message: "Week end date must be after or equal to start date",
+		},
 	},
 	dailyRecords: [dailyRecordSchema],
 	supervisorName: {
 		type: String,
-		// required: true, // Now optional for upload-only flow
+		required: true,
 	},
 	supervisorSignature: String,
 	studentSignature: String,
@@ -80,12 +92,6 @@ const weeklyReportSchema = new Schema({
 	hasBeenExported: {
 		type: Boolean,
 		default: false,
-	},
-	file: {
-		filename: String,
-		path: String,
-		mimetype: String,
-		size: Number,
 	},
 	photos: [
 		{

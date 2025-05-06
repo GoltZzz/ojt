@@ -23,6 +23,14 @@ const userSchema = new Schema({
 		enum: ["admin", "user"],
 		default: "user",
 	},
+	internshipSite: {
+		type: String,
+		required: false,
+	},
+	course: {
+		type: String,
+		required: false,
+	},
 	profileImage: {
 		url: {
 			type: String,

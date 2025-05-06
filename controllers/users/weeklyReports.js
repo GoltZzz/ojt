@@ -66,7 +66,7 @@ export const index = catchAsync(async (req, res) => {
 	const totalReports = await WeeklyReport.countDocuments(filter);
 	const totalPages = Math.ceil(totalReports / limitNum);
 
-	// Get reports with pagination
+	// Get reports with pagination and populate author data
 	const WeeklyReports = await WeeklyReport.find(filter)
 		.populate("author", "username firstName middleName lastName")
 		.populate("approvedBy", "username")
@@ -74,10 +74,9 @@ export const index = catchAsync(async (req, res) => {
 		.skip(skip)
 		.limit(limitNum);
 
-	// Format author names and add isCurrentUserReport flag
+	// Format author names and add flags
 	WeeklyReports.forEach((report) => {
 		if (report.author) {
-			// Format author full name
 			let fullName = report.author.firstName;
 			if (report.author.middleName && report.author.middleName.length > 0) {
 				const middleInitial = report.author.middleName.charAt(0).toUpperCase();
@@ -85,10 +84,21 @@ export const index = catchAsync(async (req, res) => {
 			}
 			fullName += ` ${report.author.lastName}`;
 			report.authorFullName = fullName;
-
-			// Check if this report belongs to the current user
 			report.isCurrentUserReport =
 				req.user && report.author._id.equals(req.user._id);
+		}
+
+		// Format dates for display
+		if (report.weekStartDate) {
+			report.formattedWeekPeriod = `${new Date(
+				report.weekStartDate
+			).toLocaleDateString("en-US", {
+				month: "short",
+				day: "numeric",
+			})} – ${new Date(report.weekEndDate).toLocaleDateString("en-US", {
+				month: "short",
+				day: "numeric",
+			})}`;
 		}
 	});
 
@@ -120,10 +130,25 @@ export const renderNewForm = async (req, res) => {
 	}
 	fullName += ` ${req.user.lastName}`;
 
-	res.render("reports/new", { fullName });
+	// Pass internshipSite from user to the form
+	const internshipSite = req.user.internshipSite || "";
+
+	res.render("reports/new", { fullName, internshipSite });
 };
 
 export const createReport = catchAsync(async (req, res) => {
+	const { weekNumber, weekStartDate, weekEndDate, supervisorName } = req.body;
+
+	// Format user's full name
+	let fullName = req.user.firstName;
+	if (req.user.middleName && req.user.middleName.length > 0) {
+		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+		fullName += ` ${middleInitial}.`;
+	}
+	fullName += ` ${req.user.lastName}`;
+
+	const internshipSite = req.user.internshipSite || "";
+
 	const photos =
 		req.files && req.files.photos
 			? req.files.photos.map((file) => ({
@@ -150,6 +175,12 @@ export const createReport = catchAsync(async (req, res) => {
 
 	const WeeklyReports = new WeeklyReport({
 		author: req.user._id,
+		studentName: fullName,
+		internshipSite,
+		weekNumber,
+		weekStartDate,
+		weekEndDate,
+		supervisorName,
 		photos,
 		docxFile,
 	});
@@ -164,8 +195,8 @@ export const createReport = catchAsync(async (req, res) => {
 export const showReport = catchAsync(async (req, res, next) => {
 	const { id } = req.params;
 	const WeeklyReports = await WeeklyReport.findById(id)
-		.populate("approvedBy", "username")
-		.populate("author", "username")
+		.populate("approvedBy", "username firstName middleName lastName")
+		.populate("author", "username firstName middleName lastName")
 		.lean();
 	if (!WeeklyReports) {
 		req.flash("error", "Cannot find that weekly report!");
@@ -297,31 +328,48 @@ export const updateReport = catchAsync(async (req, res) => {
 	}
 	fullName += ` ${req.user.lastName}`;
 
-	// Override the studentName in the request body with the formatted full name
-	// This ensures the student name cannot be changed even if someone tries to manipulate the form
-	req.body.studentName = fullName;
+	// Handle file uploads if present
+	const updateData = { ...req.body };
+
+	// Always use the user's internshipSite
+	updateData.internshipSite = req.user.internshipSite || "";
+
+	// Handle photo updates
+	if (req.files && req.files.photos && req.files.photos.length > 0) {
+		updateData.photos = req.files.photos.map((file) => ({
+			filename: file.filename,
+			path: file.path,
+			mimetype: file.mimetype,
+			size: file.size,
+		}));
+	}
+
+	// Handle docx file update
+	if (req.files && req.files.docxFile && req.files.docxFile[0]) {
+		updateData.docxFile = {
+			filename: req.files.docxFile[0].filename,
+			path: req.files.docxFile[0].path,
+			mimetype: req.files.docxFile[0].mimetype,
+			size: req.files.docxFile[0].size,
+		};
+	}
+
+	// Override the studentName with the formatted full name
+	updateData.studentName = fullName;
 
 	// If this is a rejected report being revised, set status back to pending
 	if (isRejectedReport) {
-		req.body.status = "pending";
+		updateData.status = "pending";
 	}
 
-	// Now update the report
-	const WeeklyReports = await WeeklyReport.findByIdAndUpdate(id, req.body, {
+	// Update the report
+	const WeeklyReports = await WeeklyReport.findByIdAndUpdate(id, updateData, {
 		new: true,
 		runValidators: true,
 	});
 
 	// If this was a revision of a rejected report, send notification to all admins
 	if (isRejectedReport) {
-		// Format the user's full name for the notification
-		let userFullName = req.user.firstName;
-		if (req.user.middleName && req.user.middleName.length > 0) {
-			const middleInitial = req.user.middleName.charAt(0).toUpperCase();
-			userFullName += ` ${middleInitial}.`;
-		}
-		userFullName += ` ${req.user.lastName}`;
-
 		// Find all admin users
 		const adminUsers = await User.find({ role: "admin" });
 
@@ -329,7 +377,7 @@ export const updateReport = catchAsync(async (req, res) => {
 		for (const admin of adminUsers) {
 			const notification = new Notification({
 				recipient: admin._id,
-				message: `${userFullName} has done a revision on weekly report you rejected. Do you want to view it?`,
+				message: `${fullName} has done a revision on weekly report you rejected. Do you want to view it?`,
 				type: "info",
 				reportType: "weeklyreport",
 				reportId: WeeklyReports._id,

@@ -42,13 +42,15 @@ router
 		isReportAuthor("weeklyReport"),
 		weeklyReports.renderEditForm
 	);
-router
-	.route("/:id/update")
-	.post(
-		isLoggedIn,
-		isReportAuthor("weeklyReport"),
-		validateWeeklyReport,
-		handleValidationErrors,
-		weeklyReports.updateReport
-	);
+router.route("/:id/update").post(
+	isLoggedIn,
+	isReportAuthor("weeklyReport"),
+	weeklyReportUpload.fields([
+		{ name: "photos", maxCount: 10 },
+		{ name: "docxFile", maxCount: 1 },
+	]),
+	validateWeeklyReport,
+	handleValidationErrors,
+	weeklyReports.updateReport
+);
 export default router;

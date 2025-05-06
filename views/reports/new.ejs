@@ -11,34 +11,217 @@
 		method="POST"
 		enctype="multipart/form-data"
 		class="validated-form needs-validation">
-		<div class="mb-3">
-			<label for="photos" class="form-label">Add Photos</label>
-			<input
-				type="file"
-				class="form-control"
-				id="photos"
-				name="photos"
-				accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-				multiple
-				required />
-			<div class="form-text">
-				You can upload multiple images (JPG, JPEG, PNG). Max size per image:
-				10MB.
+		<div class="card mb-4">
+			<div class="card-header">
+				<h5>Student Information</h5>
+			</div>
+			<div class="card-body">
+				<div class="mb-3">
+					<label for="studentName" class="form-label">Student Name</label>
+					<div class="input-group">
+						<span class="input-group-text"><i class="fas fa-user"></i></span>
+						<input
+							type="text"
+							class="form-control bg-light"
+							id="studentName"
+							name="studentName"
+							value="<%= fullName %>"
+							readonly />
+					</div>
+				</div>
+				<div class="mb-3">
+					<label for="internshipSite" class="form-label">Internship Site</label>
+					<div class="input-group">
+						<span class="input-group-text"
+							><i class="fas fa-building"></i
+						></span>
+						<input
+							type="text"
+							class="form-control bg-light"
+							id="internshipSite"
+							name="internshipSite"
+							value="<%= internshipSite %>"
+							readonly />
+					</div>
+					<small class="form-text text-muted"
+						>This field is automatically filled with your internship site and
+						cannot be changed.</small
+					>
+				</div>
+				<div class="mb-3">
+					<label for="supervisorName" class="form-label">Supervisor Name</label>
+					<input
+						type="text"
+						class="form-control"
+						id="supervisorName"
+						name="supervisorName"
+						required />
+				</div>
+				<div class="row">
+					<div class="col-md-4 mb-3">
+						<label for="weekNumber" class="form-label">Week Number</label>
+						<div class="input-group">
+							<span class="input-group-text"
+								><i class="fas fa-hashtag"></i
+							></span>
+							<input
+								type="number"
+								class="form-control"
+								id="weekNumber"
+								name="weekNumber"
+								min="1"
+								required />
+							<div class="invalid-feedback">
+								Please provide a valid week number (minimum 1).
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 mb-3">
+						<label for="weekStartDate" class="form-label"
+							>Week Start Date</label
+						>
+						<div class="input-group">
+							<span class="input-group-text"
+								><i class="fas fa-calendar-alt"></i
+							></span>
+							<input
+								type="date"
+								class="form-control"
+								id="weekStartDate"
+								name="weekStartDate"
+								required />
+							<div class="invalid-feedback">
+								Please select a start date for the week.
+							</div>
+						</div>
+					</div>
+					<div class="col-md-4 mb-3">
+						<label for="weekEndDate" class="form-label">Week End Date</label>
+						<div class="input-group">
+							<span class="input-group-text"
+								><i class="fas fa-calendar-alt"></i
+							></span>
+							<input
+								type="date"
+								class="form-control"
+								id="weekEndDate"
+								name="weekEndDate"
+								required />
+							<div class="invalid-feedback">
+								Please select an end date for the week (must be after or equal
+								to start date).
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
-		<div class="mb-3">
-			<label for="docxFile" class="form-label">Add DOCX File</label>
-			<input
-				type="file"
-				class="form-control"
-				id="docxFile"
-				name="docxFile"
-				accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-				required />
-			<div class="form-text">Upload a single DOCX file. Max size: 10MB.</div>
+
+		<div class="card mb-4">
+			<div class="card-header">
+				<h5>Upload Files</h5>
+			</div>
+			<div class="card-body">
+				<div class="mb-4">
+					<label for="docxFile" class="form-label"
+						>Weekly Report Document</label
+					>
+					<div class="input-group">
+						<span class="input-group-text"
+							><i class="fas fa-file-word"></i
+						></span>
+						<input
+							type="file"
+							class="form-control"
+							id="docxFile"
+							name="docxFile"
+							accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+							required />
+					</div>
+					<div class="form-text">
+						Upload your weekly report in DOCX format. Must be less than 10MB.
+					</div>
+					<div class="invalid-feedback">Please upload a valid DOCX file.</div>
+				</div>
+
+				<div class="mb-4">
+					<label for="photos" class="form-label">Report Photo</label>
+					<div class="input-group">
+						<span class="input-group-text"><i class="fas fa-image"></i></span>
+						<input
+							type="file"
+							class="form-control"
+							id="photos"
+							name="photos"
+							accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+							required />
+					</div>
+					<div class="form-text">
+						Upload a photo of your report (JPG, JPEG, PNG). Must be less than
+						10MB.
+					</div>
+					<div class="invalid-feedback">Please upload a valid image file.</div>
+				</div>
+
+				<div id="imagePreview" class="mt-3 d-none">
+					<h6>Image Preview</h6>
+					<img
+						id="preview"
+						src="#"
+						alt="Preview"
+						style="max-width: 300px; max-height: 300px"
+						class="img-thumbnail" />
+				</div>
+			</div>
 		</div>
+
 		<div class="text-center">
+			<a href="/weeklyreport" class="btn btn-secondary me-2">Cancel</a>
 			<button type="submit" class="btn btn-primary">Submit Report</button>
 		</div>
 	</form>
 </div>
+
+<script>
+	document.getElementById("photos").addEventListener("change", function (e) {
+		const file = e.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = function (e) {
+				document.getElementById("preview").src = e.target.result;
+				document.getElementById("imagePreview").classList.remove("d-none");
+			};
+			reader.readAsDataURL(file);
+		}
+	});
+
+	// Add client-side validation for date range
+	document.addEventListener("DOMContentLoaded", function () {
+		const form = document.querySelector(".validated-form");
+		const weekStartDate = document.getElementById("weekStartDate");
+		const weekEndDate = document.getElementById("weekEndDate");
+
+		form.addEventListener("submit", function (event) {
+			const startDate = new Date(weekStartDate.value);
+			const endDate = new Date(weekEndDate.value);
+
+			if (endDate < startDate) {
+				event.preventDefault();
+				weekEndDate.setCustomValidity(
+					"End date must be after or equal to start date"
+				);
+				weekEndDate.reportValidity();
+			} else {
+				weekEndDate.setCustomValidity("");
+			}
+		});
+
+		// Clear validation when dates change
+		weekStartDate.addEventListener("change", function () {
+			weekEndDate.setCustomValidity("");
+		});
+		weekEndDate.addEventListener("change", function () {
+			weekEndDate.setCustomValidity("");
+		});
+	});
+</script>
