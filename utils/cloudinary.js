@@ -57,6 +57,11 @@ const weeklyReportStorage = new CloudinaryStorage({
 		return {
 			folder: "ojt-weekly-reports",
 			resource_type: isDocx ? "raw" : "image",
+			format: isDocx ? "docx" : undefined,
+			// Enable secure download URL generation
+			type: "upload",
+			access_mode: "authenticated",
+			use_filename: true,
 		};
 	},
 });

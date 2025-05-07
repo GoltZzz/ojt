@@ -2,6 +2,7 @@ import catchAsync from "../../utils/catchAsync.js";
 import WeeklyReport from "../../models/weeklyReports.js";
 import Notification from "../../models/notification.js";
 import User from "../../models/users.js";
+import { cloudinary } from "../../utils/cloudinary.js";
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
@@ -152,7 +153,7 @@ export const createReport = catchAsync(async (req, res) => {
 		req.files && req.files.photos
 			? req.files.photos.map((file) => ({
 					filename: file.filename,
-					path: file.path,
+					path: file.path, // Cloudinary URL is already provided here
 					mimetype: file.mimetype,
 					size: file.size,
 			  }))
@@ -160,8 +161,8 @@ export const createReport = catchAsync(async (req, res) => {
 	const docxFile =
 		req.files && req.files.docxFile && req.files.docxFile[0]
 			? {
-					filename: req.files.docxFile[0].filename,
-					path: req.files.docxFile[0].path,
+					filename: req.files.docxFile[0].originalname, // Use originalname instead of filename
+					path: req.files.docxFile[0].path, // Cloudinary URL is already provided here
 					mimetype: req.files.docxFile[0].mimetype,
 					size: req.files.docxFile[0].size,
 			  }
@@ -346,7 +347,7 @@ export const updateReport = catchAsync(async (req, res) => {
 	// Handle docx file update
 	if (req.files && req.files.docxFile && req.files.docxFile[0]) {
 		updateData.docxFile = {
-			filename: req.files.docxFile[0].filename,
+			filename: req.files.docxFile[0].originalname, // Use originalname instead of filename
 			path: req.files.docxFile[0].path,
 			mimetype: req.files.docxFile[0].mimetype,
 			size: req.files.docxFile[0].size,
