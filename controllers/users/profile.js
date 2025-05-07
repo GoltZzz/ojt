@@ -1,11 +1,6 @@
 import User from "../../models/users.js";
 import WeeklyReport from "../../models/weeklyReports.js";
-import Documentation from "../../models/documentation.js";
 import TimeReport from "../../models/timeReport.js";
-import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
-import TrainingSchedule from "../../models/trainingSchedule.js";
-import LearningOutcome from "../../models/learningOutcomes.js";
-import DailyAttendance from "../../models/dailyAttendance.js";
 import Notification from "../../models/notification.js";
 import catchAsync from "../../utils/catchAsync.js";
 import { cloudinary } from "../../utils/cloudinary.js";
@@ -26,33 +21,7 @@ const renderProfile = catchAsync(async (req, res) => {
 			archived: false,
 		});
 
-		const documentationCount = await Documentation.countDocuments({
-			author: req.user._id,
-			archived: false,
-		});
-
 		const timeReportsCount = await TimeReport.countDocuments({
-			author: req.user._id,
-			archived: false,
-		});
-
-		// Count new report types
-		const weeklyProgressCount = await WeeklyProgressReport.countDocuments({
-			author: req.user._id,
-			archived: false,
-		});
-
-		const trainingScheduleCount = await TrainingSchedule.countDocuments({
-			author: req.user._id,
-			archived: false,
-		});
-
-		const learningOutcomeCount = await LearningOutcome.countDocuments({
-			author: req.user._id,
-			archived: false,
-		});
-
-		const dailyAttendanceCount = await DailyAttendance.countDocuments({
 			author: req.user._id,
 			archived: false,
 		});
@@ -60,12 +29,7 @@ const renderProfile = catchAsync(async (req, res) => {
 		// Prepare report stats
 		const reportStats = {
 			weeklyReports: weeklyReportsCount,
-			documentation: documentationCount,
 			timeReports: timeReportsCount,
-			weeklyProgress: weeklyProgressCount,
-			trainingSchedule: trainingScheduleCount,
-			learningOutcome: learningOutcomeCount,
-			dailyAttendance: dailyAttendanceCount,
 		};
 
 		res.render("profile/index", { user, reportStats });
@@ -75,21 +39,6 @@ const renderProfile = catchAsync(async (req, res) => {
 
 		// Count pending reports across all types
 		const pendingWeeklyReports = await WeeklyReport.countDocuments({
-			status: "pending",
-		});
-		const pendingWeeklyProgress = await WeeklyProgressReport.countDocuments({
-			status: "pending",
-		});
-		const pendingTrainingSchedule = await TrainingSchedule.countDocuments({
-			status: "pending",
-		});
-		const pendingLearningOutcome = await LearningOutcome.countDocuments({
-			status: "pending",
-		});
-		const pendingDailyAttendance = await DailyAttendance.countDocuments({
-			status: "pending",
-		});
-		const pendingDocumentation = await Documentation.countDocuments({
 			status: "pending",
 		});
 		const pendingTimeReports = await TimeReport.countDocuments({
@@ -108,64 +57,23 @@ const renderProfile = catchAsync(async (req, res) => {
 				select: "_id studentName internshipSite weekNumber",
 			});
 
-		const pendingReportsCount =
-			pendingWeeklyReports +
-			pendingWeeklyProgress +
-			pendingTrainingSchedule +
-			pendingLearningOutcome +
-			pendingDailyAttendance +
-			pendingDocumentation +
-			pendingTimeReports;
+		const pendingReportsCount = pendingWeeklyReports + pendingTimeReports;
 
 		// Count total reports
 		const totalWeeklyReports = await WeeklyReport.countDocuments({});
-		const totalWeeklyProgress = await WeeklyProgressReport.countDocuments({});
-		const totalTrainingSchedule = await TrainingSchedule.countDocuments({});
-		const totalLearningOutcome = await LearningOutcome.countDocuments({});
-		const totalDailyAttendance = await DailyAttendance.countDocuments({});
-		const totalDocumentation = await Documentation.countDocuments({});
 		const totalTimeReports = await TimeReport.countDocuments({});
 
-		const totalReportsCount =
-			totalWeeklyReports +
-			totalWeeklyProgress +
-			totalTrainingSchedule +
-			totalLearningOutcome +
-			totalDailyAttendance +
-			totalDocumentation +
-			totalTimeReports;
+		const totalReportsCount = totalWeeklyReports + totalTimeReports;
 
 		// Count archived reports
 		const archivedWeeklyReports = await WeeklyReport.countDocuments({
-			archived: true,
-		});
-		const archivedWeeklyProgress = await WeeklyProgressReport.countDocuments({
-			archived: true,
-		});
-		const archivedTrainingSchedule = await TrainingSchedule.countDocuments({
-			archived: true,
-		});
-		const archivedLearningOutcome = await LearningOutcome.countDocuments({
-			archived: true,
-		});
-		const archivedDailyAttendance = await DailyAttendance.countDocuments({
-			archived: true,
-		});
-		const archivedDocumentation = await Documentation.countDocuments({
 			archived: true,
 		});
 		const archivedTimeReports = await TimeReport.countDocuments({
 			archived: true,
 		});
 
-		const archivedReportsCount =
-			archivedWeeklyReports +
-			archivedWeeklyProgress +
-			archivedTrainingSchedule +
-			archivedLearningOutcome +
-			archivedDailyAttendance +
-			archivedDocumentation +
-			archivedTimeReports;
+		const archivedReportsCount = archivedWeeklyReports + archivedTimeReports;
 
 		res.render("profile/index", {
 			user,
@@ -300,21 +208,6 @@ const markNotificationAsRead = catchAsync(async (req, res) => {
 	switch (reportType) {
 		case "weeklyreport":
 			redirectUrl = `/weeklyreport/${reportId}`;
-			break;
-		case "weeklyprogress":
-			redirectUrl = `/weeklyprogress/${reportId}`;
-			break;
-		case "trainingschedule":
-			redirectUrl = `/trainingschedule/${reportId}`;
-			break;
-		case "learningoutcomes":
-			redirectUrl = `/learningoutcomes/${reportId}`;
-			break;
-		case "dailyattendance":
-			redirectUrl = `/dailyattendance/${reportId}`;
-			break;
-		case "documentation":
-			redirectUrl = `/documentation/${reportId}`;
 			break;
 		case "timereport":
 			redirectUrl = `/timereport/${reportId}`;

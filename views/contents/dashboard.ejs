@@ -38,15 +38,6 @@
 					<span class="stat-label">Weekly Reports</span>
 				</div>
 				<div class="stat-item">
-					<div class="stat-icon bg-success">
-						<i class="fas fa-book"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.documentation : 0 %></span
-					>
-					<span class="stat-label">Documentation</span>
-				</div>
-				<div class="stat-item">
 					<div class="stat-icon bg-info">
 						<i class="fas fa-clock"></i>
 					</div>
@@ -54,42 +45,6 @@
 						><%= userStats ? userStats.timeReports : 0 %></span
 					>
 					<span class="stat-label">Time Reports</span>
-				</div>
-				<div class="stat-item">
-					<div class="stat-icon bg-purple">
-						<i class="fas fa-chart-bar"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.weeklyProgress : 0 %></span
-					>
-					<span class="stat-label">Weekly Progress</span>
-				</div>
-				<div class="stat-item">
-					<div class="stat-icon bg-teal">
-						<i class="fas fa-calendar-alt"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.trainingSchedule : 0 %></span
-					>
-					<span class="stat-label">Training Schedule</span>
-				</div>
-				<div class="stat-item">
-					<div class="stat-icon bg-orange">
-						<i class="fas fa-graduation-cap"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.learningOutcome : 0 %></span
-					>
-					<span class="stat-label">Learning Outcomes</span>
-				</div>
-				<div class="stat-item">
-					<div class="stat-icon bg-indigo">
-						<i class="fas fa-clipboard-check"></i>
-					</div>
-					<span class="stat-number"
-						><%= userStats ? userStats.dailyAttendance : 0 %></span
-					>
-					<span class="stat-label">Daily Attendance</span>
 				</div>
 				<div class="stat-item">
 					<div class="stat-icon bg-warning">
@@ -176,15 +131,6 @@
 						<span class="action-desc">Create a new weekly report</span>
 					</div>
 				</a>
-				<a href="/documentation/new" class="action-btn documentation">
-					<div class="action-icon">
-						<i class="fas fa-book"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Documentation</span>
-						<span class="action-desc">Create new documentation</span>
-					</div>
-				</a>
 				<a href="/timereport/new" class="action-btn time-report">
 					<div class="action-icon">
 						<i class="fas fa-clock"></i>
@@ -192,42 +138,6 @@
 					<div class="action-text">
 						<span class="action-title">Time Report</span>
 						<span class="action-desc">Log your work hours</span>
-					</div>
-				</a>
-				<a href="/weeklyprogress/new" class="action-btn weekly-progress">
-					<div class="action-icon">
-						<i class="fas fa-chart-bar"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Weekly Progress</span>
-						<span class="action-desc">Create a progress report</span>
-					</div>
-				</a>
-				<a href="/trainingschedule/new" class="action-btn training-schedule">
-					<div class="action-icon">
-						<i class="fas fa-calendar-alt"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Training Schedule</span>
-						<span class="action-desc">Create a training schedule</span>
-					</div>
-				</a>
-				<a href="/learningoutcomes/new" class="action-btn learning-outcome">
-					<div class="action-icon">
-						<i class="fas fa-graduation-cap"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Learning Outcome</span>
-						<span class="action-desc">Document your learning</span>
-					</div>
-				</a>
-				<a href="/dailyattendance/new" class="action-btn daily-attendance">
-					<div class="action-icon">
-						<i class="fas fa-clipboard-check"></i>
-					</div>
-					<div class="action-text">
-						<span class="action-title">Daily Attendance</span>
-						<span class="action-desc">Record your attendance</span>
 					</div>
 				</a>
 				<% } else { %>

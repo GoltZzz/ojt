@@ -80,35 +80,6 @@
 					</li>
 
 					<li class="nav-item">
-						<a href="/weeklyprogress" class="nav-link"
-							><i class="fa-solid fa-chart-line"></i> Weekly Progress</a
-						>
-					</li>
-
-					<li class="nav-item">
-						<a href="/trainingschedule" class="nav-link"
-							><i class="fa-solid fa-calendar-alt"></i> Training Schedule</a
-						>
-					</li>
-
-					<li class="nav-item">
-						<a href="/learningoutcomes" class="nav-link"
-							><i class="fa-solid fa-graduation-cap"></i> Learning Outcomes</a
-						>
-					</li>
-
-					<li class="nav-item">
-						<a href="/dailyattendance" class="nav-link"
-							><i class="fa-solid fa-clipboard-check"></i> Daily Attendance</a
-						>
-					</li>
-
-					<li class="nav-item">
-						<a href="/documentation" class="nav-link"
-							><i class="fa-solid fa-file-alt"></i> Documentation</a
-						>
-					</li>
-					<li class="nav-item">
 						<a href="/timereport" class="nav-link"
 							><i class="fa-solid fa-clock"></i> Time Report</a
 						>
@@ -148,13 +119,7 @@
 						id="desktop-profile-notification-dot"></span>
 				</a>
 			</li>
-			<% if (currentUser.role === 'admin') { %> <% } else { %>
-			<li class="nav-item">
-				<a href="/dashboard" class="nav-link"
-					><i class="fa-solid fa-info-circle"></i> Dashboard</a
-				>
-			</li>
-			<% } %> <% if (currentUser.role === 'admin') { %>
+			<% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
 				<a href="/admin" class="nav-link"
 					><i class="fa-solid fa-user-shield"></i> Admin Panel
@@ -165,7 +130,6 @@
 					><i class="fa-solid fa-users-cog"></i> User Management</a
 				>
 			</li>
-			<% } %> <% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
 				<a href="/admin/pending-reports" class="nav-link position-relative">
 					<i class="fa-solid fa-clipboard-check"></i> Pending Reports <% if
@@ -191,35 +155,6 @@
 				>
 			</li>
 
-			<li class="nav-item">
-				<a href="/weeklyprogress" class="nav-link"
-					><i class="fa-solid fa-chart-line"></i> Weekly Progress</a
-				>
-			</li>
-
-			<li class="nav-item">
-				<a href="/trainingschedule" class="nav-link"
-					><i class="fa-solid fa-calendar-alt"></i> Training Schedule</a
-				>
-			</li>
-
-			<li class="nav-item">
-				<a href="/learningoutcomes" class="nav-link"
-					><i class="fa-solid fa-graduation-cap"></i> Learning Outcomes</a
-				>
-			</li>
-
-			<li class="nav-item">
-				<a href="/dailyattendance" class="nav-link"
-					><i class="fa-solid fa-clipboard-check"></i> Daily Attendance</a
-				>
-			</li>
-
-			<li class="nav-item">
-				<a href="/documentation" class="nav-link"
-					><i class="fa-solid fa-file-alt"></i> Documentation</a
-				>
-			</li>
 			<li class="nav-item">
 				<a href="/timereport" class="nav-link"
 					><i class="fa-solid fa-clock"></i> Time Report</a

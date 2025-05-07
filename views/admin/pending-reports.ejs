@@ -22,7 +22,6 @@
 						<option value="trainingschedule" <%= filters && filters.reportType === 'trainingschedule' ? 'selected' : '' %>>Training Schedule</option>
 						<option value="learningoutcomes" <%= filters && filters.reportType === 'learningoutcomes' ? 'selected' : '' %>>Learning Outcome</option>
 						<option value="dailyattendance" <%= filters && filters.reportType === 'dailyattendance' ? 'selected' : '' %>>Daily Attendance</option>
-						<option value="documentation" <%= filters && filters.reportType === 'documentation' ? 'selected' : '' %>>Documentation</option>
 						<option value="timereport" <%= filters && filters.reportType === 'timereport' ? 'selected' : '' %>>Time Report</option>
 					</select>
 				</div>
@@ -99,8 +98,6 @@
 								<span class="badge bg-orange">Learning Outcome</span>
 							<% } else if (report.reportType === 'dailyattendance') { %>
 								<span class="badge bg-indigo">Daily Attendance</span>
-							<% } else if (report.reportType === 'documentation') { %>
-								<span class="badge bg-success">Documentation</span>
 							<% } else if (report.reportType === 'timereport') { %>
 								<span class="badge bg-info">Time Report</span>
 							<% } else { %>

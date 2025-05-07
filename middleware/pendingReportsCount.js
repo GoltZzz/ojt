@@ -1,8 +1,5 @@
 import WeeklyReport from "../models/weeklyReports.js";
-import WeeklyProgressReport from "../models/weeklyProgressReports.js";
-import TrainingSchedule from "../models/trainingSchedule.js";
-import LearningOutcome from "../models/learningOutcomes.js";
-import DailyAttendance from "../models/dailyAttendance.js";
+import TimeReport from "../models/timeReport.js";
 
 // Middleware to count pending reports for admin users
 const pendingReportsCount = async (req, res, next) => {
@@ -15,53 +12,26 @@ const pendingReportsCount = async (req, res, next) => {
 				archived: false,
 			});
 
-			const pendingWeeklyProgressReports =
-				await WeeklyProgressReport.countDocuments({
-					status: "pending",
-					archived: false,
-				});
-
-			const pendingTrainingSchedules = await TrainingSchedule.countDocuments({
-				status: "pending",
-				archived: false,
-			});
-
-			const pendingLearningOutcomes = await LearningOutcome.countDocuments({
-				status: "pending",
-				archived: false,
-			});
-
-			const pendingDailyAttendances = await DailyAttendance.countDocuments({
+			const pendingTimeReports = await TimeReport.countDocuments({
 				status: "pending",
 				archived: false,
 			});
 
 			// Calculate total pending reports
-			const totalPendingCount =
-				pendingWeeklyReports +
-				pendingWeeklyProgressReports +
-				pendingTrainingSchedules +
-				pendingLearningOutcomes +
-				pendingDailyAttendances;
+			const totalPendingCount = pendingWeeklyReports + pendingTimeReports;
 
 			// Add the counts to res.locals so they're available in all templates
 			res.locals.pendingReportsCount = totalPendingCount;
 			res.locals.pendingReportDetails = {
 				weeklyReports: pendingWeeklyReports,
-				weeklyProgressReports: pendingWeeklyProgressReports,
-				trainingSchedules: pendingTrainingSchedules,
-				learningOutcomes: pendingLearningOutcomes,
-				dailyAttendances: pendingDailyAttendances,
+				timeReports: pendingTimeReports,
 			};
 		} else {
 			// Set to 0 for non-admin users
 			res.locals.pendingReportsCount = 0;
 			res.locals.pendingReportDetails = {
 				weeklyReports: 0,
-				weeklyProgressReports: 0,
-				trainingSchedules: 0,
-				learningOutcomes: 0,
-				dailyAttendances: 0,
+				timeReports: 0,
 			};
 		}
 		next();
@@ -71,10 +41,7 @@ const pendingReportsCount = async (req, res, next) => {
 		res.locals.pendingReportsCount = 0;
 		res.locals.pendingReportDetails = {
 			weeklyReports: 0,
-			weeklyProgressReports: 0,
-			trainingSchedules: 0,
-			learningOutcomes: 0,
-			dailyAttendances: 0,
+			timeReports: 0,
 		};
 		next();
 	}

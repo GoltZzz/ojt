@@ -1,12 +1,7 @@
 import catchAsync from "../../utils/catchAsync.js";
 import User from "../../models/users.js";
 import WeeklyReport from "../../models/weeklyReports.js";
-import Documentation from "../../models/documentation.js";
 import TimeReport from "../../models/timeReport.js";
-import WeeklyProgressReport from "../../models/weeklyProgressReports.js";
-import TrainingSchedule from "../../models/trainingSchedule.js";
-import LearningOutcome from "../../models/learningOutcomes.js";
-import DailyAttendance from "../../models/dailyAttendance.js";
 import Notification from "../../models/notification.js";
 import ExpressError from "../../utils/ExpressError.js";
 import { cloudinary } from "../../utils/cloudinary.js";
@@ -16,65 +11,31 @@ const renderDashboard = catchAsync(async (req, res) => {
 
 	// Count reports by type
 	const totalWeeklyReports = await WeeklyReport.countDocuments({});
-	const totalWeeklyProgressReports = await WeeklyProgressReport.countDocuments(
-		{}
-	);
-	const totalTrainingSchedules = await TrainingSchedule.countDocuments({});
-	const totalLearningOutcomes = await LearningOutcome.countDocuments({});
-	const totalDailyAttendances = await DailyAttendance.countDocuments({});
+	const totalTimeReports = await TimeReport.countDocuments({});
 
 	// Count pending reports by type
 	const pendingWeeklyReports = await WeeklyReport.countDocuments({
 		status: "pending",
+		archived: false,
 	});
-	const pendingWeeklyProgressReports =
-		await WeeklyProgressReport.countDocuments({
-			status: "pending",
-		});
-	const pendingTrainingSchedules = await TrainingSchedule.countDocuments({
+	const pendingTimeReports = await TimeReport.countDocuments({
 		status: "pending",
-	});
-	const pendingLearningOutcomes = await LearningOutcome.countDocuments({
-		status: "pending",
-	});
-	const pendingDailyAttendances = await DailyAttendance.countDocuments({
-		status: "pending",
+		archived: false,
 	});
 
 	// Calculate total pending reports
-	const pendingReports =
-		pendingWeeklyReports +
-		pendingWeeklyProgressReports +
-		pendingTrainingSchedules +
-		pendingLearningOutcomes +
-		pendingDailyAttendances;
+	const pendingReports = pendingWeeklyReports + pendingTimeReports;
 
-	const totalDocumentation = await Documentation.countDocuments({});
-	const totalTimeReports = await TimeReport.countDocuments({});
+	// Get user statistics - EXCLUDE admin users
 	const users = await User.find({ role: "user" });
-
 	const userStats = await Promise.all(
 		users.map(async (user) => {
-			// Count reports by type for this user
 			const weeklyReports = await WeeklyReport.countDocuments({
 				author: user._id,
 			});
-			const weeklyProgressReports = await WeeklyProgressReport.countDocuments({
+			const timeReports = await TimeReport.countDocuments({
 				author: user._id,
 			});
-			const trainingSchedules = await TrainingSchedule.countDocuments({
-				author: user._id,
-			});
-			const learningOutcomes = await LearningOutcome.countDocuments({
-				author: user._id,
-			});
-			const dailyAttendances = await DailyAttendance.countDocuments({
-				author: user._id,
-			});
-			const documentation = await Documentation.countDocuments({
-				author: user._id,
-			});
-			const timeReports = await TimeReport.countDocuments({ author: user._id });
 
 			// Format user's full name
 			let fullName = user.firstName;
@@ -87,30 +48,18 @@ const renderDashboard = catchAsync(async (req, res) => {
 			return {
 				fullName,
 				weeklyReports,
-				weeklyProgressReports,
-				trainingSchedules,
-				learningOutcomes,
-				dailyAttendances,
-				documentation,
 				timeReports,
 			};
 		})
 	);
+
 	const stats = {
 		totalUsers,
 		totalWeeklyReports,
-		totalWeeklyProgressReports,
-		totalTrainingSchedules,
-		totalLearningOutcomes,
-		totalDailyAttendances,
+		totalTimeReports,
 		pendingReports,
 		pendingWeeklyReports,
-		pendingWeeklyProgressReports,
-		pendingTrainingSchedules,
-		pendingLearningOutcomes,
-		pendingDailyAttendances,
-		totalDocumentation,
-		totalTimeReports,
+		pendingTimeReports,
 	};
 
 	res.render("admin/dashboard", { stats, userStats });
@@ -172,6 +121,7 @@ const renderPendingReports = catchAsync(async (req, res) => {
 			{ date: weekDate },
 		];
 	}
+
 	let sortOptions = {};
 	if (sortBy) {
 		const [field, order] = sortBy.split("_");
@@ -180,10 +130,8 @@ const renderPendingReports = catchAsync(async (req, res) => {
 		sortOptions = { dateSubmitted: -1 };
 	}
 
-	// Helper function to format author names and check for revised reports
 	const formatReportNames = (reports) => {
 		return reports.map((report) => {
-			// Format author name
 			if (report.author) {
 				let fullName = report.author.firstName;
 				if (report.author.middleName && report.author.middleName.length > 0) {
@@ -196,19 +144,16 @@ const renderPendingReports = catchAsync(async (req, res) => {
 				report.authorFullName = fullName;
 			}
 
-			// Check if this is a revised report (has needsRevision flag but status is pending)
 			if (report.needsRevision && report.status === "pending") {
 				report.isRevised = true;
 			}
 
-			// Add report type for display
 			report.reportTypeFormatted =
 				report.reportType || report.constructor.modelName;
 			return report;
 		});
 	};
 
-	// Fetch reports based on the selected report type
 	let pendingReports = [];
 
 	if (reportType === "all" || reportType === "weeklyreport") {
@@ -222,61 +167,6 @@ const renderPendingReports = catchAsync(async (req, res) => {
 		pendingReports = [...pendingReports, ...weeklyReports];
 	}
 
-	if (reportType === "all" || reportType === "weeklyprogress") {
-		const weeklyProgressReports = await WeeklyProgressReport.find(filter)
-			.populate("author")
-			.sort(sortOptions);
-
-		weeklyProgressReports.forEach((report) => {
-			report.reportType = "weeklyprogress";
-		});
-		pendingReports = [...pendingReports, ...weeklyProgressReports];
-	}
-
-	if (reportType === "all" || reportType === "trainingschedule") {
-		const trainingSchedules = await TrainingSchedule.find(filter)
-			.populate("author")
-			.sort(sortOptions);
-
-		trainingSchedules.forEach((report) => {
-			report.reportType = "trainingschedule";
-		});
-		pendingReports = [...pendingReports, ...trainingSchedules];
-	}
-
-	if (reportType === "all" || reportType === "learningoutcomes") {
-		const learningOutcomes = await LearningOutcome.find(filter)
-			.populate("author")
-			.sort(sortOptions);
-
-		learningOutcomes.forEach((report) => {
-			report.reportType = "learningoutcomes";
-		});
-		pendingReports = [...pendingReports, ...learningOutcomes];
-	}
-
-	if (reportType === "all" || reportType === "dailyattendance") {
-		const dailyAttendances = await DailyAttendance.find(filter)
-			.populate("author")
-			.sort(sortOptions);
-
-		dailyAttendances.forEach((report) => {
-			report.reportType = "dailyattendance";
-		});
-		pendingReports = [...pendingReports, ...dailyAttendances];
-	}
-
-	if (reportType === "all" || reportType === "documentation") {
-		const documentations = await Documentation.find(filter)
-			.populate("author")
-			.sort(sortOptions);
-
-		documentations.forEach((report) => {
-			report.reportType = "documentation";
-		});
-		pendingReports = [...pendingReports, ...documentations];
-	}
-
 	if (reportType === "all" || reportType === "timereport") {
 		const timeReports = await TimeReport.find(filter)
 			.populate("author")
@@ -288,7 +178,6 @@ const renderPendingReports = catchAsync(async (req, res) => {
 		pendingReports = [...pendingReports, ...timeReports];
 	}
 
-	// Sort all reports by the selected sort option
 	if (sortBy) {
 		const [field, order] = sortBy.split("_");
 		const sortMultiplier = order === "asc" ? 1 : -1;
@@ -304,7 +193,6 @@ const renderPendingReports = catchAsync(async (req, res) => {
 		});
 	}
 
-	// Format names for all reports
 	const formattedReports = formatReportNames(pendingReports);
 
 	res.render("admin/pending-reports", {
@@ -313,11 +201,6 @@ const renderPendingReports = catchAsync(async (req, res) => {
 		reportTypes: [
 			{ value: "all", label: "All Reports" },
 			{ value: "weeklyreport", label: "Weekly Reports" },
-			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
-			{ value: "trainingschedule", label: "Training Schedules" },
-			{ value: "learningoutcomes", label: "Learning Outcomes" },
-			{ value: "dailyattendance", label: "Daily Attendance" },
-			{ value: "documentation", label: "Documentation" },
 			{ value: "timereport", label: "Time Reports" },
 		],
 	});
@@ -334,7 +217,6 @@ const renderAllReports = catchAsync(async (req, res) => {
 		sortBy = "dateSubmitted_desc",
 	} = req.query;
 
-	// By default, exclude archived reports
 	const filter = { archived: false };
 
 	if (studentName) {
@@ -357,10 +239,8 @@ const renderAllReports = catchAsync(async (req, res) => {
 		filter.status = status;
 	}
 
-	// Override the default archived filter if explicitly specified in the query
 	if (archived !== undefined && archived !== "") {
 		if (archived === "all") {
-			// Remove the archived filter to show all reports
 			delete filter.archived;
 		} else {
 			filter.archived = archived === "true";
@@ -375,10 +255,8 @@ const renderAllReports = catchAsync(async (req, res) => {
 		sortOptions = { dateSubmitted: -1 };
 	}
 
-	// Helper function to format author and approver names
 	const formatReportNames = (reports) => {
 		return reports.map((report) => {
-			// Format author name
 			if (report.author) {
 				let fullName = report.author.firstName;
 				if (report.author.middleName && report.author.middleName.length > 0) {
@@ -391,7 +269,6 @@ const renderAllReports = catchAsync(async (req, res) => {
 				report.authorFullName = fullName;
 			}
 
-			// Format approver name
 			if (report.approvedBy) {
 				let fullName = report.approvedBy.firstName;
 				if (
@@ -407,14 +284,12 @@ const renderAllReports = catchAsync(async (req, res) => {
 				report.approverFullName = fullName;
 			}
 
-			// Add report type for display
 			report.reportTypeFormatted =
 				report.reportType || report.constructor.modelName;
 			return report;
 		});
 	};
 
-	// Fetch reports based on the selected report type
 	let allReports = [];
 
 	if (reportType === "all" || reportType === "weeklyreport") {
@@ -429,66 +304,6 @@ const renderAllReports = catchAsync(async (req, res) => {
 		allReports = [...allReports, ...weeklyReports];
 	}
 
-	if (reportType === "all" || reportType === "weeklyprogress") {
-		const weeklyProgressReports = await WeeklyProgressReport.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		weeklyProgressReports.forEach((report) => {
-			report.reportType = "weeklyprogress";
-		});
-		allReports = [...allReports, ...weeklyProgressReports];
-	}
-
-	if (reportType === "all" || reportType === "trainingschedule") {
-		const trainingSchedules = await TrainingSchedule.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		trainingSchedules.forEach((report) => {
-			report.reportType = "trainingschedule";
-		});
-		allReports = [...allReports, ...trainingSchedules];
-	}
-
-	if (reportType === "all" || reportType === "learningoutcomes") {
-		const learningOutcomes = await LearningOutcome.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		learningOutcomes.forEach((report) => {
-			report.reportType = "learningoutcomes";
-		});
-		allReports = [...allReports, ...learningOutcomes];
-	}
-
-	if (reportType === "all" || reportType === "dailyattendance") {
-		const dailyAttendances = await DailyAttendance.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		dailyAttendances.forEach((report) => {
-			report.reportType = "dailyattendance";
-		});
-		allReports = [...allReports, ...dailyAttendances];
-	}
-
-	if (reportType === "all" || reportType === "documentation") {
-		const documentations = await Documentation.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		documentations.forEach((report) => {
-			report.reportType = "documentation";
-		});
-		allReports = [...allReports, ...documentations];
-	}
-
 	if (reportType === "all" || reportType === "timereport") {
 		const timeReports = await TimeReport.find(filter)
 			.populate("author")
@@ -501,7 +316,6 @@ const renderAllReports = catchAsync(async (req, res) => {
 		allReports = [...allReports, ...timeReports];
 	}
 
-	// Sort all reports by the selected sort option
 	if (sortBy) {
 		const [field, order] = sortBy.split("_");
 		const sortMultiplier = order === "asc" ? 1 : -1;
@@ -517,7 +331,6 @@ const renderAllReports = catchAsync(async (req, res) => {
 		});
 	}
 
-	// Format names for all reports
 	const formattedReports = formatReportNames(allReports);
 
 	res.render("admin/all-reports", {
@@ -526,17 +339,10 @@ const renderAllReports = catchAsync(async (req, res) => {
 		reportTypes: [
 			{ value: "all", label: "All Reports" },
 			{ value: "weeklyreport", label: "Weekly Reports" },
-			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
-			{ value: "trainingschedule", label: "Training Schedules" },
-			{ value: "learningoutcomes", label: "Learning Outcomes" },
-			{ value: "dailyattendance", label: "Daily Attendance" },
-			{ value: "documentation", label: "Documentation" },
 			{ value: "timereport", label: "Time Reports" },
 		],
 	});
 });
-
-// approveReport function moved to reportMonitoring.js
 
 const renderArchivedReports = catchAsync(async (req, res) => {
 	const {
@@ -578,10 +384,8 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 		sortOptions = { dateSubmitted: -1 };
 	}
 
-	// Helper function to format author and approver names
 	const formatReportNames = (reports) => {
 		return reports.map((report) => {
-			// Format author name
 			if (report.author) {
 				let fullName = report.author.firstName;
 				if (report.author.middleName && report.author.middleName.length > 0) {
@@ -594,7 +398,6 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 				report.authorFullName = fullName;
 			}
 
-			// Format approver name
 			if (report.approvedBy) {
 				let fullName = report.approvedBy.firstName;
 				if (
@@ -610,14 +413,12 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 				report.approverFullName = fullName;
 			}
 
-			// Add report type for display
 			report.reportTypeFormatted =
 				report.reportType || report.constructor.modelName;
 			return report;
 		});
 	};
 
-	// Fetch reports based on the selected report type
 	let archivedReports = [];
 
 	if (reportType === "all" || reportType === "weeklyreport") {
@@ -632,66 +433,6 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 		archivedReports = [...archivedReports, ...weeklyReports];
 	}
 
-	if (reportType === "all" || reportType === "weeklyprogress") {
-		const weeklyProgressReports = await WeeklyProgressReport.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		weeklyProgressReports.forEach((report) => {
-			report.reportType = "weeklyprogress";
-		});
-		archivedReports = [...archivedReports, ...weeklyProgressReports];
-	}
-
-	if (reportType === "all" || reportType === "trainingschedule") {
-		const trainingSchedules = await TrainingSchedule.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		trainingSchedules.forEach((report) => {
-			report.reportType = "trainingschedule";
-		});
-		archivedReports = [...archivedReports, ...trainingSchedules];
-	}
-
-	if (reportType === "all" || reportType === "learningoutcomes") {
-		const learningOutcomes = await LearningOutcome.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		learningOutcomes.forEach((report) => {
-			report.reportType = "learningoutcomes";
-		});
-		archivedReports = [...archivedReports, ...learningOutcomes];
-	}
-
-	if (reportType === "all" || reportType === "dailyattendance") {
-		const dailyAttendances = await DailyAttendance.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		dailyAttendances.forEach((report) => {
-			report.reportType = "dailyattendance";
-		});
-		archivedReports = [...archivedReports, ...dailyAttendances];
-	}
-
-	if (reportType === "all" || reportType === "documentation") {
-		const documentations = await Documentation.find(filter)
-			.populate("author")
-			.populate("approvedBy")
-			.sort(sortOptions);
-
-		documentations.forEach((report) => {
-			report.reportType = "documentation";
-		});
-		archivedReports = [...archivedReports, ...documentations];
-	}
-
 	if (reportType === "all" || reportType === "timereport") {
 		const timeReports = await TimeReport.find(filter)
 			.populate("author")
@@ -704,7 +445,6 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 		archivedReports = [...archivedReports, ...timeReports];
 	}
 
-	// Sort all reports by the selected sort option
 	if (sortBy) {
 		const [field, order] = sortBy.split("_");
 		const sortMultiplier = order === "asc" ? 1 : -1;
@@ -720,7 +460,6 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 		});
 	}
 
-	// Format names for all reports
 	const formattedReports = formatReportNames(archivedReports);
 
 	res.render("admin/archived-reports", {
@@ -729,11 +468,6 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 		reportTypes: [
 			{ value: "all", label: "All Reports" },
 			{ value: "weeklyreport", label: "Weekly Reports" },
-			{ value: "weeklyprogress", label: "Weekly Progress Reports" },
-			{ value: "trainingschedule", label: "Training Schedules" },
-			{ value: "learningoutcomes", label: "Learning Outcomes" },
-			{ value: "dailyattendance", label: "Daily Attendance" },
-			{ value: "documentation", label: "Documentation" },
 			{ value: "timereport", label: "Time Reports" },
 		],
 	});
@@ -755,33 +489,7 @@ const deleteUser = catchAsync(async (req, res) => {
 		{ archived: true, archivedReason: "User deleted" }
 	);
 
-	await Documentation.updateMany(
-		{ author: user._id },
-		{ archived: true, archivedReason: "User deleted" }
-	);
-
 	await TimeReport.updateMany(
-		{ author: user._id },
-		{ archived: true, archivedReason: "User deleted" }
-	);
-
-	// Archive new report types
-	await WeeklyProgressReport.updateMany(
-		{ author: user._id },
-		{ archived: true, archivedReason: "User deleted" }
-	);
-
-	await TrainingSchedule.updateMany(
-		{ author: user._id },
-		{ archived: true, archivedReason: "User deleted" }
-	);
-
-	await LearningOutcome.updateMany(
-		{ author: user._id },
-		{ archived: true, archivedReason: "User deleted" }
-	);
-
-	await DailyAttendance.updateMany(
 		{ author: user._id },
 		{ archived: true, archivedReason: "User deleted" }
 	);
@@ -806,22 +514,6 @@ const unarchiveReport = catchAsync(async (req, res) => {
 	switch (type) {
 		case "weeklyreport":
 			report = await WeeklyReport.findById(id).populate("author");
-			break;
-		case "weeklyprogress":
-			report = await WeeklyProgressReport.findById(id).populate("author");
-			break;
-		case "trainingschedule":
-			report = await TrainingSchedule.findById(id).populate("author");
-			break;
-		case "learningoutcome":
-		case "learningoutcomes":
-			report = await LearningOutcome.findById(id).populate("author");
-			break;
-		case "dailyattendance":
-			report = await DailyAttendance.findById(id).populate("author");
-			break;
-		case "documentation":
-			report = await Documentation.findById(id).populate("author");
 			break;
 		case "timereport":
 			report = await TimeReport.findById(id).populate("author");
@@ -954,17 +646,6 @@ const getReportTypeName = (type) => {
 	switch (type) {
 		case "weeklyreport":
 			return "Weekly Report";
-		case "weeklyprogress":
-			return "Weekly Progress Report";
-		case "trainingschedule":
-			return "Training Schedule";
-		case "learningoutcomes":
-		case "learningoutcome":
-			return "Learning Outcome";
-		case "dailyattendance":
-			return "Daily Attendance";
-		case "documentation":
-			return "Documentation";
 		case "timereport":
 			return "Time Report";
 		default:

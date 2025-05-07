@@ -18,15 +18,7 @@ const notificationSchema = new Schema({
 	},
 	reportType: {
 		type: String,
-		enum: [
-			"weeklyreport",
-			"weeklyprogress",
-			"trainingschedule",
-			"learningoutcomes",
-			"dailyattendance",
-			"documentation",
-			"timereport",
-		],
+		enum: ["weeklyreport", "timereport"],
 		required: true,
 	},
 	reportId: {
@@ -45,7 +37,6 @@ const notificationSchema = new Schema({
 	createdAt: {
 		type: Date,
 		default: Date.now,
-		expires: 2592000, // 30 days in seconds
 	},
 });
 

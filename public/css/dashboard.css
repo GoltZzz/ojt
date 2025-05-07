@@ -273,6 +273,30 @@
 	min-width: 0; /* Helps with text overflow handling */
 }
 
+/* Add styles for clickable stat items */
+a.stat-item {
+	text-decoration: none;
+	color: inherit;
+}
+
+a.stat-item:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+	background-color: #ffffff;
+}
+
+a.stat-item:hover .stat-number {
+	color: #6dd5ed;
+}
+
+a.stat-item .stat-icon {
+	transition: transform 0.3s ease;
+}
+
+a.stat-item:hover .stat-icon {
+	transform: scale(1.1);
+}
+
 .stat-item:hover {
 	transform: translateY(-5px);
 	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);

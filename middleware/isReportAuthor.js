@@ -1,8 +1,5 @@
 import WeeklyReport from "../models/weeklyReports.js";
-import WeeklyProgressReport from "../models/weeklyProgressReports.js";
-import TrainingSchedule from "../models/trainingSchedule.js";
-import DailyAttendance from "../models/dailyAttendance.js";
-import LearningOutcomes from "../models/learningOutcomes.js";
+import TimeReport from "../models/timeReport.js";
 import ExpressError from "../utils/ExpressError.js";
 
 // Middleware to check if the current user is the author of the report
@@ -17,18 +14,9 @@ const isReportAuthor = (reportType) => {
 			if (reportType === "weeklyReport") {
 				report = await WeeklyReport.findById(id);
 				redirectPath = "/weeklyreport";
-			} else if (reportType === "weeklyProgressReport") {
-				report = await WeeklyProgressReport.findById(id);
-				redirectPath = "/weeklyprogress";
-			} else if (reportType === "trainingSchedule") {
-				report = await TrainingSchedule.findById(id);
-				redirectPath = "/trainingschedule";
-			} else if (reportType === "dailyAttendance") {
-				report = await DailyAttendance.findById(id);
-				redirectPath = "/dailyattendance";
-			} else if (reportType === "learningOutcomes") {
-				report = await LearningOutcomes.findById(id);
-				redirectPath = "/learningoutcomes";
+			} else if (reportType === "timeReport") {
+				report = await TimeReport.findById(id);
+				redirectPath = "/timereport";
 			} else {
 				return next(new ExpressError("Invalid report type", 400));
 			}

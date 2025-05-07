@@ -312,53 +312,13 @@
 					<h3><i class="fas fa-file-alt"></i> Your Reports</h3>
 				</div>
 
-				<div class="reports-grid">
+				<div class="report-stats">
 					<a href="/weeklyreport" class="report-item">
-						<i class="fas fa-file-alt text-primary"></i>
+						<i class="fas fa-calendar-week text-primary"></i>
 						<div>
 							<span class="report-name">Weekly Reports</span>
 							<span class="report-number"
 								><%= reportStats ? reportStats.weeklyReports : 0 %></span
-							>
-						</div>
-					</a>
-
-					<a href="/weeklyprogress" class="report-item">
-						<i class="fas fa-tasks text-purple"></i>
-						<div>
-							<span class="report-name">Weekly Progress</span>
-							<span class="report-number"
-								><%= reportStats ? reportStats.weeklyProgress : 0 %></span
-							>
-						</div>
-					</a>
-
-					<a href="/trainingschedule" class="report-item">
-						<i class="fas fa-calendar-alt text-teal"></i>
-						<div>
-							<span class="report-name">Training Schedules</span>
-							<span class="report-number"
-								><%= reportStats ? reportStats.trainingSchedule : 0 %></span
-							>
-						</div>
-					</a>
-
-					<a href="/learningoutcome" class="report-item">
-						<i class="fas fa-graduation-cap text-orange"></i>
-						<div>
-							<span class="report-name">Learning Outcomes</span>
-							<span class="report-number"
-								><%= reportStats ? reportStats.learningOutcome : 0 %></span
-							>
-						</div>
-					</a>
-
-					<a href="/dailyattendance" class="report-item">
-						<i class="fas fa-clipboard-check text-indigo"></i>
-						<div>
-							<span class="report-name">Daily Attendance</span>
-							<span class="report-number"
-								><%= reportStats ? reportStats.dailyAttendance : 0 %></span
 							>
 						</div>
 					</a>
