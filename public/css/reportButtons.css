@@ -22,55 +22,28 @@
 	margin-right: 0.5rem;
 }
 
-/* Primary buttons - Export to PDF */
-.action-buttons .btn-primary {
-	background-color: #2193b0;
-	background-image: linear-gradient(45deg, #2193b0, #6dd5ed);
-	border: none;
-	color: white;
-}
-
-.action-buttons .btn-primary:hover {
-	background-image: linear-gradient(45deg, #1c7a94, #5bc0d9);
-	transform: translateY(-2px);
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-}
-
 /* Warning buttons - Edit */
 .action-buttons .btn-warning {
-	background-color: #f9a825;
+	background-color: #f39c12;
 	border: none;
 	color: white;
 }
 
 .action-buttons .btn-warning:hover {
-	background-color: #e59819;
+	background-color: #d68910;
 	transform: translateY(-2px);
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Danger buttons - Delete */
 .action-buttons .btn-danger {
-	background-color: #e53935;
+	background-color: #e74c3c;
 	border: none;
 	color: white;
 }
 
 .action-buttons .btn-danger:hover {
-	background-color: #d32f2f;
-	transform: translateY(-2px);
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-}
-
-/* Secondary buttons - Archive */
-.action-buttons .btn-secondary {
-	background-color: #607d8b;
-	border: none;
-	color: white;
-}
-
-.action-buttons .btn-secondary:hover {
-	background-color: #546e7a;
+	background-color: #c0392b;
 	transform: translateY(-2px);
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
@@ -88,33 +61,22 @@
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* Info buttons - Alternative for Export to PDF */
-.action-buttons .btn-info {
-	background-color: #2193b0;
-	background-image: linear-gradient(45deg, #2193b0, #6dd5ed);
+/* Secondary buttons - Archive */
+.action-buttons .btn-secondary {
+	background-color: #7f8c8d;
 	border: none;
-	color: white !important;
+	color: white;
 }
 
-.action-buttons .btn-info:hover {
-	background-image: linear-gradient(45deg, #1c7a94, #5bc0d9);
+.action-buttons .btn-secondary:hover {
+	background-color: #6c7a7d;
 	transform: translateY(-2px);
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
-/* Button groups */
-.action-buttons .button-group {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 10px;
-	margin-bottom: 5px;
-}
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
-	.action-buttons .button-group {
-		width: 100%;
+	.action-buttons {
+		padding: 0 1rem;
 	}
 
 	.action-buttons .btn {
