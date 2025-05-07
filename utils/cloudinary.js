@@ -54,14 +54,25 @@ const weeklyReportStorage = new CloudinaryStorage({
 		const isDocx =
 			file.mimetype ===
 			"application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+		// Get user's first name for the filename
+		const firstName = req.user ? req.user.firstName.toUpperCase() : "UNKNOWN";
+		const currentDate = new Date().toISOString().split("T")[0];
+
+		// Create custom filename
+		let filename = isDocx
+			? `WeeklyReport-${firstName}-${currentDate}`
+			: `ReportPhoto-${firstName}-${currentDate}`;
+
 		return {
 			folder: "ojt-weekly-reports",
 			resource_type: isDocx ? "raw" : "image",
 			format: isDocx ? "docx" : undefined,
-			// Enable secure download URL generation
+			filename_override: filename,
+			use_filename: true,
+			unique_filename: true,
 			type: "upload",
 			access_mode: "authenticated",
-			use_filename: true,
 		};
 	},
 });
