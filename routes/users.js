@@ -2,13 +2,55 @@ import express from "express";
 import passport from "passport";
 import users from "../controllers/users/users.js";
 import catchAsync from "../utils/catchAsync.js";
-import { isLoggedIn } from "../middleware.js";
+import { isLoggedIn, redirectIfUsersExist } from "../middleware.js";
 import multer from "multer";
+import { upload, cloudinary } from "../utils/cloudinary.js";
+import User from "../models/users.js";
 
 const router = express.Router();
 const uploadExcel = multer({ dest: "uploads/" });
 
-// Removed /register route
+router
+	.route("/register")
+	.get(redirectIfUsersExist, (req, res) => {
+		res.render("forms/register");
+	})
+	.post(
+		upload.single("profileImage"),
+		catchAsync(async (req, res) => {
+			try {
+				const { username, password, firstName, middleName, lastName } =
+					req.body;
+				const user = new User({
+					username,
+					firstName,
+					middleName,
+					lastName,
+					role: "user",
+				});
+
+				if (req.file) {
+					user.profileImage = {
+						url: req.file.path,
+						publicId: req.file.filename,
+					};
+				}
+
+				const registeredUser = await User.register(user, password);
+				req.login(registeredUser, (err) => {
+					if (err) return next(err);
+					req.flash("success", "Welcome! Your account has been created");
+					res.redirect("/dashboard");
+				});
+			} catch (error) {
+				if (req.file) {
+					await cloudinary.uploader.destroy(req.file.filename);
+				}
+				req.flash("error", error.message);
+				res.redirect("/register");
+			}
+		})
+	);
 
 router
 	.route("/login")
