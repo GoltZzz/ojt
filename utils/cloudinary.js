@@ -60,19 +60,17 @@ const weeklyReportStorage = new CloudinaryStorage({
 		const currentDate = new Date().toISOString().split("T")[0];
 
 		// Create custom filename
-		let filename = isDocx
-			? `WeeklyReport-${firstName}-${currentDate}`
-			: `ReportPhoto-${firstName}-${currentDate}`;
+		let filename = `WeeklyReport-${firstName}-${currentDate}`;
 
 		return {
 			folder: "ojt-weekly-reports",
-			resource_type: isDocx ? "raw" : "image",
-			format: isDocx ? "docx" : undefined,
+			resource_type: "raw",
+			format: "docx",
 			filename_override: filename,
 			use_filename: true,
 			unique_filename: true,
 			type: "upload",
-			access_mode: "authenticated",
+			access_mode: "public",
 		};
 	},
 });
@@ -83,20 +81,14 @@ const weeklyReportUpload = multer({
 		fileSize: 10 * 1024 * 1024, // 10MB limit
 	},
 	fileFilter: (req, file, cb) => {
-		const imageTypes = ["image/jpeg", "image/png", "image/jpg"];
 		const docxTypes = [
 			"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 		];
-		if (
-			imageTypes.includes(file.mimetype) ||
-			docxTypes.includes(file.mimetype)
-		) {
+		if (docxTypes.includes(file.mimetype)) {
 			cb(null, true);
 		} else {
 			cb(
-				new Error(
-					"Unsupported file format. Only images (JPG, PNG) and DOCX are allowed."
-				),
+				new Error("Unsupported file format. Only DOCX files are allowed."),
 				false
 			);
 		}

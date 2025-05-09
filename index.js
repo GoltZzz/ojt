@@ -58,6 +58,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/pdfs", express.static(path.join(__dirname, "uploads/pdfs")));
 
 // Apply sanitization middleware to all routes
 app.use(sanitizeBody);

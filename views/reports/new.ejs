@@ -124,7 +124,7 @@
 			<div class="card-body">
 				<div class="mb-4">
 					<label for="docxFile" class="form-label"
-						>Weekly Report Document</label
+						>Weekly Report Document (DOCX)</label
 					>
 					<div class="input-group">
 						<span class="input-group-text"
@@ -140,37 +140,9 @@
 					</div>
 					<div class="form-text">
 						Upload your weekly report in DOCX format. Must be less than 10MB.
+						The file will be automatically converted to PDF for viewing.
 					</div>
 					<div class="invalid-feedback">Please upload a valid DOCX file.</div>
-				</div>
-
-				<div class="mb-4">
-					<label for="photos" class="form-label">Report Photo</label>
-					<div class="input-group">
-						<span class="input-group-text"><i class="fas fa-image"></i></span>
-						<input
-							type="file"
-							class="form-control"
-							id="photos"
-							name="photos"
-							accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-							required />
-					</div>
-					<div class="form-text">
-						Upload a photo of your report (JPG, JPEG, PNG). Must be less than
-						10MB.
-					</div>
-					<div class="invalid-feedback">Please upload a valid image file.</div>
-				</div>
-
-				<div id="imagePreview" class="mt-3 d-none">
-					<h6>Image Preview</h6>
-					<img
-						id="preview"
-						src="#"
-						alt="Preview"
-						style="max-width: 300px; max-height: 300px"
-						class="img-thumbnail" />
 				</div>
 			</div>
 		</div>
@@ -183,18 +155,6 @@
 </div>
 
 <script>
-	document.getElementById("photos").addEventListener("change", function (e) {
-		const file = e.target.files[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onload = function (e) {
-				document.getElementById("preview").src = e.target.result;
-				document.getElementById("imagePreview").classList.remove("d-none");
-			};
-			reader.readAsDataURL(file);
-		}
-	});
-
 	// Add client-side validation for date range
 	document.addEventListener("DOMContentLoaded", function () {
 		const form = document.querySelector(".validated-form");

@@ -107,6 +107,13 @@ const weeklyReportSchema = new Schema({
 		mimetype: String,
 		size: Number,
 	},
+	pdfFile: {
+		filename: String,
+		path: String,
+		mimetype: String,
+		size: Number,
+		generatedFrom: String,
+	},
 });
 
 export default mongoose.model("WeeklyReport", weeklyReportSchema);

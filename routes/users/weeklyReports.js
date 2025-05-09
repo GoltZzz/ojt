@@ -6,7 +6,7 @@ import {
 	validateWeeklyReport,
 	handleValidationErrors,
 } from "../../utils/sanitize.js";
-import { weeklyReportUpload } from "../../utils/cloudinary.js";
+import { docxUpload } from "../../utils/localUpload.js";
 
 const router = express.Router();
 
@@ -15,10 +15,9 @@ router
 	.get(isLoggedIn, weeklyReports.index)
 	.post(
 		isLoggedIn,
-		weeklyReportUpload.fields([
-			{ name: "photos", maxCount: 10 },
-			{ name: "docxFile", maxCount: 1 },
-		]),
+		docxUpload.fields([{ name: "docxFile", maxCount: 1 }]),
+		validateWeeklyReport,
+		handleValidationErrors,
 		weeklyReports.createReport
 	);
 
@@ -41,15 +40,14 @@ router
 		isReportAuthor("weeklyReport"),
 		weeklyReports.renderEditForm
 	);
-router.route("/:id/update").post(
-	isLoggedIn,
-	isReportAuthor("weeklyReport"),
-	weeklyReportUpload.fields([
-		{ name: "photos", maxCount: 10 },
-		{ name: "docxFile", maxCount: 1 },
-	]),
-	validateWeeklyReport,
-	handleValidationErrors,
-	weeklyReports.updateReport
-);
+router
+	.route("/:id/update")
+	.post(
+		isLoggedIn,
+		isReportAuthor("weeklyReport"),
+		docxUpload.fields([{ name: "docxFile", maxCount: 1 }]),
+		validateWeeklyReport,
+		handleValidationErrors,
+		weeklyReports.updateReport
+	);
 export default router;

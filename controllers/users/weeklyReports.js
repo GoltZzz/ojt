@@ -3,6 +3,7 @@ import WeeklyReport from "../../models/weeklyReports.js";
 import Notification from "../../models/notification.js";
 import User from "../../models/users.js";
 import { cloudinary } from "../../utils/cloudinary.js";
+import { convertDocxToPdf } from "../../utils/pdfGenerators/docxToPdfConverter.js";
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
@@ -149,15 +150,6 @@ export const createReport = catchAsync(async (req, res) => {
 
 	const internshipSite = req.user.internshipSite || "";
 
-	const photos =
-		req.files && req.files.photos
-			? req.files.photos.map((file) => ({
-					filename: file.filename,
-					path: file.path, // Cloudinary URL is already provided here
-					mimetype: file.mimetype,
-					size: file.size,
-			  }))
-			: [];
 	const docxFile =
 		req.files && req.files.docxFile && req.files.docxFile[0]
 			? {
@@ -168,8 +160,18 @@ export const createReport = catchAsync(async (req, res) => {
 			  }
 			: null;
 
-	if (photos.length === 0 || !docxFile) {
-		req.flash("error", "You must upload at least one photo and one DOCX file.");
+	if (!docxFile) {
+		req.flash("error", "You must upload a DOCX file.");
+		return res.redirect("/weeklyreport/new");
+	}
+
+	// Convert DOCX to PDF
+	let pdfFile = null;
+	try {
+		pdfFile = await convertDocxToPdf(docxFile, fullName);
+	} catch (error) {
+		console.error("PDF conversion error:", error);
+		req.flash("error", `Failed to convert DOCX to PDF: ${error.message}`);
 		return res.redirect("/weeklyreport/new");
 	}
 
@@ -181,15 +183,16 @@ export const createReport = catchAsync(async (req, res) => {
 		weekStartDate,
 		weekEndDate,
 		supervisorName,
-		photos,
 		docxFile,
+		pdfFile,
 	});
+
 	await WeeklyReports.save();
 	req.flash(
 		"success",
-		"Successfully uploaded photos and DOCX file for the weekly report!"
+		"Successfully uploaded weekly report! Your DOCX has been converted to PDF."
 	);
-	res.redirect(`/weeklyreport/${WeeklyReports._id}`);
+	return res.redirect(`/weeklyreport/${WeeklyReports._id}`);
 });
 
 export const showReport = catchAsync(async (req, res, next) => {
@@ -352,6 +355,18 @@ export const updateReport = catchAsync(async (req, res) => {
 			mimetype: req.files.docxFile[0].mimetype,
 			size: req.files.docxFile[0].size,
 		};
+
+		// Convert DOCX to PDF
+		try {
+			updateData.pdfFile = await convertDocxToPdf(
+				updateData.docxFile,
+				fullName
+			);
+		} catch (error) {
+			console.error("PDF conversion error:", error);
+			req.flash("error", `Failed to convert DOCX to PDF: ${error.message}`);
+			return res.redirect(`/weeklyreport/${id}/edit`);
+		}
 	}
 
 	// Override the studentName with the formatted full name
