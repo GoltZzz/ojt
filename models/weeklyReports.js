@@ -52,10 +52,6 @@ const weeklyReportSchema = new Schema({
 		},
 	},
 	dailyRecords: [dailyRecordSchema],
-	supervisorName: {
-		type: String,
-		required: true,
-	},
 	supervisorSignature: String,
 	studentSignature: String,
 	dateSubmitted: {

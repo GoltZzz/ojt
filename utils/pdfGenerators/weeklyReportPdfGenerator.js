@@ -26,9 +26,6 @@ export const generateWeeklyReportPdf = (report) => {
 			if (!report.weekStartDate || !report.weekEndDate) {
 				throw new Error("Week period dates are missing");
 			}
-			if (!report.supervisorName) {
-				throw new Error("Supervisor name is missing");
-			}
 
 			// Create a document with Legal size for more space
 			const doc = new PDFDocument({

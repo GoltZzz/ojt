@@ -138,7 +138,7 @@ export const renderNewForm = async (req, res) => {
 };
 
 export const createReport = catchAsync(async (req, res) => {
-	const { weekNumber, weekStartDate, weekEndDate, supervisorName } = req.body;
+	const { weekNumber, weekStartDate, weekEndDate } = req.body;
 
 	// Format user's full name
 	let fullName = req.user.firstName;
@@ -182,7 +182,6 @@ export const createReport = catchAsync(async (req, res) => {
 		weekNumber,
 		weekStartDate,
 		weekEndDate,
-		supervisorName,
 		docxFile,
 		pdfFile,
 	});
@@ -339,50 +338,11 @@ export const updateReport = catchAsync(async (req, res) => {
 	report.weekNumber = updateData.weekNumber;
 	report.weekStartDate = updateData.weekStartDate;
 	report.weekEndDate = updateData.weekEndDate;
-	report.supervisorName = updateData.supervisorName;
-
-	// Handle docx file update
-	if (req.files && req.files.docxFile && req.files.docxFile[0]) {
-		report.docxFile = {
-			filename: req.files.docxFile[0].originalname,
-			path: req.files.docxFile[0].path,
-			mimetype: req.files.docxFile[0].mimetype,
-			size: req.files.docxFile[0].size,
-		};
-		try {
-			report.pdfFile = await convertDocxToPdf(report.docxFile, fullName);
-		} catch (error) {
-			console.error("PDF conversion error:", error);
-			req.flash("error", `Failed to convert DOCX to PDF: ${error.message}`);
-			return res.redirect(`/weeklyreport/${id}/edit`);
-		}
-	}
-
-	if (isRejectedReport) {
-		report.status = "pending";
-	}
 
 	await report.save();
 
-	if (isRejectedReport) {
-		const adminUsers = await User.find({ role: "admin" });
-		for (const admin of adminUsers) {
-			const notification = new Notification({
-				recipient: admin._id,
-				message: `${fullName} has done a revision on weekly report you rejected. Do you want to view it?`,
-				type: "info",
-				reportType: "weeklyreport",
-				reportId: report._id,
-				action: "revised",
-			});
-			await notification.save();
-		}
-		req.flash("success", "Your revised report has been submitted for review!");
-	} else {
-		req.flash("success", "Successfully updated weekly report!");
-	}
-
-	res.redirect(`/weeklyreport/${report._id}`);
+	req.flash("success", "Weekly report updated successfully!");
+	return res.redirect(`/weeklyreport/${id}`);
 });
 
 export const deleteReport = catchAsync(async (req, res) => {
