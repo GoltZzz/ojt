@@ -4,6 +4,12 @@ import adminController from "../../controllers/admin/admin.js";
 import selfDeleteController from "../../controllers/admin/selfDelete.js";
 import { validateUser, handleValidationErrors } from "../../utils/sanitize.js";
 import { upload } from "../../utils/cloudinary.js";
+import {
+	getWeeklySummary,
+	startWeeklyLoop,
+	stopWeeklyLoop,
+	submitWeeklyReportForStudent,
+} from "../../controllers/admin/weeklySummary.js";
 
 const router = express.Router();
 
@@ -52,5 +58,10 @@ router
 router
 	.route("/reports/:type/:id/unarchive")
 	.post(isLoggedIn, isAdmin, adminController.unarchiveReport);
+
+router.get("/weekly-summary", getWeeklySummary);
+router.post("/weekly-summary/start", startWeeklyLoop);
+router.post("/weekly-summary/stop", stopWeeklyLoop);
+router.post("/weekly-summary/submit", submitWeeklyReportForStudent);
 
 export default router;

@@ -1,0 +1,72 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/dashboard.css" />
+
+<div class="dashboard-container">
+  <div class="welcome-section">
+    <h1>Weekly Report Summary</h1>
+    <div class="card shadow-sm mb-4" style="max-width: 500px; margin: 0 auto;">
+      <div class="card-body">
+        <form method="POST" action="/admin/weekly-summary/start" class="row g-3 align-items-center">
+          <div class="col-12 mb-2">
+            <label for="startDate" class="form-label fw-semibold">Select Start Date <span class="text-muted">(Monday)</span>:</label>
+            <input type="date" id="startDate" name="startDate" class="form-control" required value="<%= startDate ? startDate : '' %>" />
+          </div>
+          <div class="col-12 d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary w-100 me-2" <%= loopActive ? 'disabled' : '' %>>
+              <i class="fa-solid fa-play"></i> Start Weekly Loop
+            </button>
+            <% if (loopActive) { %>
+              <button type="submit" formaction="/admin/weekly-summary/stop" class="btn btn-danger w-100 ms-2">
+                <i class="fa-solid fa-stop"></i> Stop Loop
+              </button>
+            <% } %>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <% if (weeks && weeks.length) { %>
+    <div class="dashboard-card full-width mt-4">
+      <h3>Weekly Submission Status</h3>
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Week #</th>
+              <th>Date Range</th>
+              <% students.forEach(student => { %>
+                <th><%= student.firstName %> <%= student.lastName %></th>
+              <% }) %>
+            </tr>
+          </thead>
+          <tbody>
+            <% weeks.forEach((week, i) => { %>
+              <tr>
+                <td>Week <%= i + 1 %></td>
+                <td><%= week.startLabel %> – <%= week.endLabel %></td>
+                <% students.forEach(student => { %>
+                  <td class="text-center">
+                    <% const status = week.submissions[student._id]; %>
+                    <% if (status && status.submitted) { %>
+                      <span class="text-success"><i class="fas fa-check-circle"></i></span>
+                    <% } else { %>
+                      <span class="text-danger">No Submission</span>
+                    <% } %>
+                    <% if (status && status.canSubmit) { %>
+                      <form method="POST" action="/admin/weekly-summary/submit" style="display:inline;">
+                        <input type="hidden" name="studentId" value="<%= student._id %>" />
+                        <input type="hidden" name="weekNumber" value="<%= week.weekNumber %>" />
+                        <button type="submit" class="btn btn-sm btn-success" <%= status.submitDisabled ? 'disabled' : '' %>>Submit</button>
+                      </form>
+                    <% } %>
+                  </td>
+                <% }) %>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+</div> 

@@ -53,7 +53,6 @@
 							><i class="fa-solid fa-users-cog"></i> User Management</a
 						>
 					</li>
-					<% } %> <% if (currentUser.role === 'admin') { %>
 					<li class="nav-item">
 						<a href="/admin/pending-reports" class="nav-link position-relative">
 							<i class="fa-solid fa-clipboard-check"></i> Pending Reports <% if
@@ -70,6 +69,11 @@
 					<li class="nav-item">
 						<a href="/admin/archived-reports" class="nav-link">
 							<i class="fa-solid fa-archive"></i> Archived Reports
+						</a>
+					</li>
+					<li class="nav-item">
+						<a href="/admin/weekly-summary" class="nav-link">
+							<i class="fa-solid fa-calendar-days"></i> Weekly Summary
 						</a>
 					</li>
 					<% } %> <% if (currentUser.role !== 'admin') { %>
@@ -121,6 +125,11 @@
 			</li>
 			<% if (currentUser.role === 'admin') { %>
 			<li class="nav-item">
+				<a href="/admin/weekly-summary" class="nav-link">
+					<i class="fa-solid fa-calendar-days"></i> Weekly Summary
+				</a>
+			</li>
+			<li class="nav-item">
 				<a href="/admin" class="nav-link"
 					><i class="fa-solid fa-user-shield"></i> Admin Panel
 				</a>
@@ -148,6 +157,7 @@
 					<i class="fa-solid fa-archive"></i> Archived Reports
 				</a>
 			</li>
+
 			<% } %> <% if (currentUser.role !== 'admin') { %>
 			<li class="nav-item">
 				<a href="/weeklyreport" class="nav-link"
