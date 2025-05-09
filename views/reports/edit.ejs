@@ -7,10 +7,11 @@
 <div class="container mt-4">
 	<h1 class="mb-4">Edit Weekly Report</h1>
 	<form
-		action="/weeklyreport/<%= WeeklyReports._id %>/update?_method=PUT"
+		action="/weeklyreport/<%= WeeklyReports._id %>/update"
 		method="POST"
 		enctype="multipart/form-data"
 		class="validated-form needs-validation">
+		<input type="hidden" name="_method" value="PATCH" />
 		<div class="card mb-4">
 			<div class="card-header">
 				<h5>Student Information</h5>
@@ -95,7 +96,7 @@
 								class="form-control"
 								id="weekStartDate"
 								name="weekStartDate"
-								value="<%= typeof WeeklyReports.weekStartDate === 'string' ? new Date(WeeklyReports.weekStartDate).toISOString().split('T')[0] : WeeklyReports.weekStartDate.toISOString().split('T')[0] %>"
+								value="<%= WeeklyReports.weekStartDate ? new Date(WeeklyReports.weekStartDate).toISOString().split('T')[0] : '' %>"
 								required />
 							<div class="invalid-feedback">
 								Please select a start date for the week.
@@ -113,7 +114,7 @@
 								class="form-control"
 								id="weekEndDate"
 								name="weekEndDate"
-								value="<%= typeof WeeklyReports.weekEndDate === 'string' ? new Date(WeeklyReports.weekEndDate).toISOString().split('T')[0] : WeeklyReports.weekEndDate.toISOString().split('T')[0] %>"
+								value="<%= WeeklyReports.weekEndDate ? new Date(WeeklyReports.weekEndDate).toISOString().split('T')[0] : '' %>"
 								required />
 							<div class="invalid-feedback">
 								Please select an end date for the week (must be after start
@@ -125,74 +126,22 @@
 			</div>
 		</div>
 
-		<!-- Daily Records -->
-		<div id="dailyRecords" novalidate>
-			<% ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].forEach((day,
-			index) => { %>
-			<div class="card mb-3">
-				<div class="card-header"><%= day %></div>
-				<div class="card-body">
-					<div class="row">
-						<div class="col-md-3">
-							<label>Morning Time In</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeIn][morning]"
-								value="<%= WeeklyReports.dailyRecords && WeeklyReports.dailyRecords[index] && WeeklyReports.dailyRecords[index].timeIn && WeeklyReports.dailyRecords[index].timeIn.morning !== 'N/A' ? WeeklyReports.dailyRecords[index].timeIn.morning : '' %>" />
-						</div>
-						<div class="col-md-3">
-							<label>Morning Time Out</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeOut][morning]"
-								value="12:00"
-								readonly
-								style="background-color: #e9ecef" />
-						</div>
-						<div class="col-md-3">
-							<label>Afternoon Time In</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeIn][afternoon]"
-								value="01:00"
-								readonly
-								style="background-color: #e9ecef" />
-						</div>
-						<div class="col-md-3">
-							<label>Afternoon Time Out</label>
-							<input
-								type="time"
-								class="form-control"
-								name="dailyRecords[<%= index %>][timeOut][afternoon]"
-								value="<%= WeeklyReports.dailyRecords && WeeklyReports.dailyRecords[index] && WeeklyReports.dailyRecords[index].timeOut && WeeklyReports.dailyRecords[index].timeOut.afternoon !== 'N/A' ? WeeklyReports.dailyRecords[index].timeOut.afternoon : '' %>" />
-						</div>
-						<div class="col-12 mt-2">
-							<label>Accomplishments</label>
-							<textarea
-								class="form-control"
-								name="dailyRecords[<%= index %>][accomplishments]"
-								placeholder="Enter your accomplishments for the day (optional)">
-<%= WeeklyReports.dailyRecords && WeeklyReports.dailyRecords[index] && WeeklyReports.dailyRecords[index].accomplishments && WeeklyReports.dailyRecords[index].accomplishments !== 'No accomplishments recorded' ? WeeklyReports.dailyRecords[index].accomplishments : '' %></textarea
-							>
-						</div>
-					</div>
+		<div class="card mb-4">
+			<div class="card-header">
+				<h5>Supervisor Information</h5>
+			</div>
+			<div class="card-body">
+				<div class="mb-3">
+					<label for="supervisorName" class="form-label">Supervisor Name</label>
+					<input
+						type="text"
+						class="form-control"
+						id="supervisorName"
+						name="supervisorName"
+						value="<%= WeeklyReports.supervisorName %>"
+						required />
 				</div>
 			</div>
-			<% }) %>
-		</div>
-
-		<div class="mb-3">
-			<label for="supervisorName" class="form-label">Supervisor Name</label>
-			<input
-				type="text"
-				class="form-control"
-				id="supervisorName"
-				name="supervisorName"
-				value="<%= WeeklyReports.supervisorName %>"
-				required />
 		</div>
 
 		<div class="card mb-4">
@@ -250,14 +199,6 @@
 			</div>
 		</div>
 
-		<div class="mb-3">
-			<p class="text-center font-italic">
-				"I CERTIFY on my honor that the above is a true and correct report of
-				the hours of work performed, record of which was made daily at the time
-				of arrival at and departure from office."
-			</p>
-		</div>
-
 		<div class="text-center">
 			<button type="submit" class="btn btn-primary">Update Report</button>
 			<a
@@ -280,33 +221,41 @@
 		});
 	});
 
-	// Add client-side validation for date range
-	document.addEventListener("DOMContentLoaded", function () {
-		const form = document.querySelector(".validated-form");
+	// Stronger client-side validation for weekStartDate and weekEndDate
+	function validateDates() {
 		const weekStartDate = document.getElementById("weekStartDate");
 		const weekEndDate = document.getElementById("weekEndDate");
-
-		form.addEventListener("submit", function (event) {
+		const submitBtn = document.querySelector("button[type='submit']");
+		let errorMsg = document.getElementById("dateErrorMsg");
+		if (!errorMsg) {
+			errorMsg = document.createElement("div");
+			errorMsg.id = "dateErrorMsg";
+			errorMsg.className = "text-danger mb-2";
+			weekEndDate.parentNode.appendChild(errorMsg);
+		}
+		if (weekStartDate.value && weekEndDate.value) {
 			const startDate = new Date(weekStartDate.value);
 			const endDate = new Date(weekEndDate.value);
-
 			if (endDate < startDate) {
-				event.preventDefault();
-				weekEndDate.setCustomValidity(
-					"End date must be after or equal to start date"
-				);
-				weekEndDate.reportValidity();
+				errorMsg.textContent = "End date must be after or equal to start date.";
+				submitBtn.disabled = true;
+				weekEndDate.classList.add("is-invalid");
 			} else {
-				weekEndDate.setCustomValidity("");
+				errorMsg.textContent = "";
+				submitBtn.disabled = false;
+				weekEndDate.classList.remove("is-invalid");
 			}
-		});
-
-		// Clear validation when dates change
-		weekStartDate.addEventListener("change", function () {
-			weekEndDate.setCustomValidity("");
-		});
-		weekEndDate.addEventListener("change", function () {
-			weekEndDate.setCustomValidity("");
-		});
+		} else {
+			errorMsg.textContent = "";
+			submitBtn.disabled = false;
+			weekEndDate.classList.remove("is-invalid");
+		}
+	}
+	document.addEventListener("DOMContentLoaded", function () {
+		const weekStartDate = document.getElementById("weekStartDate");
+		const weekEndDate = document.getElementById("weekEndDate");
+		weekStartDate.addEventListener("change", validateDates);
+		weekEndDate.addEventListener("change", validateDates);
+		validateDates(); // Initial check
 	});
 </script>

@@ -294,7 +294,8 @@ export const renderEditForm = catchAsync(async (req, res) => {
 export const updateReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 
-	// First find the report to check permissions
+	console.log("Update Report Body:", req.body);
+
 	const report = await WeeklyReport.findById(id);
 
 	if (!report) {
@@ -302,28 +303,23 @@ export const updateReport = catchAsync(async (req, res) => {
 		return res.redirect("/weeklyreport");
 	}
 
-	// Double-check that the current user is the author
 	if (!report.author || !report.author.equals(req.user._id)) {
 		req.flash("error", "You don't have permission to update this report");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	// Check if the report is already approved (rejected reports can be updated)
 	if (report.status === "approved") {
 		req.flash("error", "You cannot update an approved report");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	// Check if the report is archived
 	if (report.archived) {
 		req.flash("error", "You cannot update an archived report");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	// Store the original status to check if this is a revision of a rejected report
 	const isRejectedReport = report.status === "rejected";
 
-	// Format the user's full name to ensure it's consistent
 	let fullName = req.user.firstName;
 	if (req.user.middleName && req.user.middleName.length > 0) {
 		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
@@ -331,37 +327,30 @@ export const updateReport = catchAsync(async (req, res) => {
 	}
 	fullName += ` ${req.user.lastName}`;
 
-	// Handle file uploads if present
 	const updateData = { ...req.body };
+	if (updateData.weekStartDate)
+		updateData.weekStartDate = new Date(updateData.weekStartDate);
+	if (updateData.weekEndDate)
+		updateData.weekEndDate = new Date(updateData.weekEndDate);
 
-	// Always use the user's internshipSite
-	updateData.internshipSite = req.user.internshipSite || "";
-
-	// Handle photo updates
-	if (req.files && req.files.photos && req.files.photos.length > 0) {
-		updateData.photos = req.files.photos.map((file) => ({
-			filename: file.filename,
-			path: file.path,
-			mimetype: file.mimetype,
-			size: file.size,
-		}));
-	}
+	// Set fields on the report document
+	report.studentName = fullName;
+	report.internshipSite = req.user.internshipSite || "";
+	report.weekNumber = updateData.weekNumber;
+	report.weekStartDate = updateData.weekStartDate;
+	report.weekEndDate = updateData.weekEndDate;
+	report.supervisorName = updateData.supervisorName;
 
 	// Handle docx file update
 	if (req.files && req.files.docxFile && req.files.docxFile[0]) {
-		updateData.docxFile = {
-			filename: req.files.docxFile[0].originalname, // Use originalname instead of filename
+		report.docxFile = {
+			filename: req.files.docxFile[0].originalname,
 			path: req.files.docxFile[0].path,
 			mimetype: req.files.docxFile[0].mimetype,
 			size: req.files.docxFile[0].size,
 		};
-
-		// Convert DOCX to PDF
 		try {
-			updateData.pdfFile = await convertDocxToPdf(
-				updateData.docxFile,
-				fullName
-			);
+			report.pdfFile = await convertDocxToPdf(report.docxFile, fullName);
 		} catch (error) {
 			console.error("PDF conversion error:", error);
 			req.flash("error", `Failed to convert DOCX to PDF: ${error.message}`);
@@ -369,44 +358,31 @@ export const updateReport = catchAsync(async (req, res) => {
 		}
 	}
 
-	// Override the studentName with the formatted full name
-	updateData.studentName = fullName;
-
-	// If this is a rejected report being revised, set status back to pending
 	if (isRejectedReport) {
-		updateData.status = "pending";
+		report.status = "pending";
 	}
 
-	// Update the report
-	const WeeklyReports = await WeeklyReport.findByIdAndUpdate(id, updateData, {
-		new: true,
-		runValidators: true,
-	});
+	await report.save();
 
-	// If this was a revision of a rejected report, send notification to all admins
 	if (isRejectedReport) {
-		// Find all admin users
 		const adminUsers = await User.find({ role: "admin" });
-
-		// Create a notification for each admin
 		for (const admin of adminUsers) {
 			const notification = new Notification({
 				recipient: admin._id,
 				message: `${fullName} has done a revision on weekly report you rejected. Do you want to view it?`,
 				type: "info",
 				reportType: "weeklyreport",
-				reportId: WeeklyReports._id,
+				reportId: report._id,
 				action: "revised",
 			});
 			await notification.save();
 		}
-
 		req.flash("success", "Your revised report has been submitted for review!");
 	} else {
 		req.flash("success", "Successfully updated weekly report!");
 	}
 
-	res.redirect(`/weeklyreport/${WeeklyReports._id}`);
+	res.redirect(`/weeklyreport/${report._id}`);
 });
 
 export const deleteReport = catchAsync(async (req, res) => {

@@ -49,5 +49,13 @@ router
 		validateWeeklyReport,
 		handleValidationErrors,
 		weeklyReports.updateReport
+	)
+	.patch(
+		isLoggedIn,
+		isReportAuthor("weeklyReport"),
+		docxUpload.fields([{ name: "docxFile", maxCount: 1 }]),
+		validateWeeklyReport,
+		handleValidationErrors,
+		weeklyReports.updateReport
 	);
 export default router;
