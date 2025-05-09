@@ -21,12 +21,17 @@ router
 			try {
 				const { username, password, firstName, middleName, lastName } =
 					req.body;
+
+				// Check if this is the first user
+				const userCount = await User.countDocuments({});
+
 				const user = new User({
 					username,
 					firstName,
 					middleName,
 					lastName,
-					role: "user",
+					// If no users exist, make this user an admin
+					role: userCount === 0 ? "admin" : "user",
 				});
 
 				if (req.file) {
@@ -39,8 +44,12 @@ router
 				const registeredUser = await User.register(user, password);
 				req.login(registeredUser, (err) => {
 					if (err) return next(err);
-					req.flash("success", "Welcome! Your account has been created");
-					res.redirect("/dashboard");
+					const welcomeMessage =
+						userCount === 0
+							? "Welcome Admin! Your account has been created with administrator privileges"
+							: "Welcome! Your account has been created";
+					req.flash("success", welcomeMessage);
+					res.redirect(userCount === 0 ? "/admin" : "/dashboard");
 				});
 			} catch (error) {
 				if (req.file) {
