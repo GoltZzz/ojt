@@ -59,9 +59,14 @@ router
 	.route("/reports/:type/:id/unarchive")
 	.post(isLoggedIn, isAdmin, adminController.unarchiveReport);
 
-router.get("/weekly-summary", getWeeklySummary);
-router.post("/weekly-summary/start", startWeeklyLoop);
-router.post("/weekly-summary/stop", stopWeeklyLoop);
-router.post("/weekly-summary/submit", submitWeeklyReportForStudent);
+router.get("/weekly-summary", isLoggedIn, isAdmin, getWeeklySummary);
+router.post("/weekly-summary/start", isLoggedIn, isAdmin, startWeeklyLoop);
+router.post("/weekly-summary/stop", isLoggedIn, isAdmin, stopWeeklyLoop);
+router.post(
+	"/weekly-summary/submit",
+	isLoggedIn,
+	isAdmin,
+	submitWeeklyReportForStudent
+);
 
 export default router;

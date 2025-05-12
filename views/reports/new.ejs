@@ -6,143 +6,119 @@
 <link rel="stylesheet" href="/css/weeklyReportsNew.css" />
 <div class="container mt-4">
 	<h1 class="mb-4">Create New Weekly Report</h1>
-	<form
-		action="/weeklyreport"
-		method="POST"
-		enctype="multipart/form-data"
-		class="validated-form needs-validation">
-		<div class="card mb-4">
-			<div class="card-header">
-				<h5>Student Information</h5>
-			</div>
-			<div class="card-body">
-				<div class="mb-3">
-					<label for="studentName" class="form-label">Student Name</label>
-					<div class="input-group">
-						<span class="input-group-text"><i class="fas fa-user"></i></span>
-						<input
-							type="text"
-							class="form-control bg-light"
-							id="studentName"
-							name="studentName"
-							value="<%= fullName %>"
-							readonly />
-					</div>
+	<% if (!loopActive || !currentWeek) { %>
+		<div class="alert alert-info text-center mt-4">
+			Weekly reporting is not open yet. Please wait for your admin to start the weekly loop.
+		</div>
+	<% } else { %>
+		<form
+			action="/weeklyreport"
+			method="POST"
+			enctype="multipart/form-data"
+			class="validated-form needs-validation">
+			<input type="hidden" name="weekId" value="<%= currentWeek ? currentWeek._id : '' %>" />
+			<div class="card mb-4">
+				<div class="card-header">
+					<h5>Student Information</h5>
 				</div>
-				<div class="mb-3">
-					<label for="internshipSite" class="form-label">Internship Site</label>
-					<div class="input-group">
-						<span class="input-group-text"
-							><i class="fas fa-building"></i
-						></span>
-						<input
-							type="text"
-							class="form-control bg-light"
-							id="internshipSite"
-							name="internshipSite"
-							value="<%= internshipSite %>"
-							readonly />
+				<div class="card-body">
+					<div class="mb-3">
+						<label for="studentName" class="form-label">Student Name</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="fas fa-user"></i></span>
+							<input
+								type="text"
+								class="form-control bg-light"
+								id="studentName"
+								name="studentName"
+								value="<%= fullName %>"
+								readonly />
+						</div>
 					</div>
-					<small class="form-text text-muted"
-						>This field is automatically filled with your internship site and
-						cannot be changed.</small
-					>
-				</div>
-				<div class="row">
-					<div class="col-md-4 mb-3">
-						<label for="weekNumber" class="form-label">Week Number</label>
+					<div class="mb-3">
+						<label for="internshipSite" class="form-label">Internship Site</label>
 						<div class="input-group">
 							<span class="input-group-text"
-								><i class="fas fa-hashtag"></i
+								><i class="fas fa-building"></i
 							></span>
 							<input
-								type="number"
-								class="form-control"
-								id="weekNumber"
-								name="weekNumber"
-								min="1"
-								required />
-							<div class="invalid-feedback">
-								Please provide a valid week number (minimum 1).
+								type="text"
+								class="form-control bg-light"
+								id="internshipSite"
+								name="internshipSite"
+								value="<%= internshipSite %>"
+								readonly />
+						</div>
+						<small class="form-text text-muted"
+							>This field is automatically filled with your internship site and
+							cannot be changed.</small
+						>
+					</div>
+					<div class="row">
+						<div class="col-md-4 mb-3">
+							<label class="form-label">Week Number</label>
+							<div class="input-group">
+								<span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+								<input type="text" class="form-control" value="<%= currentWeek ? currentWeek.weekNumber : '' %>" readonly />
+							</div>
+						</div>
+						<div class="col-md-4 mb-3">
+							<label class="form-label">Week Start Date</label>
+							<div class="input-group">
+								<span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+								<input type="text" class="form-control" value="<%= weekStartLocal %>" readonly />
+							</div>
+						</div>
+						<div class="col-md-4 mb-3">
+							<label class="form-label">Week End Date</label>
+							<div class="input-group">
+								<span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+								<input type="text" class="form-control" value="<%= weekEndLocal %>" readonly />
 							</div>
 						</div>
 					</div>
-					<div class="col-md-4 mb-3">
-						<label for="weekStartDate" class="form-label"
-							>Week Start Date</label
+				</div>
+			</div>
+
+			<div class="card mb-4">
+				<div class="card-header">
+					<h5>Upload Files</h5>
+				</div>
+				<div class="card-body">
+					<div class="mb-4">
+						<label for="docxFile" class="form-label"
+							>Weekly Report Document (DOCX)</label
 						>
 						<div class="input-group">
 							<span class="input-group-text"
-								><i class="fas fa-calendar-alt"></i
+								><i class="fas fa-file-word"></i
 							></span>
 							<input
-								type="date"
+								type="file"
 								class="form-control"
-								id="weekStartDate"
-								name="weekStartDate"
+								id="docxFile"
+								name="docxFile"
+								accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 								required />
-							<div class="invalid-feedback">
-								Please select a start date for the week.
-							</div>
 						</div>
-					</div>
-					<div class="col-md-4 mb-3">
-						<label for="weekEndDate" class="form-label">Week End Date</label>
-						<div class="input-group">
-							<span class="input-group-text"
-								><i class="fas fa-calendar-alt"></i
-							></span>
-							<input
-								type="date"
-								class="form-control"
-								id="weekEndDate"
-								name="weekEndDate"
-								required />
-							<div class="invalid-feedback">
-								Please select an end date for the week (must be after or equal
-								to start date).
-							</div>
+						<div class="form-text">
+							Upload your weekly report in DOCX format. Must be less than 10MB.
+							The file will be automatically converted to PDF for viewing.
 						</div>
+						<div class="invalid-feedback">Please upload a valid DOCX file.</div>
 					</div>
 				</div>
 			</div>
-		</div>
 
-		<div class="card mb-4">
-			<div class="card-header">
-				<h5>Upload Files</h5>
+			<div class="text-center">
+				<a href="/weeklyreport" class="btn btn-secondary me-2">Cancel</a>
+				<button type="submit" class="btn btn-primary" <%= !isSaturday ? 'disabled' : '' %>>Submit Report</button>
+				<% if (!isSaturday) { %>
+					<div class="alert alert-warning mt-3">You can only submit your weekly report on Saturday.</div>
+				<% } %>
 			</div>
-			<div class="card-body">
-				<div class="mb-4">
-					<label for="docxFile" class="form-label"
-						>Weekly Report Document (DOCX)</label
-					>
-					<div class="input-group">
-						<span class="input-group-text"
-							><i class="fas fa-file-word"></i
-						></span>
-						<input
-							type="file"
-							class="form-control"
-							id="docxFile"
-							name="docxFile"
-							accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-							required />
-					</div>
-					<div class="form-text">
-						Upload your weekly report in DOCX format. Must be less than 10MB.
-						The file will be automatically converted to PDF for viewing.
-					</div>
-					<div class="invalid-feedback">Please upload a valid DOCX file.</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="text-center">
-			<a href="/weeklyreport" class="btn btn-secondary me-2">Cancel</a>
-			<button type="submit" class="btn btn-primary">Submit Report</button>
-		</div>
-	</form>
+		</form>
+	<% } %>
 </div>
 
 <script>

@@ -581,13 +581,6 @@ const registerUser = catchAsync(async (req, res) => {
 			return res.redirect("/admin/register");
 		}
 
-			// Check if this is the first user
-		const userCount = await User.countDocuments({});
-		let assignedRole = role || "user";
-		if (userCount === 0) {
-			assignedRole = "admin";
-		}
-
 		// Validate password
 		const isLengthValid = password.length >= 8 && password.length <= 16;
 		const hasUppercase = /[A-Z]/.test(password);
@@ -614,7 +607,7 @@ const registerUser = catchAsync(async (req, res) => {
 			firstName,
 			middleName,
 			lastName,
-			role: assignedRole,
+			role: role || "user",
 		});
 
 		// Handle profile image if uploaded

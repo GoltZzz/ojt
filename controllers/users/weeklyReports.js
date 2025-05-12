@@ -2,8 +2,15 @@ import catchAsync from "../../utils/catchAsync.js";
 import WeeklyReport from "../../models/weeklyReports.js";
 import Notification from "../../models/notification.js";
 import User from "../../models/users.js";
+import Week from "../../models/week.js";
 import { cloudinary } from "../../utils/cloudinary.js";
 import { convertDocxToPdf } from "../../utils/pdfGenerators/docxToPdfConverter.js";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import { isWeeklyLoopActive } from "../../controllers/admin/weeklySummary.js";
+
+// Import and configure dayjs with UTC plugin
+dayjs.extend(utc);
 
 export const index = catchAsync(async (req, res) => {
 	// Get query parameters for filtering and pagination
@@ -71,6 +78,7 @@ export const index = catchAsync(async (req, res) => {
 	const WeeklyReports = await WeeklyReport.find(filter)
 		.populate("author", "username firstName middleName lastName")
 		.populate("approvedBy", "username")
+		.populate("weekId")
 		.sort(sortOptions)
 		.skip(skip)
 		.limit(limitNum);
@@ -89,14 +97,14 @@ export const index = catchAsync(async (req, res) => {
 				req.user && report.author._id.equals(req.user._id);
 		}
 
-		// Format dates for display
-		if (report.weekStartDate) {
+		// Format dates for display using weekId
+		if (report.weekId && report.weekId.weekStartDate) {
 			report.formattedWeekPeriod = `${new Date(
-				report.weekStartDate
+				report.weekId.weekStartDate
 			).toLocaleDateString("en-US", {
 				month: "short",
 				day: "numeric",
-			})} – ${new Date(report.weekEndDate).toLocaleDateString("en-US", {
+			})} – ${new Date(report.weekId.weekEndDate).toLocaleDateString("en-US", {
 				month: "short",
 				day: "numeric",
 			})}`;
@@ -134,11 +142,61 @@ export const renderNewForm = async (req, res) => {
 	// Pass internshipSite from user to the form
 	const internshipSite = req.user.internshipSite || "";
 
-	res.render("reports/new", { fullName, internshipSite });
+	// Get the current active week (latest week in Week collection)
+	const currentWeek = await Week.findOne().sort({ weekNumber: -1 });
+
+	// Check if the admin loop is active
+	const loopActive =
+		typeof isWeeklyLoopActive === "function"
+			? await isWeeklyLoopActive()
+			: false;
+
+	// Format week start and end as local date strings
+	const weekStartLocal = currentWeek
+		? dayjs(currentWeek.weekStartDate).utc().local().format("YYYY-MM-DD")
+		: "";
+	const weekEndLocal = currentWeek
+		? dayjs(currentWeek.weekEndDate).utc().local().format("YYYY-MM-DD")
+		: "";
+
+	res.render("reports/new", {
+		fullName,
+		internshipSite,
+		currentWeek,
+		isSaturday: dayjs().day() === 6,
+		loopActive,
+		weekStartLocal,
+		weekEndLocal,
+	});
 };
 
 export const createReport = catchAsync(async (req, res) => {
-	const { weekNumber, weekStartDate, weekEndDate } = req.body;
+	const currentWeek = await Week.findOne().sort({ weekNumber: -1 });
+	const now = dayjs();
+	const loopActive =
+		typeof isWeeklyLoopActive === "function"
+			? await isWeeklyLoopActive()
+			: false;
+
+	// Check if weekly loop is active and it's Saturday
+	if (!loopActive || !currentWeek || now.day() !== 6) {
+		req.flash(
+			"error",
+			"You can only submit a report for the current week and only on Saturday"
+		);
+		return res.redirect("/weeklyreport/new");
+	}
+
+	// Prevent duplicate submission for this week
+	const existing = await WeeklyReport.findOne({
+		author: req.user._id,
+		weekNumber: currentWeek.weekNumber,
+	});
+
+	if (existing) {
+		req.flash("error", "You have already submitted a report for this week.");
+		return res.redirect("/weeklyreport/new");
+	}
 
 	// Format user's full name
 	let fullName = req.user.firstName;
@@ -148,50 +206,25 @@ export const createReport = catchAsync(async (req, res) => {
 	}
 	fullName += ` ${req.user.lastName}`;
 
-	const internshipSite = req.user.internshipSite || "";
-
-	const docxFile =
-		req.files && req.files.docxFile && req.files.docxFile[0]
-			? {
-					filename: req.files.docxFile[0].originalname, // Use originalname instead of filename
-					path: req.files.docxFile[0].path, // Cloudinary URL is already provided here
-					mimetype: req.files.docxFile[0].mimetype,
-					size: req.files.docxFile[0].size,
-			  }
-			: null;
-
-	if (!docxFile) {
-		req.flash("error", "You must upload a DOCX file.");
-		return res.redirect("/weeklyreport/new");
-	}
-
-	// Convert DOCX to PDF
-	let pdfFile = null;
-	try {
-		pdfFile = await convertDocxToPdf(docxFile, fullName);
-	} catch (error) {
-		console.error("PDF conversion error:", error);
-		req.flash("error", `Failed to convert DOCX to PDF: ${error.message}`);
-		return res.redirect("/weeklyreport/new");
-	}
-
+	// Create the report with current week's info
 	const WeeklyReports = new WeeklyReport({
 		author: req.user._id,
 		studentName: fullName,
-		internshipSite,
-		weekNumber,
-		weekStartDate,
-		weekEndDate,
-		docxFile,
-		pdfFile,
+		internshipSite: req.user.internshipSite || "",
+		weekId: currentWeek._id, // Set the weekId reference
+		weekNumber: currentWeek.weekNumber,
+		weekStartDate: currentWeek.weekStartDate,
+		weekEndDate: currentWeek.weekEndDate,
+		status: "pending",
+		dateSubmitted: now.toDate(),
 	});
 
+	// Save the report
 	await WeeklyReports.save();
-	req.flash(
-		"success",
-		"Successfully uploaded weekly report! Your DOCX has been converted to PDF."
-	);
-	return res.redirect(`/weeklyreport/${WeeklyReports._id}`);
+
+	// Add success message
+	req.flash("success", "Successfully submitted weekly report!");
+	res.redirect(`/weeklyreport/${WeeklyReports._id}`);
 });
 
 export const showReport = catchAsync(async (req, res, next) => {
@@ -335,7 +368,7 @@ export const updateReport = catchAsync(async (req, res) => {
 	// Set fields on the report document
 	report.studentName = fullName;
 	report.internshipSite = req.user.internshipSite || "";
-	report.weekNumber = updateData.weekNumber;
+	report.weekId = updateData.weekId;
 	report.weekStartDate = updateData.weekStartDate;
 	report.weekEndDate = updateData.weekEndDate;
 

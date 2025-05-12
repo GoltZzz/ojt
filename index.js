@@ -13,6 +13,8 @@ import ExpressError from "./utils/ExpressError.js";
 import { sanitizeBody } from "./utils/sanitize.js";
 import { body, validationResult } from "express-validator";
 import pendingReportsCount from "./middleware/pendingReportsCount.js";
+import cron from "node-cron";
+import { checkAndCreateNextWeek } from "./controllers/admin/weeklySummary.js";
 
 const app = express();
 
@@ -131,6 +133,12 @@ app.use((err, req, res, next) => {
 	const { statusCode = 500 } = err;
 	if (!err.message) err.message = "Oh No, Something Went Wrong!";
 	res.status(statusCode).render("error", { err });
+});
+
+// Schedule job: every Saturday at 00:01
+cron.schedule("1 0 * * 6", async () => {
+	await checkAndCreateNextWeek();
+	console.log("Checked and created next week (if needed)");
 });
 
 app.listen(3000, () => {

@@ -32,10 +32,10 @@ const weeklyReportSchema = new Schema({
 		type: String,
 		required: true,
 	},
-	weekNumber: {
-		type: Number,
+	weekId: {
+		type: Schema.Types.ObjectId,
+		ref: "Week",
 		required: true,
-		min: 1,
 	},
 	weekStartDate: {
 		type: Date,
@@ -44,12 +44,6 @@ const weeklyReportSchema = new Schema({
 	weekEndDate: {
 		type: Date,
 		required: true,
-		validate: {
-			validator: function (endDate) {
-				return endDate >= this.weekStartDate;
-			},
-			message: "Week end date must be after or equal to start date",
-		},
 	},
 	dailyRecords: [dailyRecordSchema],
 	supervisorSignature: String,
