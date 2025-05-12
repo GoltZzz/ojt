@@ -33,29 +33,5 @@ router
 	);
 
 router.post("/:id/archive", isLoggedIn, weeklyReports.archiveReport);
-router
-	.route("/:id/edit")
-	.get(
-		isLoggedIn,
-		isReportAuthor("weeklyReport"),
-		weeklyReports.renderEditForm
-	);
-router
-	.route("/:id/update")
-	.post(
-		isLoggedIn,
-		isReportAuthor("weeklyReport"),
-		docxUpload.fields([{ name: "docxFile", maxCount: 1 }]),
-		validateWeeklyReport,
-		handleValidationErrors,
-		weeklyReports.updateReport
-	)
-	.patch(
-		isLoggedIn,
-		isReportAuthor("weeklyReport"),
-		docxUpload.fields([{ name: "docxFile", maxCount: 1 }]),
-		validateWeeklyReport,
-		handleValidationErrors,
-		weeklyReports.updateReport
-	);
+
 export default router;

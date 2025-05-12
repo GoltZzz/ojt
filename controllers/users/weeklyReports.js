@@ -314,119 +314,6 @@ export const showReport = catchAsync(async (req, res, next) => {
 	res.render("reports/show", { WeeklyReports });
 });
 
-export const renderEditForm = catchAsync(async (req, res) => {
-	const { id } = req.params;
-	const WeeklyReports = await WeeklyReport.findById(id);
-
-	if (!WeeklyReports) {
-		req.flash("error", "Cannot find that weekly report!");
-		return res.redirect("/weeklyreport");
-	}
-
-	// Double-check that the current user is the author (middleware should have caught this already)
-	if (!WeeklyReports.author || !WeeklyReports.author.equals(req.user._id)) {
-		req.flash("error", "You don't have permission to edit this report");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	// Check if the report is already approved (rejected reports can be edited)
-	if (WeeklyReports.status === "approved") {
-		req.flash("error", "You cannot edit an approved report");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	// Check if the report is archived
-	if (WeeklyReports.archived) {
-		req.flash("error", "You cannot edit an archived report");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	// Format the user's full name to ensure it's consistent
-	let fullName = req.user.firstName;
-	if (req.user.middleName && req.user.middleName.length > 0) {
-		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
-		fullName += ` ${middleInitial}.`;
-	}
-	fullName += ` ${req.user.lastName}`;
-
-	res.render("reports/edit", { WeeklyReports, fullName });
-});
-
-export const updateReport = catchAsync(async (req, res) => {
-	const { id } = req.params;
-
-	console.log("Update Report Body:", req.body);
-
-	const report = await WeeklyReport.findById(id);
-
-	if (!report) {
-		req.flash("error", "Weekly Report not found");
-		return res.redirect("/weeklyreport");
-	}
-
-	if (!report.author || !report.author.equals(req.user._id)) {
-		req.flash("error", "You don't have permission to update this report");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	if (report.status === "approved") {
-		req.flash("error", "You cannot update an approved report");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	if (report.archived) {
-		req.flash("error", "You cannot update an archived report");
-		return res.redirect(`/weeklyreport/${id}`);
-	}
-
-	// Format user's full name
-	let fullName = req.user.firstName;
-	if (req.user.middleName && req.user.middleName.length > 0) {
-		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
-		fullName += ` ${middleInitial}.`;
-	}
-	fullName += ` ${req.user.lastName}`;
-
-	const updateData = { ...req.body };
-	if (updateData.weekStartDate)
-		updateData.weekStartDate = new Date(updateData.weekStartDate);
-	if (updateData.weekEndDate)
-		updateData.weekEndDate = new Date(updateData.weekEndDate);
-
-	// Set fields on the report document
-	report.studentName = fullName;
-	report.internshipSite = req.user.internshipSite || "";
-	report.weekId = updateData.weekId;
-	report.weekStartDate = updateData.weekStartDate;
-	report.weekEndDate = updateData.weekEndDate;
-
-	// Handle DOCX file update if provided
-	if (req.files && req.files.docxFile && req.files.docxFile[0]) {
-		const docxFile = req.files.docxFile[0];
-		report.docxFile = {
-			filename: docxFile.filename,
-			path: docxFile.path,
-			mimetype: docxFile.mimetype,
-			size: docxFile.size,
-		};
-
-		// Convert the new DOCX to PDF
-		try {
-			const pdfFile = await convertDocxToPdf(docxFile, report.studentName);
-			report.pdfFile = pdfFile;
-		} catch (error) {
-			console.error("Error converting DOCX to PDF:", error);
-			req.flash("error", "Failed to convert DOCX to PDF. Please try again.");
-			return res.redirect(`/weeklyreport/${id}`);
-		}
-	}
-
-	await report.save();
-
-	req.flash("success", "Weekly report updated successfully!");
-	return res.redirect(`/weeklyreport/${id}`);
-});
-
 export const deleteReport = catchAsync(async (req, res) => {
 	const { id } = req.params;
 	const { password } = req.body;
@@ -590,8 +477,6 @@ export default {
 	renderNewForm,
 	createReport,
 	showReport,
-	renderEditForm,
-	updateReport,
 	deleteReport,
 	archiveReport,
 };

@@ -184,11 +184,6 @@
 								title="View Report">
 								<i class="fas fa-eye"></i>
 							</a>
-							<% if (report.isCurrentUserReport && (report.status === 'pending' || report.status === 'rejected') && !report.archived) { %>
-								<a href="/weeklyreport/<%= report._id %>/edit" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Edit Report">
-									<i class="fas fa-edit"></i>
-								</a>
-							<% } %>
 							<% if (report.isCurrentUserReport && report.status === 'pending' && !report.archived) { %>
 								<button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Delete Report" data-custom-modal-target="deleteReportModal<%= report._id %>">
 									<i class="fas fa-trash"></i>
