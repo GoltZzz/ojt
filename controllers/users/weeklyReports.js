@@ -5,6 +5,7 @@ import User from "../../models/users.js";
 import Week from "../../models/week.js";
 import { cloudinary } from "../../utils/cloudinary.js";
 import { convertDocxToPdf } from "../../utils/pdfGenerators/docxToPdfConverter.js";
+import { convertXlsxToPdf } from "../../utils/pdfGenerators/xlsxToPdfConverter.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
 import { isWeeklyLoopActive } from "../../controllers/admin/weeklySummary.js";
@@ -472,6 +473,26 @@ export const archiveReport = catchAsync(async (req, res) => {
 	return res.redirect("/admin/archived-reports");
 });
 
+export const uploadXlsxAndShowPdf = async (req, res) => {
+	try {
+		if (!req.file) {
+			return res.status(400).send("No XLSX file uploaded.");
+		}
+		let fullName = req.user.firstName;
+		if (req.user.middleName && req.user.middleName.length > 0) {
+			const middleInitial = req.user.middleName.charAt(0).toUpperCase();
+			fullName += ` ${middleInitial}.`;
+		}
+		fullName += ` ${req.user.lastName}`;
+
+		const pdfFile = await convertXlsxToPdf(req.file, fullName);
+		res.render("reports/showXlsxPdf", { pdfFile });
+	} catch (error) {
+		console.error("Error uploading or converting XLSX:", error);
+		res.status(500).send("Failed to convert XLSX to PDF: " + error.message);
+	}
+};
+
 export default {
 	index,
 	renderNewForm,
@@ -479,4 +500,5 @@ export default {
 	showReport,
 	deleteReport,
 	archiveReport,
+	uploadXlsxAndShowPdf,
 };

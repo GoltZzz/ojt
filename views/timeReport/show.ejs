@@ -1,0 +1,51 @@
+<%- layout('layouts/boilerplate') %>
+
+<div class="container mt-4">
+	<div class="row mb-4">
+		<div class="col-md-8">
+			<h2>Time Report Details</h2>
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-6">
+							<% if (timeReport.studentName) { %>
+							<p><strong>Student:</strong> <%= timeReport.studentName %></p>
+							<% } %> <% if (timeReport.internshipSite) { %>
+							<p>
+								<strong>Internship Site:</strong> <%= timeReport.internshipSite
+								%>
+							</p>
+							<% } %>
+							<p>
+								<strong>Date:</strong> <%= new
+								Date(timeReport.date).toLocaleDateString() %>
+							</p>
+							<p>
+								<strong>Date Submitted:</strong> <%= new
+								Date(timeReport.dateSubmitted).toLocaleDateString() %>
+							</p>
+						</div>
+						<div class="col-md-6">
+							<p>
+								<strong>Hours Worked:</strong> <%= timeReport.hoursWorked %>
+							</p>
+							<p><strong>Description:</strong> <%= timeReport.description %></p>
+							<% if (timeReport.weekStartDate && timeReport.weekEndDate) { %>
+							<p>
+								<strong>Week Period:</strong>
+								<%= new Date(timeReport.weekStartDate).toLocaleDateString() %> -
+								<%= new Date(timeReport.weekEndDate).toLocaleDateString() %>
+							</p>
+							<% } %>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 text-end">
+			<a href="/timereport" class="btn btn-secondary">
+				<i class="fas fa-arrow-left"></i> Back to Time Reports
+			</a>
+		</div>
+	</div>
+</div>

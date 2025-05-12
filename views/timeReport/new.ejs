@@ -2,48 +2,140 @@
 <link rel="stylesheet" href="/css/weeklyReportsNew.css" />
 
 <div class="container mt-4">
-    <h1 class="mb-4">Create New Time Report</h1>
-    <form action="/timereport" method="POST" novalidate class="validated-form needs-validation">
-        <div class="mb-3">
-            <label for="date" class="form-label">Date</label>
-            <input type="date" class="form-control" id="date" name="date" required>
-        </div>
-        
-        <div class="mb-3">
-            <label for="hours" class="form-label">Hours Worked</label>
-            <input type="number" class="form-control" id="hours" name="hours" min="0" max="24" step="0.5" required>
-        </div>
-        
-        <div class="mb-3">
-            <label for="description" class="form-label">Description of Work</label>
-            <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
-        </div>
-        
-        <div class="mb-3">
-            <label for="project" class="form-label">Project</label>
-            <input type="text" class="form-control" id="project" name="project" required>
-        </div>
-        
-        <div class="text-center mt-4">
-            <button type="submit" class="btn btn-primary">Create Time Report</button>
-            <a href="/timereport" class="btn btn-secondary ms-2">Cancel</a>
-        </div>
-    </form>
+	<h1 class="mb-4">Upload Time Report (Excel to PDF)</h1>
+	<form
+		action="/timereport/upload-xlsx"
+		method="POST"
+		enctype="multipart/form-data"
+		class="validated-form needs-validation">
+		<div class="card mb-4">
+			<div class="card-header">
+				<h5>Student Information</h5>
+			</div>
+			<div class="card-body">
+				<div class="mb-3">
+					<label for="studentName" class="form-label">Student Name</label>
+					<div class="input-group">
+						<span class="input-group-text"><i class="fas fa-user"></i></span>
+						<input
+							type="text"
+							class="form-control bg-light"
+							id="studentName"
+							name="studentName"
+							value="<%= fullName %>"
+							readonly />
+					</div>
+				</div>
+				<div class="mb-3">
+					<label for="internshipSite" class="form-label">Internship Site</label>
+					<div class="input-group">
+						<span class="input-group-text"
+							><i class="fas fa-building"></i
+						></span>
+						<input
+							type="text"
+							class="form-control bg-light"
+							id="internshipSite"
+							name="internshipSite"
+							value="<%= internshipSite %>"
+							readonly />
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-4 mb-3">
+						<label class="form-label">Week Number</label>
+						<div class="input-group">
+							<span class="input-group-text"
+								><i class="fas fa-hashtag"></i
+							></span>
+							<input
+								type="text"
+								class="form-control"
+								value="<%= currentWeek ? currentWeek.weekNumber : '' %>"
+								readonly />
+						</div>
+					</div>
+					<div class="col-md-4 mb-3">
+						<label class="form-label">Week Start Date</label>
+						<div class="input-group">
+							<span class="input-group-text"
+								><i class="fas fa-calendar-alt"></i
+							></span>
+							<input
+								type="text"
+								class="form-control"
+								value="<%= weekStartLocal %>"
+								readonly />
+						</div>
+					</div>
+					<div class="col-md-4 mb-3">
+						<label class="form-label">Week End Date</label>
+						<div class="input-group">
+							<span class="input-group-text"
+								><i class="fas fa-calendar-alt"></i
+							></span>
+							<input
+								type="text"
+								class="form-control"
+								value="<%= weekEndLocal %>"
+								readonly />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="mb-3">
+			<label for="xlsxFile" class="form-label">Select Excel File (.xlsx)</label>
+			<input
+				type="file"
+				class="form-control"
+				id="xlsxFile"
+				name="xlsxFile"
+				accept=".xlsx"
+				required />
+		</div>
+		<div class="text-center mt-4">
+			<button type="submit" class="btn btn-primary">Upload & Convert</button>
+			<a href="/timereport" class="btn btn-secondary ms-2">Cancel</a>
+		</div>
+	</form>
+	<% if (typeof pdfFile !== 'undefined' && pdfFile) { %>
+	<div class="mt-5">
+		<h2>Converted PDF Preview</h2>
+		<div class="mb-3">
+			<a
+				href="/pdfs/<%= pdfFile.filename %>"
+				target="_blank"
+				class="btn btn-primary"
+				>Download PDF</a
+			>
+		</div>
+		<iframe
+			src="/pdfs/<%= pdfFile.filename %>"
+			width="100%"
+			height="600px"
+			style="border: 1px solid #ccc"></iframe>
+	</div>
+	<% } %>
 </div>
 
 <script>
-    // Form validation
-    (function() {
-        'use strict';
-        const forms = document.querySelectorAll('.validated-form');
-        Array.from(forms).forEach(function(form) {
-            form.addEventListener('submit', function(event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
-    })();
+	// Form validation
+	(function () {
+		"use strict";
+		const forms = document.querySelectorAll(".validated-form");
+		Array.from(forms).forEach(function (form) {
+			form.addEventListener(
+				"submit",
+				function (event) {
+					if (!form.checkValidity()) {
+						event.preventDefault();
+						event.stopPropagation();
+					}
+					form.classList.add("was-validated");
+				},
+				false
+			);
+		});
+	})();
 </script>

@@ -25,3 +25,6 @@ export default {
 	generateTrainingSchedulePdf,
 	generateLearningOutcomePdf,
 };
+
+export * from "./docxToPdfConverter.js";
+export * from "./xlsxToPdfConverter.js";

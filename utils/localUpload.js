@@ -28,4 +28,30 @@ const docxUpload = multer({
 	},
 });
 
-export { docxUpload };
+const xlsxStorage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, path.join(process.cwd(), "public/uploads/excel"));
+	},
+	filename: function (req, file, cb) {
+		const ext = path.extname(file.originalname);
+		const base = path.basename(file.originalname, ext);
+		cb(null, `${base}-${uuidv4().substring(0, 8)}${ext}`);
+	},
+});
+
+const xlsxUpload = multer({
+	storage: xlsxStorage,
+	limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+	fileFilter: (req, file, cb) => {
+		if (
+			file.mimetype ===
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+		) {
+			cb(null, true);
+		} else {
+			cb(new Error("Only XLSX files are allowed."), false);
+		}
+	},
+});
+
+export { docxUpload, xlsxUpload };

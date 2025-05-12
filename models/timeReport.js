@@ -11,14 +11,35 @@ const timeReportSchema = new Schema({
 		type: Date,
 		required: true,
 	},
+	weekId: {
+		type: Schema.Types.ObjectId,
+		ref: "Week",
+		required: true,
+	},
+	weekStartDate: {
+		type: Date,
+		required: true,
+	},
+	weekEndDate: {
+		type: Date,
+		required: true,
+	},
+	studentName: {
+		type: String,
+		required: true,
+	},
+	internshipSite: {
+		type: String,
+		required: true,
+	},
 	hoursWorked: {
 		type: Number,
-		required: true,
 		min: 0,
+		required: false,
 	},
 	description: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	dateSubmitted: {
 		type: Date,
@@ -31,6 +52,15 @@ const timeReportSchema = new Schema({
 	archivedReason: {
 		type: String,
 		default: "",
+	},
+	excelFile: {
+		filename: String,
+		originalName: String,
+		path: String,
+		uploadDate: {
+			type: Date,
+			default: Date.now,
+		},
 	},
 });
 

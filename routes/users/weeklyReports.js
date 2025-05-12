@@ -6,7 +6,7 @@ import {
 	validateWeeklyReport,
 	handleValidationErrors,
 } from "../../utils/sanitize.js";
-import { docxUpload } from "../../utils/localUpload.js";
+import { docxUpload, xlsxUpload } from "../../utils/localUpload.js";
 
 const router = express.Router();
 
@@ -33,5 +33,11 @@ router
 	);
 
 router.post("/:id/archive", isLoggedIn, weeklyReports.archiveReport);
+
+router.post(
+	"/upload-xlsx",
+	xlsxUpload.single("xlsxFile"),
+	weeklyReports.uploadXlsxAndShowPdf
+);
 
 export default router;
