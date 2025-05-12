@@ -206,25 +206,54 @@ export const createReport = catchAsync(async (req, res) => {
 	}
 	fullName += ` ${req.user.lastName}`;
 
+	const internshipSite = req.user.internshipSite || "";
+
+	const docxFile =
+		req.files && req.files.docxFile && req.files.docxFile[0]
+			? {
+					filename: req.files.docxFile[0].originalname, // Use originalname instead of filename
+					path: req.files.docxFile[0].path, // Cloudinary URL is already provided here
+					mimetype: req.files.docxFile[0].mimetype,
+					size: req.files.docxFile[0].size,
+			  }
+			: null;
+
+	if (!docxFile) {
+		req.flash("error", "You must upload a DOCX file.");
+		return res.redirect("/weeklyreport/new");
+	}
+
+	// Convert DOCX to PDF
+	let pdfFile = null;
+	try {
+		pdfFile = await convertDocxToPdf(docxFile, fullName);
+	} catch (error) {
+		console.error("PDF conversion error:", error);
+		req.flash("error", `Failed to convert DOCX to PDF: ${error.message}`);
+		return res.redirect("/weeklyreport/new");
+	}
+
 	// Create the report with current week's info
 	const WeeklyReports = new WeeklyReport({
 		author: req.user._id,
 		studentName: fullName,
-		internshipSite: req.user.internshipSite || "",
+		internshipSite,
 		weekId: currentWeek._id, // Set the weekId reference
 		weekNumber: currentWeek.weekNumber,
 		weekStartDate: currentWeek.weekStartDate,
 		weekEndDate: currentWeek.weekEndDate,
+		docxFile,
+		pdfFile,
 		status: "pending",
 		dateSubmitted: now.toDate(),
 	});
 
-	// Save the report
 	await WeeklyReports.save();
-
-	// Add success message
-	req.flash("success", "Successfully submitted weekly report!");
-	res.redirect(`/weeklyreport/${WeeklyReports._id}`);
+	req.flash(
+		"success",
+		"Successfully uploaded weekly report! Your DOCX has been converted to PDF."
+	);
+	return res.redirect(`/weeklyreport/${WeeklyReports._id}`);
 });
 
 export const showReport = catchAsync(async (req, res, next) => {
@@ -350,8 +379,7 @@ export const updateReport = catchAsync(async (req, res) => {
 		return res.redirect(`/weeklyreport/${id}`);
 	}
 
-	const isRejectedReport = report.status === "rejected";
-
+	// Format user's full name
 	let fullName = req.user.firstName;
 	if (req.user.middleName && req.user.middleName.length > 0) {
 		const middleInitial = req.user.middleName.charAt(0).toUpperCase();
@@ -371,6 +399,27 @@ export const updateReport = catchAsync(async (req, res) => {
 	report.weekId = updateData.weekId;
 	report.weekStartDate = updateData.weekStartDate;
 	report.weekEndDate = updateData.weekEndDate;
+
+	// Handle DOCX file update if provided
+	if (req.files && req.files.docxFile && req.files.docxFile[0]) {
+		const docxFile = req.files.docxFile[0];
+		report.docxFile = {
+			filename: docxFile.filename,
+			path: docxFile.path,
+			mimetype: docxFile.mimetype,
+			size: docxFile.size,
+		};
+
+		// Convert the new DOCX to PDF
+		try {
+			const pdfFile = await convertDocxToPdf(docxFile, report.studentName);
+			report.pdfFile = pdfFile;
+		} catch (error) {
+			console.error("Error converting DOCX to PDF:", error);
+			req.flash("error", "Failed to convert DOCX to PDF. Please try again.");
+			return res.redirect(`/weeklyreport/${id}`);
+		}
+	}
 
 	await report.save();
 

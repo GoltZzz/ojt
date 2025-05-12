@@ -8,7 +8,7 @@ import {
 	getWeeklySummary,
 	startWeeklyLoop,
 	stopWeeklyLoop,
-	submitWeeklyReportForStudent,
+	restartWeeklyLoop,
 } from "../../controllers/admin/weeklySummary.js";
 
 const router = express.Router();
@@ -62,11 +62,6 @@ router
 router.get("/weekly-summary", isLoggedIn, isAdmin, getWeeklySummary);
 router.post("/weekly-summary/start", isLoggedIn, isAdmin, startWeeklyLoop);
 router.post("/weekly-summary/stop", isLoggedIn, isAdmin, stopWeeklyLoop);
-router.post(
-	"/weekly-summary/submit",
-	isLoggedIn,
-	isAdmin,
-	submitWeeklyReportForStudent
-);
+router.post("/weekly-summary/restart", isLoggedIn, isAdmin, restartWeeklyLoop);
 
 export default router;

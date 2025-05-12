@@ -99,8 +99,6 @@ export async function getWeeklySummary(req, res) {
 				submitted: !!report,
 				submittedAt: report?.dateSubmitted,
 				status: report?.status || "not submitted",
-				canSubmit: !report && dayjs().day() === 6,
-				submitDisabled: !!report || dayjs().day() !== 6,
 			};
 		});
 	});
@@ -124,20 +122,27 @@ export async function startWeeklyLoop(req, res) {
 				req.flash("error", "Start date is required for the first week.");
 				return res.redirect("/admin/weekly-summary");
 			}
-			// Set to local midnight to avoid timezone issues
-			const weekStart = dayjs(startDate)
-				.hour(0)
-				.minute(0)
-				.second(0)
-				.millisecond(0);
-			const weekEnd = weekStart.add(4, "day");
+
+			// Ensure the start date is set to Monday at midnight
+			const weekStart = dayjs(startDate).startOf("day");
+
+			// If the selected date is not Monday (1), adjust to the next Monday
+			if (weekStart.day() !== 1) {
+				req.flash("error", "Please select a Monday as the start date.");
+				return res.redirect("/admin/weekly-summary");
+			}
+
+			// End date is Friday (add 4 days to Monday)
+			const weekEnd = weekStart
+				.add(4, "day") // Monday + 4 days = Friday
+				.endOf("day"); // End of Friday
+
 			await Week.create({
 				weekNumber: 1,
 				weekStartDate: weekStart.toDate(),
 				weekEndDate: weekEnd.toDate(),
 			});
 		}
-		// If weeks already exist, just activate the loop
 		settings.weeklyLoopActive = true;
 		await settings.save();
 	}
@@ -152,64 +157,64 @@ export async function stopWeeklyLoop(req, res) {
 	res.redirect("/admin/weekly-summary");
 }
 
-// POST /admin/weekly-summary/submit
-export async function submitWeeklyReportForStudent(req, res) {
-	const { studentId, weekNumber } = req.body;
+// POST /admin/weekly-summary/restart
+export async function restartWeeklyLoop(req, res) {
 	const settings = await getSettings();
-	if (!settings.weeklyLoopActive) return res.redirect("/admin/weekly-summary");
+	const startDate = req.body.startDate;
 
-	// Find the week
-	const week = await Week.findOne({ weekNumber });
-	if (!week) return res.redirect("/admin/weekly-summary");
-
-	// Find the student to get their name and internship site
-	const student = await User.findById(studentId);
-	if (!student) return res.redirect("/admin/weekly-summary");
-
-	// Format student name
-	let fullName = student.firstName;
-	if (student.middleName && student.middleName.length > 0) {
-		const middleInitial = student.middleName.charAt(0).toUpperCase();
-		fullName += ` ${middleInitial}.`;
-	}
-	fullName += ` ${student.lastName}`;
-
-	// Prevent resubmission
-	const existing = await WeeklyReport.findOne({
-		author: studentId,
-		weekNumber: week.weekNumber,
-	});
-	if (existing) return res.redirect("/admin/weekly-summary");
-
-	// Only allow on Saturday
-	const now = dayjs();
-	if (now.day() !== 6) {
+	if (!startDate) {
+		req.flash("error", "Start date is required for restarting the loop.");
 		return res.redirect("/admin/weekly-summary");
 	}
 
-	// Create the report with all required fields
-	await WeeklyReport.create({
-		author: studentId,
-		studentName: fullName,
-		internshipSite: student.internshipSite || "",
-		weekId: week._id,
-		weekNumber: week.weekNumber,
-		weekStartDate: week.weekStartDate,
-		weekEndDate: week.weekEndDate,
-		status: "pending",
-		dateSubmitted: now.toDate(),
-	});
+	// Ensure the start date is set to Monday at midnight
+	const weekStart = dayjs(startDate).startOf("day");
 
-	req.flash("success", "Report submitted successfully");
+	// If the selected date is not Monday (1), reject it
+	if (weekStart.day() !== 1) {
+		req.flash("error", "Please select a Monday as the start date.");
+		return res.redirect("/admin/weekly-summary");
+	}
+
+	// Calculate first week end date (Friday)
+	const weekEnd = weekStart
+		.add(4, "day") // Monday + 4 days = Friday
+		.endOf("day");
+
+	try {
+		// Delete all existing weeks and their associated reports
+		await Week.deleteMany({});
+		await WeeklyReport.deleteMany({});
+
+		// Create the first week
+		await Week.create({
+			weekNumber: 1,
+			weekStartDate: weekStart.toDate(),
+			weekEndDate: weekEnd.toDate(),
+		});
+
+		// Activate the loop
+		settings.weeklyLoopActive = true;
+		await settings.save();
+
+		req.flash(
+			"success",
+			"Weekly loop has been restarted with new dates. All previous weeks and reports have been cleared."
+		);
+	} catch (error) {
+		req.flash("error", "Failed to restart weekly loop. Please try again.");
+	}
+
 	res.redirect("/admin/weekly-summary");
 }
 
-// Cron-like logic: create next week on Saturday if loopActive
+// Cron-like logic: create next week on Sunday if loopActive
 export async function checkAndCreateNextWeek() {
 	const settings = await getSettings();
 	if (!settings.weeklyLoopActive) return;
 	const now = dayjs();
-	if (now.day() === 6) {
+	if (now.day() === 0) {
+		// 0 is Sunday
 		await createNextWeek();
 	}
 }

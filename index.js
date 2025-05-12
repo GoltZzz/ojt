@@ -135,8 +135,8 @@ app.use((err, req, res, next) => {
 	res.status(statusCode).render("error", { err });
 });
 
-// Schedule job: every Saturday at 00:01
-cron.schedule("1 0 * * 6", async () => {
+// Schedule job: every Sunday at 00:01
+cron.schedule("1 0 * * 0", async () => {
 	await checkAndCreateNextWeek();
 	console.log("Checked and created next week (if needed)");
 });
