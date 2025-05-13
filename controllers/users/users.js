@@ -74,19 +74,32 @@ const renderLogin = async (_, res) => {
 
 const login = async (req, res, next) => {
 	try {
+		console.log("Login function called");
+		console.log("Session:", req.session);
+		console.log("Session returnTo:", req.session.returnTo);
+		console.log(
+			"User:",
+			req.user ? { id: req.user._id, role: req.user.role } : "No user"
+		);
+
 		let redirectUrl = req.session.returnTo || "/dashboard";
+		console.log(`Initial redirectUrl: ${redirectUrl}`);
 
 		if (req.user && req.user.role === "admin") {
 			if (redirectUrl === "/dashboard") {
 				redirectUrl = "/admin";
+				console.log(
+					`Changed redirectUrl to: ${redirectUrl} because user is admin`
+				);
 			}
 		}
 
 		delete req.session.returnTo;
 		req.flash("success", "Logged in successfully!");
-		console.log(`🔄 Redirecting to: ${redirectUrl}`);
-		res.redirect(redirectUrl);
+		console.log(`🔄 Final Redirecting to: ${redirectUrl}`);
+		return res.redirect(redirectUrl);
 	} catch (error) {
+		console.error("Login error:", error);
 		return next(error);
 	}
 };

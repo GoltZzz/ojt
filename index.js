@@ -64,6 +64,14 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/pdfs", express.static(path.join(__dirname, "uploads/pdfs")));
 app.use(
 	"/uploads/excel",
+	(req, res, next) => {
+		// Set proper headers for Excel files
+		res.setHeader("Access-Control-Allow-Origin", "*");
+		// Don't force content type - let the browser detect it
+		// res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		res.setHeader("Content-Disposition", "inline");
+		next();
+	},
 	express.static(path.join(process.cwd(), "public/uploads/excel"))
 );
 

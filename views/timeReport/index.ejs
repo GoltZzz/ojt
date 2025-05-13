@@ -237,6 +237,16 @@
 											<i class="fas fa-download"></i>
 										</a>
 									<% } %>
+									<% if (report.author && report.author.toString() === currentUser._id.toString()) { %>
+										<button 
+											type="button" 
+											class="btn btn-sm btn-danger"
+											data-bs-toggle="modal"
+											data-bs-target="#deleteConfirmModal<%= report._id %>"
+											title="Delete Report">
+											<i class="fas fa-trash"></i>
+										</button>
+									<% } %>
 								</div>
 							</td>
 						</tr>
@@ -260,6 +270,46 @@
 		</div>
 	</div>
 </div>
+
+<!-- Delete Confirmation Modals -->
+<% if (timeReports && timeReports.length) { %>
+  <% timeReports.forEach(function(report) { %>
+    <% if (report.author && report.author.toString() === currentUser._id.toString()) { %>
+      <div class="modal fade" id="deleteConfirmModal<%= report._id %>" tabindex="-1" aria-labelledby="deleteConfirmModalLabel<%= report._id %>" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+              <h5 class="modal-title" id="deleteConfirmModalLabel<%= report._id %>">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Confirm Deletion
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>Are you sure you want to delete this time report?</p>
+              <div class="alert alert-warning">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                This action cannot be undone!
+              </div>
+              <% if (report.excelFile && report.excelFile.originalName) { %>
+                <p><strong>Excel File:</strong> <%= report.excelFile.originalName %></p>
+              <% } %>
+              <p><strong>Date:</strong> <%= new Date(report.date).toLocaleDateString() %></p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <form action="/timereport/<%= report._id %>?_method=DELETE" method="POST" class="d-inline">
+                <button type="submit" class="btn btn-danger">
+                  <i class="fas fa-trash me-1"></i> Delete
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  <% }) %>
+<% } %>
 
 <!-- Filter Toggle Script -->
 <script>
