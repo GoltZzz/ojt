@@ -3,24 +3,22 @@ import WeeklyReport from "../../models/weeklyReports.js";
 import TimeReport from "../../models/timeReport.js";
 import Notification from "../../models/notification.js";
 
-// Get pending reports for all report types
-export const getPendingReports = catchAsync(async (req, res) => {
-	// Get pending reports for each type
-	const pendingWeeklyReports = await WeeklyReport.find({
-		status: "pending",
+// Get all reports
+export const getReports = catchAsync(async (req, res) => {
+	// Get reports of each type
+	const weeklyReports = await WeeklyReport.find({
 		archived: false,
 	})
 		.populate("author", "username firstName middleName lastName")
 		.sort({ dateSubmitted: -1 });
 
-	const pendingTimeReports = await TimeReport.find({
-		status: "pending",
+	const timeReports = await TimeReport.find({
 		archived: false,
 	})
 		.populate("author", "username firstName middleName lastName")
 		.sort({ dateSubmitted: -1 });
 
-	// Format all pending reports
+	// Format all reports
 	const formatReports = (reports) => {
 		return reports.map((report) => {
 			if (report.author) {
@@ -38,16 +36,16 @@ export const getPendingReports = catchAsync(async (req, res) => {
 		});
 	};
 
-	const formattedWeeklyReports = formatReports(pendingWeeklyReports);
-	const formattedTimeReports = formatReports(pendingTimeReports);
+	const formattedWeeklyReports = formatReports(weeklyReports);
+	const formattedTimeReports = formatReports(timeReports);
 
-	// Combine all pending reports for display
-	const pendingReports = {
+	// Combine all reports for display
+	const reports = {
 		weeklyReports: formattedWeeklyReports,
 		timeReports: formattedTimeReports,
 	};
 
-	res.render("admin/pending-reports", { pendingReports });
+	res.render("admin/reports", { pendingReports: reports });
 });
 
 // Helper function to get report type name
@@ -74,80 +72,7 @@ const getModelForType = (type) => {
 	}
 };
 
-// Approve a report
-export const approveReport = catchAsync(async (req, res) => {
-	const { id, type } = req.params;
-	const { adminComments } = req.body;
-
-	const Model = getModelForType(type);
-	const report = await Model.findById(id).populate("author");
-
-	if (!report) {
-		req.flash("error", "Report not found");
-		return res.redirect("/admin/pending-reports");
-	}
-
-	report.status = "approved";
-	report.approvedBy = req.user._id;
-	report.adminComments = adminComments;
-	report.dateApproved = new Date();
-	await report.save();
-
-	// Create notification for the report author
-	if (report.author) {
-		const notification = new Notification({
-			recipient: report.author._id,
-			message: `Your ${getReportTypeName(type)} has been approved.`,
-			type: "success",
-			reportType: type,
-			reportId: report._id,
-			action: "approved",
-		});
-		await notification.save();
-	}
-
-	req.flash("success", "Report has been approved successfully");
-	res.redirect("/admin/pending-reports");
-});
-
-// Reject a report
-export const rejectReport = catchAsync(async (req, res) => {
-	const { id, type } = req.params;
-	const { adminComments } = req.body;
-
-	const Model = getModelForType(type);
-	const report = await Model.findById(id).populate("author");
-
-	if (!report) {
-		req.flash("error", "Report not found");
-		return res.redirect("/admin/pending-reports");
-	}
-
-	report.status = "rejected";
-	report.approvedBy = req.user._id;
-	report.adminComments = adminComments;
-	await report.save();
-
-	// Create notification for the report author
-	if (report.author) {
-		const notification = new Notification({
-			recipient: report.author._id,
-			message: `Your ${getReportTypeName(type)} has been rejected.`,
-			type: "error",
-			reportType: type,
-			reportId: report._id,
-			action: "rejected",
-		});
-		await notification.save();
-	}
-
-	req.flash("success", "Report has been rejected successfully");
-	res.redirect("/admin/pending-reports");
-});
-
 export default {
-	getPendingReports,
-	approveReport,
-	rejectReport,
+	getReports,
 	getReportTypeName,
 };

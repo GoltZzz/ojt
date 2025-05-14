@@ -55,15 +55,6 @@
 						value="<%= filters?.weekPeriod || '' %>" />
 				</div>
 				<div class="col-md-4 col-lg-2">
-					<label for="status" class="form-label">Status</label>
-					<select class="form-select" id="status" name="status">
-						<option value="" <%= !filters?.status ? 'selected' : '' %>>All Statuses</option>
-						<option value="pending" <%= filters?.status === 'pending' ? 'selected' : '' %>>Pending</option>
-						<option value="approved" <%= filters?.status === 'approved' ? 'selected' : '' %>>Approved</option>
-						<option value="rejected" <%= filters?.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
-					</select>
-				</div>
-				<div class="col-md-4 col-lg-2">
 					<label for="archived" class="form-label">Archive Status</label>
 					<select class="form-select" id="archived" name="archived">
 						<option value="" <%= !filters?.archived ? 'selected' : '' %>>All Reports</option>
@@ -146,7 +137,6 @@
 						</span>
 					</td>
 					<td>
-						<% if (report.status === 'approved') { %>
 						<div class="status-badge">
 							<span class="badge bg-success">
 								<i class="fas fa-check-circle me-1"></i> Approved
@@ -157,24 +147,6 @@
 							</small>
 							<% } %>
 						</div>
-						<% } else if (report.status === 'rejected') { %>
-						<div class="status-badge">
-							<span class="badge bg-danger">
-								<i class="fas fa-times-circle me-1"></i> Rejected
-							</span>
-							<% if (report.approvedBy) { %>
-							<small class="d-block text-muted mt-1">
-								by <%= report.approvedBy.username %>
-							</small>
-							<% } %>
-						</div>
-						<% } else { %>
-						<div class="status-badge">
-							<span class="badge bg-warning">
-								<i class="fas fa-clock me-1"></i> Pending
-							</span>
-						</div>
-						<% } %>
 						<% if (report.archived) { %>
 						<div class="status-badge mt-1">
 							<span class="badge bg-secondary">
@@ -192,7 +164,7 @@
 								title="View Report">
 								<i class="fas fa-eye"></i>
 							</a>
-							<% if (report.isCurrentUserReport && report.status === 'pending' && !report.archived) { %>
+							<% if (report.isCurrentUserReport && !report.archived) { %>
 								<button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Delete Report" data-custom-modal-target="deleteReportModal<%= report._id %>">
 									<i class="fas fa-trash"></i>
 								</button>
@@ -309,7 +281,7 @@
 <!-- Delete Report Modals -->
 <% if (WeeklyReports && WeeklyReports.length) { %>
 	<% WeeklyReports.forEach(report => { %>
-		<% if (report.isCurrentUserReport && report.status === 'pending') { %>
+		<% if (report.isCurrentUserReport && !report.archived) { %>
 			<!-- Delete Report Modal for <%= report._id %> -->
 			<div
 				class="custom-modal-overlay report-modal"
@@ -384,7 +356,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // For each delete modal, set up the password confirmation
     <% if (WeeklyReports && WeeklyReports.length) { %>
         <% WeeklyReports.forEach(function(report) { %>
-            <% if (report.isCurrentUserReport && report.status === 'pending') { %>
+            <% if (report.isCurrentUserReport && !report.archived) { %>
                 (function() {
                     const modalId = '<%= report._id %>';
                     const passwordInput = document.getElementById(`confirmPassword${modalId}`);

@@ -7,13 +7,7 @@ const router = express.Router();
 // Apply middleware to all routes
 router.use(isLoggedIn, isAdmin);
 
-// Get all pending reports
-router.get("/pending-reports", reportMonitoring.getPendingReports);
-
-// Approve a report
-router.post("/:type/:id/approve", reportMonitoring.approveReport);
-
-// Reject a report
-router.post("/:type/:id/reject", reportMonitoring.rejectReport);
+// Get all reports
+router.get("/reports", reportMonitoring.getReports);
 
 export default router;

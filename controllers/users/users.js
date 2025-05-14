@@ -86,8 +86,9 @@ const login = async (req, res, next) => {
 		console.log(`Initial redirectUrl: ${redirectUrl}`);
 
 		if (req.user && req.user.role === "admin") {
-			if (redirectUrl === "/dashboard") {
-				redirectUrl = "/admin";
+			// Always redirect admin users to weekly summary page unless they're trying to access another admin page
+			if (redirectUrl === "/dashboard" || !redirectUrl.startsWith("/admin/")) {
+				redirectUrl = "/admin/weekly-summary";
 				console.log(
 					`Changed redirectUrl to: ${redirectUrl} because user is admin`
 				);

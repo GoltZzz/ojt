@@ -7,13 +7,7 @@
     <div class="report-header mb-4">
         <h1>Weekly Report Details</h1>
         <div class="report-status">
-            <% if (WeeklyReports.status === 'pending') { %>
-                <span class="badge bg-warning text-dark">Pending Review</span>
-            <% } else if (WeeklyReports.status === 'approved') { %>
-                <span class="badge bg-success">Approved</span>
-            <% } else { %>
-                <span class="badge bg-danger">Rejected</span>
-            <% } %>
+            <span class="badge bg-success">Approved</span>
             <% if (WeeklyReports.archived) { %>
                 <span class="badge bg-secondary ms-2">Archived</span>
             <% } %>
@@ -135,25 +129,9 @@
                         <% } %>
 
                         <% if (currentUser.role === 'admin') { %>
-                            <% if (WeeklyReports.status === 'pending') { %>
-                                <button type="button" class="btn btn-success btn-block mb-2" data-custom-modal-target="approveModal">
-                                    <i class="fas fa-check"></i> Approve
-                                </button>
-                                <button type="button" class="btn btn-danger btn-block mb-2" data-custom-modal-target="rejectModal">
-                                    <i class="fas fa-times"></i> Reject
-                                </button>
-                            <% } %>
-                            
                             <% if (!WeeklyReports.archived) { %>
                                 <button type="button" class="btn btn-secondary btn-block mb-2" data-custom-modal-target="archiveReportModal">
                                     <i class="fas fa-archive"></i> Archive
-                                </button>
-                            <% } else if (WeeklyReports.archived) { %>
-                                <button type="button" class="btn btn-warning btn-block mb-2" data-custom-modal-target="unarchiveReportModal">
-                                    <i class="fas fa-box-open"></i> Unarchive
-                                </button>
-                                <button type="button" class="btn btn-danger btn-block mb-2" data-custom-modal-target="adminDeleteModal">
-                                    <i class="fas fa-trash"></i> Delete
                                 </button>
                             <% } %>
                         <% } %>
@@ -203,132 +181,6 @@
         </div>
     </div>
 </div>
-
-<!-- Include all the existing modals -->
-<!-- Approve Modal -->
-<% if (currentUser.role === 'admin' && WeeklyReports.status === 'pending') { %>
-<div
-    class="custom-modal-overlay report-modal"
-    id="approveModal"
-    role="dialog"
-    aria-labelledby="approveModalLabel">
-    <div class="custom-modal">
-        <div class="custom-modal-header approve-header">
-            <h5 class="custom-modal-title" id="approveModalLabel">
-                <i class="fas fa-check"></i>
-                Approve Report
-            </h5>
-            <button type="button" class="custom-modal-close" aria-label="Close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="custom-modal-body">
-            <div class="custom-modal-content">
-                <i class="fas fa-check-circle custom-modal-icon text-success"></i>
-                <h4>Approve this report?</h4>
-                <p class="text-muted mb-4">
-                    This action will mark the report as approved and notify the
-                    student.
-                </p>
-
-                <form
-                    action="/admin/reports/weeklyreport/<%= WeeklyReports._id %>/approve"
-                    method="POST"
-                    data-custom-message="Report has been approved successfully"
-                    data-action-type="approve"
-                    id="approveForm">
-                    <input type="hidden" name="status" value="approved" />
-                    <div class="form-group">
-                        <label for="approveComments" class="form-label">
-                            Comments (Optional):
-                        </label>
-                        <textarea
-                            class="form-control"
-                            id="approveComments"
-                            name="adminComments"
-                            rows="4"
-                            placeholder="Add any feedback or comments about this report"
-                            maxlength="500"></textarea>
-                        <span class="char-counter" id="approveCharCounter"
-                            >0/500 characters</span
-                        >
-                    </div>
-
-                    <div class="custom-modal-footer">
-                        <button
-                            type="submit"
-                            class="custom-modal-btn custom-modal-btn-success">
-                            <i class="fas fa-check me-2"></i> Approve Report
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Reject Modal -->
-<div
-    class="custom-modal-overlay report-modal"
-    id="rejectModal"
-    role="dialog"
-    aria-labelledby="rejectModalLabel">
-    <div class="custom-modal">
-        <div class="custom-modal-header reject-header">
-            <h5 class="custom-modal-title" id="rejectModalLabel">
-                <i class="fas fa-times"></i>
-                Reject Report
-            </h5>
-            <button type="button" class="custom-modal-close" aria-label="Close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="custom-modal-body">
-            <div class="custom-modal-content">
-                <i class="fas fa-times-circle custom-modal-icon text-danger"></i>
-                <h4>Reject this report?</h4>
-                <p class="text-muted mb-4">
-                    This action will mark the report as rejected and notify the
-                    student.
-                </p>
-
-                <form
-                    action="/admin/reports/weeklyreport/<%= WeeklyReports._id %>/reject"
-                    method="POST"
-                    data-custom-message="Report has been rejected"
-                    data-action-type="reject"
-                    id="rejectForm">
-                    <input type="hidden" name="status" value="rejected" />
-                    <div class="form-group">
-                        <label for="rejectComments" class="form-label required-field">
-                            Reason for Rejection
-                        </label>
-                        <textarea
-                            class="form-control"
-                            id="rejectComments"
-                            name="adminComments"
-                            rows="4"
-                            placeholder="Please provide a detailed explanation of why this report is being rejected"
-                            required
-                            maxlength="500"></textarea>
-                        <span class="char-counter" id="rejectCharCounter"
-                            >0/500 characters</span
-                        >
-                    </div>
-
-                    <div class="custom-modal-footer">
-                        <button
-                            type="submit"
-                            class="custom-modal-btn custom-modal-btn-danger">
-                            <i class="fas fa-times me-2"></i> Reject Report
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-<% } %>
 
 <!-- Archive Report Modal -->
 <div
@@ -388,45 +240,6 @@
     </div>
 </div>
 
-<!-- Unarchive Report Modal -->
-<div
-    class="custom-modal-overlay"
-    id="unarchiveReportModal"
-    role="dialog"
-    aria-labelledby="unarchiveReportModalLabel">
-    <div class="custom-modal">
-        <div class="custom-modal-header bg-success">
-            <h5 class="custom-modal-title" id="unarchiveReportModalLabel">
-                <i class="fas fa-box-open"></i>
-                Unarchive Report
-            </h5>
-            <button type="button" class="custom-modal-close" aria-label="Close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="custom-modal-body">
-            <div class="custom-modal-content">
-                <i class="fas fa-box-open custom-modal-icon text-success"></i>
-                <h4>Are you sure you want to unarchive this report?</h4>
-            </div>
-        </div>
-        <div class="custom-modal-footer">
-            <form
-                action="/admin/reports/weeklyreport/<%= WeeklyReports._id %>/unarchive"
-                method="POST"
-                data-custom-message="Report has been unarchived successfully"
-                data-action-type="unarchive"
-                class="d-inline unarchive-form">
-                <button
-                    type="submit"
-                    class="custom-modal-btn custom-modal-btn-success">
-                    <i class="fas fa-box-open me-1"></i> Unarchive Report
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-
 <!-- Password Confirmation Modal for Delete -->
 <% if (WeeklyReports.canDelete) { %>
 <div
@@ -476,53 +289,6 @@
                 class="d-inline">
                 <!-- Hidden input to store the password -->
                 <input type="hidden" id="hiddenPassword" name="password" value="" />
-                <button
-                    type="submit"
-                    class="custom-modal-btn custom-modal-btn-danger">
-                    <i class="fas fa-trash me-1"></i> Delete Report
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-<% } %>
-
-<!-- Admin Delete Modal (no password required) -->
-<% if (currentUser.role === 'admin' && WeeklyReports.archived) { %>
-<div
-    class="custom-modal-overlay report-modal"
-    id="adminDeleteModal"
-    role="dialog"
-    aria-labelledby="adminDeleteModalLabel">
-    <div class="custom-modal">
-        <div class="custom-modal-header bg-danger">
-            <h5 class="custom-modal-title" id="adminDeleteModalLabel">
-                <i class="fas fa-trash"></i>
-                Delete Report
-            </h5>
-            <button type="button" class="custom-modal-close" aria-label="Close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="custom-modal-body">
-            <div class="custom-modal-content">
-                <i
-                    class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
-                <h4>Are you sure you want to delete this report?</h4>
-                <p class="text-danger mt-3">
-                    <strong>This action cannot be undone.</strong>
-                </p>
-            </div>
-        </div>
-        <div class="custom-modal-footer">
-            <form
-                action="/weeklyreport/<%= WeeklyReports._id %>?_method=DELETE"
-                method="POST"
-                data-custom-message="Report has been deleted successfully"
-                data-action-type="delete"
-                class="d-inline delete-form">
-                <!-- Admin doesn't need to enter password -->
-                <input type="hidden" name="password" value="admin-bypass" />
                 <button
                     type="submit"
                     class="custom-modal-btn custom-modal-btn-danger">

@@ -120,6 +120,11 @@ const timeReportSchema = new Schema({
 		type: Date,
 		default: Date.now,
 	},
+	status: {
+		type: String,
+		enum: ["approved"],
+		default: "approved",
+	},
 	archived: {
 		type: Boolean,
 		default: false,

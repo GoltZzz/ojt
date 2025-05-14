@@ -140,31 +140,38 @@
 	// Add client-side validation for date range
 	document.addEventListener("DOMContentLoaded", function () {
 		const form = document.querySelector(".validated-form");
-		const weekStartDate = document.getElementById("weekStartDate");
-		const weekEndDate = document.getElementById("weekEndDate");
+		
+		// Only set up validation if the form exists and contains date inputs
+		if (form) {
+			const weekStartDate = document.getElementById("weekStartDate");
+			const weekEndDate = document.getElementById("weekEndDate");
+			
+			// Only add event listeners if both date elements exist
+			if (weekStartDate && weekEndDate) {
+				form.addEventListener("submit", function (event) {
+					const startDate = new Date(weekStartDate.value);
+					const endDate = new Date(weekEndDate.value);
 
-		form.addEventListener("submit", function (event) {
-			const startDate = new Date(weekStartDate.value);
-			const endDate = new Date(weekEndDate.value);
+					if (endDate < startDate) {
+						event.preventDefault();
+						weekEndDate.setCustomValidity(
+							"End date must be after or equal to start date"
+						);
+						weekEndDate.reportValidity();
+					} else {
+						weekEndDate.setCustomValidity("");
+					}
+				});
 
-			if (endDate < startDate) {
-				event.preventDefault();
-				weekEndDate.setCustomValidity(
-					"End date must be after or equal to start date"
-				);
-				weekEndDate.reportValidity();
-			} else {
-				weekEndDate.setCustomValidity("");
+				// Clear validation when dates change
+				weekStartDate.addEventListener("change", function () {
+					weekEndDate.setCustomValidity("");
+				});
+				weekEndDate.addEventListener("change", function () {
+					weekEndDate.setCustomValidity("");
+				});
 			}
-		});
-
-		// Clear validation when dates change
-		weekStartDate.addEventListener("change", function () {
-			weekEndDate.setCustomValidity("");
-		});
-		weekEndDate.addEventListener("change", function () {
-			weekEndDate.setCustomValidity("");
-		});
+		}
 	});
 	
 	// Confirm deletion of report

@@ -15,7 +15,10 @@ import {
 
 const router = express.Router();
 
-router.route("/").get(isLoggedIn, isAdmin, adminController.renderDashboard);
+// Redirect root admin route to weekly summary
+router.route("/").get(isLoggedIn, isAdmin, (req, res) => {
+	res.redirect("/admin/weekly-summary");
+});
 
 router.route("/users").get(isLoggedIn, isAdmin, adminController.renderUsers);
 
@@ -42,10 +45,6 @@ router
 router
 	.route("/users/:id/self-delete")
 	.post(isLoggedIn, selfDeleteController.verifySelfDelete);
-
-router
-	.route("/pending-reports")
-	.get(isLoggedIn, isAdmin, adminController.renderPendingReports);
 
 router
 	.route("/reports")

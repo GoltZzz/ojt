@@ -6,65 +6,6 @@ import Notification from "../../models/notification.js";
 import ExpressError from "../../utils/ExpressError.js";
 import { cloudinary } from "../../utils/cloudinary.js";
 
-const renderDashboard = catchAsync(async (req, res) => {
-	const totalUsers = await User.countDocuments({});
-
-	// Count reports by type
-	const totalWeeklyReports = await WeeklyReport.countDocuments({});
-	const totalTimeReports = await TimeReport.countDocuments({});
-
-	// Count pending reports by type
-	const pendingWeeklyReports = await WeeklyReport.countDocuments({
-		status: "pending",
-		archived: false,
-	});
-	const pendingTimeReports = await TimeReport.countDocuments({
-		status: "pending",
-		archived: false,
-	});
-
-	// Calculate total pending reports
-	const pendingReports = pendingWeeklyReports + pendingTimeReports;
-
-	// Get user statistics - EXCLUDE admin users
-	const users = await User.find({ role: "user" });
-	const userStats = await Promise.all(
-		users.map(async (user) => {
-			const weeklyReports = await WeeklyReport.countDocuments({
-				author: user._id,
-			});
-			const timeReports = await TimeReport.countDocuments({
-				author: user._id,
-			});
-
-			// Format user's full name
-			let fullName = user.firstName;
-			if (user.middleName && user.middleName.length > 0) {
-				const middleInitial = user.middleName.charAt(0).toUpperCase();
-				fullName += ` ${middleInitial}.`;
-			}
-			fullName += ` ${user.lastName}`;
-
-			return {
-				fullName,
-				weeklyReports,
-				timeReports,
-			};
-		})
-	);
-
-	const stats = {
-		totalUsers,
-		totalWeeklyReports,
-		totalTimeReports,
-		pendingReports,
-		pendingWeeklyReports,
-		pendingTimeReports,
-	};
-
-	res.render("admin/dashboard", { stats, userStats });
-});
-
 const renderUsers = catchAsync(async (req, res) => {
 	const users = await User.find({});
 	res.render("admin/users", { users });
@@ -91,119 +32,6 @@ const toggleUserRole = catchAsync(async (req, res) => {
 		`${user.username}'s role has been changed from ${oldRole} to ${user.role}`
 	);
 	res.redirect("/admin/users");
-});
-
-const renderPendingReports = catchAsync(async (req, res) => {
-	const {
-		reportType = "all",
-		studentName,
-		internshipSite,
-		weekPeriod,
-		sortBy = "dateSubmitted_desc",
-	} = req.query;
-	const filter = {
-		status: "pending",
-		archived: false,
-	};
-
-	if (studentName) {
-		filter.studentName = { $regex: studentName, $options: "i" };
-	}
-
-	if (internshipSite) {
-		filter.internshipSite = { $regex: internshipSite, $options: "i" };
-	}
-
-	if (weekPeriod) {
-		const weekDate = new Date(weekPeriod);
-		filter.$or = [
-			{ weekStartDate: { $lte: weekDate }, weekEndDate: { $gte: weekDate } },
-			{ date: weekDate },
-		];
-	}
-
-	let sortOptions = {};
-	if (sortBy) {
-		const [field, order] = sortBy.split("_");
-		sortOptions[field] = order === "asc" ? 1 : -1;
-	} else {
-		sortOptions = { dateSubmitted: -1 };
-	}
-
-	const formatReportNames = (reports) => {
-		return reports.map((report) => {
-			if (report.author) {
-				let fullName = report.author.firstName;
-				if (report.author.middleName && report.author.middleName.length > 0) {
-					const middleInitial = report.author.middleName
-						.charAt(0)
-						.toUpperCase();
-					fullName += ` ${middleInitial}.`;
-				}
-				fullName += ` ${report.author.lastName}`;
-				report.authorFullName = fullName;
-			}
-
-			if (report.needsRevision && report.status === "pending") {
-				report.isRevised = true;
-			}
-
-			report.reportTypeFormatted =
-				report.reportType || report.constructor.modelName;
-			return report;
-		});
-	};
-
-	let pendingReports = [];
-
-	if (reportType === "all" || reportType === "weeklyreport") {
-		const weeklyReports = await WeeklyReport.find(filter)
-			.populate("author")
-			.sort(sortOptions);
-
-		weeklyReports.forEach((report) => {
-			report.reportType = "weeklyreport";
-		});
-		pendingReports = [...pendingReports, ...weeklyReports];
-	}
-
-	if (reportType === "all" || reportType === "timereport") {
-		const timeReports = await TimeReport.find(filter)
-			.populate("author")
-			.sort(sortOptions);
-
-		timeReports.forEach((report) => {
-			report.reportType = "timereport";
-		});
-		pendingReports = [...pendingReports, ...timeReports];
-	}
-
-	if (sortBy) {
-		const [field, order] = sortBy.split("_");
-		const sortMultiplier = order === "asc" ? 1 : -1;
-
-		pendingReports.sort((a, b) => {
-			if (field === "dateSubmitted") {
-				return (
-					(new Date(a.dateSubmitted) - new Date(b.dateSubmitted)) *
-					sortMultiplier
-				);
-			}
-			return 0;
-		});
-	}
-
-	const formattedReports = formatReportNames(pendingReports);
-
-	res.render("admin/pending-reports", {
-		pendingReports: formattedReports,
-		filters: req.query,
-		reportTypes: [
-			{ value: "all", label: "All Reports" },
-			{ value: "weeklyreport", label: "Weekly Reports" },
-			{ value: "timereport", label: "Time Reports" },
-		],
-	});
 });
 
 const renderAllReports = catchAsync(async (req, res) => {
@@ -307,7 +135,6 @@ const renderAllReports = catchAsync(async (req, res) => {
 	if (reportType === "all" || reportType === "timereport") {
 		const timeReports = await TimeReport.find(filter)
 			.populate("author")
-			.populate("approvedBy")
 			.sort(sortOptions);
 
 		timeReports.forEach((report) => {
@@ -436,7 +263,6 @@ const renderArchivedReports = catchAsync(async (req, res) => {
 	if (reportType === "all" || reportType === "timereport") {
 		const timeReports = await TimeReport.find(filter)
 			.populate("author")
-			.populate("approvedBy")
 			.sort(sortOptions);
 
 		timeReports.forEach((report) => {
@@ -621,7 +447,13 @@ const registerUser = catchAsync(async (req, res) => {
 		const registeredUser = await User.register(user, password);
 		await registeredUser.save();
 		req.flash("success", `User ${username} has been registered successfully`);
-		return res.redirect("/admin/users");
+
+		// Check if the newly registered user is an admin and redirect accordingly
+		if (registeredUser.role === "admin") {
+			return res.redirect("/admin/weekly-summary");
+		} else {
+			return res.redirect("/admin/users");
+		}
 	} catch (error) {
 		// If there was an error and we uploaded an image, delete it from Cloudinary
 		if (req.file && req.file.path) {
@@ -654,10 +486,8 @@ const getReportTypeName = (type) => {
 };
 
 export default {
-	renderDashboard,
 	renderUsers,
 	toggleUserRole,
-	renderPendingReports,
 	renderAllReports,
 	renderArchivedReports,
 	deleteUser,

@@ -175,6 +175,15 @@ export const renderNewForm = async (req, res) => {
 				{ weekId: currentWeek._id },
 			],
 		}).lean();
+
+		// If user already has a report for this week, redirect to index page
+		if (existingReport) {
+			req.flash(
+				"info",
+				`You have already submitted a report for Week ${currentWeek.weekNumber}. Please delete your existing report if you want to submit a new one.`
+			);
+			return res.redirect("/weeklyreport");
+		}
 	}
 
 	res.render("reports/new", {
@@ -230,7 +239,7 @@ export const createReport = catchAsync(async (req, res) => {
 				"error",
 				"You have already submitted a report for this week. Please delete your existing report if you want to submit a new one."
 			);
-			return res.redirect("/weeklyreport/new");
+			return res.redirect("/weeklyreport");
 		}
 	} catch (error) {
 		console.error("Error checking for existing reports:", error);
@@ -287,7 +296,7 @@ export const createReport = catchAsync(async (req, res) => {
 		weekEndDate: currentWeek.weekEndDate,
 		docxFile,
 		pdfFile,
-		status: "pending",
+		status: "approved",
 		dateSubmitted: now.toDate(),
 	});
 
@@ -306,7 +315,7 @@ export const createReport = catchAsync(async (req, res) => {
 				"error",
 				"You have already submitted a report for this week. Please delete your existing report if you want to submit a new one."
 			);
-			return res.redirect("/weeklyreport/new");
+			return res.redirect("/weeklyreport");
 		}
 
 		console.error("Error saving weekly report:", error);
@@ -368,18 +377,11 @@ export const showReport = catchAsync(async (req, res, next) => {
 		req.user &&
 		WeeklyReports.author._id.toString() === req.user._id.toString();
 
-	// Add a flag to indicate if the report can be deleted (user is author, report is not archived, and not rejected)
-	WeeklyReports.canDelete =
-		WeeklyReports.isAuthor &&
-		!WeeklyReports.archived &&
-		WeeklyReports.status !== "rejected";
+	// Add a flag to indicate if the report can be deleted (user is author and report is not archived)
+	WeeklyReports.canDelete = WeeklyReports.isAuthor && !WeeklyReports.archived;
 
-	// Add a flag to indicate if the report can be edited (user is author, report is pending or rejected, and not archived)
-	WeeklyReports.canEdit =
-		WeeklyReports.isAuthor &&
-		(WeeklyReports.status === "pending" ||
-			WeeklyReports.status === "rejected") &&
-		!WeeklyReports.archived;
+	// Add a flag to indicate if the report can be edited (user is author and not archived)
+	WeeklyReports.canEdit = WeeklyReports.isAuthor && !WeeklyReports.archived;
 
 	res.render("reports/show", { WeeklyReports });
 });

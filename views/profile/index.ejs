@@ -144,24 +144,11 @@
 						</div>
 					</a>
 
-					<a href="/admin/pending-reports" class="admin-stat-item">
-						<div class="stat-icon bg-warning-light">
-							<i class="fas fa-clock text-warning"></i>
-						</div>
-						<div class="stat-info">
-							<h4>Pending Reports</h4>
-							<span class="stat-number"><%= pendingReportsCount || 0 %></span>
-						</div>
-					</a>
-
 					<a href="/admin/reports" class="admin-stat-item">
-						<div class="stat-icon bg-success-light">
-							<i class="fas fa-file-alt text-success"></i>
+						<div class="admin-stat-icon">
+							<i class="fas fa-clipboard-check"></i>
 						</div>
-						<div class="stat-info">
-							<h4>Total Reports</h4>
-							<span class="stat-number"><%= totalReportsCount || 0 %></span>
-						</div>
+						<span class="admin-stat-label">Reports</span>
 					</a>
 
 					<a href="/admin/archived-reports" class="admin-stat-item">

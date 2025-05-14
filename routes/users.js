@@ -49,7 +49,11 @@ router
 							? "Welcome Admin! Your account has been created with administrator privileges"
 							: "Welcome! Your account has been created";
 					req.flash("success", welcomeMessage);
-					res.redirect(userCount === 0 ? "/admin" : "/dashboard");
+					res.redirect(
+						registeredUser.role === "admin"
+							? "/admin/weekly-summary"
+							: "/dashboard"
+					);
 				});
 			} catch (error) {
 				if (req.file) {

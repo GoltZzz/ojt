@@ -16,18 +16,14 @@ const renderDashboard = catchAsync(async (req, res) => {
 			archived: false,
 		});
 
-		// Count pending reports
+		// Count active reports for the user (since all are approved by default)
 		const pendingWeeklyReportsCount = await WeeklyReport.countDocuments({
 			author: req.user._id,
-			status: "pending",
 			archived: false,
 		});
 
-		const pendingTimeReportsCount = await TimeReport.countDocuments({
-			author: req.user._id,
-			status: "pending",
-			archived: false,
-		});
+		// TimeReports don't have pending status anymore
+		const pendingTimeReportsCount = 0;
 
 		// Calculate total pending reports
 		const pendingReportsCount =

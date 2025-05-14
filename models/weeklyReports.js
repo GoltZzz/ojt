@@ -58,8 +58,8 @@ const weeklyReportSchema = new Schema({
 	},
 	status: {
 		type: String,
-		enum: ["pending", "approved", "rejected"],
-		default: "pending",
+		enum: ["approved"],
+		default: "approved",
 	},
 	archived: {
 		type: Boolean,

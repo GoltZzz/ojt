@@ -21,11 +21,7 @@
 							<% if (timeReport.status) { %>
 							<p>
 								<strong>Status:</strong>
-								<span
-									class="badge <%= timeReport.status === 'approved' ? 'bg-success' : timeReport.status === 'rejected' ? 'bg-danger' : timeReport.status === 'revised' ? 'bg-warning' : 'bg-primary' %>">
-									<%= timeReport.status.charAt(0).toUpperCase() +
-									timeReport.status.slice(1) %>
-								</span>
+								<span class="badge bg-success">Approved</span>
 							</p>
 							<% } %>
 						</div>

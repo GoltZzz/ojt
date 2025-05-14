@@ -39,10 +39,10 @@ const renderProfile = catchAsync(async (req, res) => {
 
 		// Count pending reports across all types
 		const pendingWeeklyReports = await WeeklyReport.countDocuments({
-			status: "pending",
+			archived: false,
 		});
 		const pendingTimeReports = await TimeReport.countDocuments({
-			status: "pending",
+			archived: false,
 		});
 
 		// Get notifications for revised reports

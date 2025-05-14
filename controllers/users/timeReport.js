@@ -244,7 +244,7 @@ const uploadXlsxAndShowExcel = async (req, res) => {
 			weekEndDate: currentWeek.weekEndDate,
 			studentName: fullName,
 			internshipSite: req.user.internshipSite || "",
-			status: "submitted",
+			status: "approved",
 			excelFile: {
 				filename: req.file.filename,
 				originalName: req.file.originalname,
