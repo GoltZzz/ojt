@@ -132,8 +132,11 @@
 			<i class="fa-solid fa-list-check me-2" style="color: var(--accent)"></i
 			>Weekly Submission Status
 		</h3>
+
 		<div class="table-responsive">
-			<table class="table table-bordered table-hover align-middle">
+			<table
+				class="table table-bordered table-hover align-middle"
+				id="summaryTable">
 				<thead>
 					<tr>
 						<th>Week #</th>
@@ -148,7 +151,7 @@
 				</thead>
 				<tbody>
 					<% weeks.forEach((week, i) => { %>
-					<tr>
+					<tr class="week-row" data-week="<%= i + 1 %>">
 						<td class="fw-bold">Week <%= i + 1 %></td>
 						<td>
 							<span class="badge bg-light text-dark border"
@@ -156,10 +159,13 @@
 							>
 						</td>
 						<% students.forEach(student => { %>
-						<td class="text-center">
+						<td
+							class="text-center student-cell"
+							data-student="<%= student.firstName %> <%= student.lastName %>"
+							data-date="<%= week.startLabel %>">
 							<% const status = week.submissions[student._id]; %> <% if (status
 							&& status.submitted) { %>
-							<div>
+							<div class="submission-status" data-status="<%= status.status %>">
 								<% if (status.status === 'approved') { %>
 								<span class="text-success"
 									><i class="fas fa-check-circle fa-lg"></i
@@ -181,7 +187,7 @@
 								</small>
 							</div>
 							<% } else { %>
-							<div>
+							<div class="submission-status" data-status="notSubmitted">
 								<span class="text-danger"
 									><i class="fa-solid fa-xmark"></i
 								></span>

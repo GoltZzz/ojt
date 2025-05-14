@@ -17,10 +17,6 @@
 					<select class="form-select" id="reportType" name="reportType">
 						<option value="all" <%= filters && filters.reportType === 'all' ? 'selected' : '' %>>All Types</option>
 						<option value="weeklyreport" <%= filters && filters.reportType === 'weeklyreport' ? 'selected' : '' %>>Weekly Report</option>
-						<option value="weeklyprogress" <%= filters && filters.reportType === 'weeklyprogress' ? 'selected' : '' %>>Weekly Progress Report</option>
-						<option value="trainingschedule" <%= filters && filters.reportType === 'trainingschedule' ? 'selected' : '' %>>Training Schedule</option>
-						<option value="learningoutcome" <%= filters && filters.reportType === 'learningoutcome' ? 'selected' : '' %>>Learning Outcome</option>
-						<option value="dailyattendance" <%= filters && filters.reportType === 'dailyattendance' ? 'selected' : '' %>>Daily Attendance</option>
 						<option value="timereport" <%= filters && filters.reportType === 'timereport' ? 'selected' : '' %>>Time Report</option>
 					</select>
 				</div>
@@ -49,15 +45,6 @@
 						class="form-control"
 						id="weekPeriod"
 						name="weekPeriod" />
-				</div>
-				<div class="col-md-3">
-					<label for="status" class="form-label">Status</label>
-					<select class="form-select" id="status" name="status">
-						<option value="">All Statuses</option>
-						<option value="pending">Pending</option>
-						<option value="approved">Approved</option>
-						<option value="rejected">Rejected</option>
-					</select>
 				</div>
 				<div class="col-md-3">
 					<label for="archived" class="form-label">Archived</label>
@@ -98,7 +85,6 @@
 						<th>Internship Site</th>
 						<th>Period</th>
 						<th>Status</th>
-						<th>Reviewed By</th>
 						<th>Actions</th>
 					</tr>
 				</thead>
@@ -142,16 +128,6 @@
 							<span class="badge bg-success">Approved</span>
 							<% } else { %>
 							<span class="badge bg-danger">Rejected</span>
-							<% } %>
-						</td>
-						<td>
-							<% if (report.approvedBy) { %> <%= report.approvedBy.username %>
-							<small class="text-muted d-block">
-								<%= report.approvalDate ?
-								report.approvalDate.toLocaleDateString() : 'N/A' %>
-							</small>
-							<% } else { %>
-							<span class="text-muted">Not reviewed</span>
 							<% } %>
 						</td>
 						<td>

@@ -17,10 +17,6 @@
 					<select class="form-select" id="reportType" name="reportType">
 						<option value="all" <%= filters && filters.reportType === 'all' ? 'selected' : '' %>>All Types</option>
 						<option value="weeklyreport" <%= filters && filters.reportType === 'weeklyreport' ? 'selected' : '' %>>Weekly Report</option>
-						<option value="weeklyprogress" <%= filters && filters.reportType === 'weeklyprogress' ? 'selected' : '' %>>Weekly Progress Report</option>
-						<option value="trainingschedule" <%= filters && filters.reportType === 'trainingschedule' ? 'selected' : '' %>>Training Schedule</option>
-						<option value="learningoutcomes" <%= filters && filters.reportType === 'learningoutcomes' || filters && filters.reportType === 'learningoutcome' ? 'selected' : '' %>>Learning Outcome</option>
-						<option value="dailyattendance" <%= filters && filters.reportType === 'dailyattendance' ? 'selected' : '' %>>Daily Attendance</option>
 						<option value="timereport" <%= filters && filters.reportType === 'timereport' ? 'selected' : '' %>>Time Report</option>
 					</select>
 				</div>
@@ -49,15 +45,6 @@
 						class="form-control"
 						id="weekPeriod"
 						name="weekPeriod" />
-				</div>
-				<div class="col-md-3">
-					<label for="status" class="form-label">Status</label>
-					<select class="form-select" id="status" name="status">
-						<option value="">All Statuses</option>
-						<option value="pending">Pending</option>
-						<option value="approved">Approved</option>
-						<option value="rejected">Rejected</option>
-					</select>
 				</div>
 				<div class="col-md-3">
 					<label for="sortBy" class="form-label">Sort By</label>
