@@ -9,6 +9,8 @@ import {
 	startWeeklyLoop,
 	stopWeeklyLoop,
 	restartWeeklyLoop,
+	isWeeklyLoopActive,
+	forceCreateNextWeek,
 } from "../../controllers/admin/weeklySummary.js";
 
 const router = express.Router();
@@ -63,5 +65,23 @@ router.get("/weekly-summary", isLoggedIn, isAdmin, getWeeklySummary);
 router.post("/weekly-summary/start", isLoggedIn, isAdmin, startWeeklyLoop);
 router.post("/weekly-summary/stop", isLoggedIn, isAdmin, stopWeeklyLoop);
 router.post("/weekly-summary/restart", isLoggedIn, isAdmin, restartWeeklyLoop);
+
+router.post("/force-next-week", isLoggedIn, isAdmin, async (req, res) => {
+	try {
+		const success = await forceCreateNextWeek();
+		if (success) {
+			req.flash("success", "Successfully created the next week manually");
+		} else {
+			req.flash(
+				"error",
+				"Failed to create next week. Check if weekly loop is active."
+			);
+		}
+	} catch (error) {
+		console.error("Error while manually creating next week:", error);
+		req.flash("error", "An error occurred while creating the next week");
+	}
+	res.redirect("/admin/weekly-summary");
+});
 
 export default router;

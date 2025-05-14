@@ -39,7 +39,15 @@
                         </div>
                         <div class="info-item">
                             <span class="label">Week Number:</span>
-                            <span class="value">Week <%= WeeklyReports.weekNumber %></span>
+                            <span class="value">
+                                <% if (WeeklyReports.weekNumber) { %>
+                                    Week <%= WeeklyReports.weekNumber %>
+                                <% } else if (WeeklyReports.weekId && WeeklyReports.weekId.weekNumber) { %>
+                                    Week <%= WeeklyReports.weekId.weekNumber %>
+                                <% } else { %>
+                                    Week Unknown
+                                <% } %>
+                            </span>
                         </div>
                         <div class="info-item">
                             <span class="label">Period:</span>

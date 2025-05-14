@@ -211,11 +211,74 @@ export async function restartWeeklyLoop(req, res) {
 // Cron-like logic: create next week on Sunday if loopActive
 export async function checkAndCreateNextWeek() {
 	const settings = await getSettings();
-	if (!settings.weeklyLoopActive) return;
 	const now = dayjs();
+	console.log(
+		`[Weekly Check] Current date: ${now.format(
+			"YYYY-MM-DD"
+		)}, Day: ${now.day()} (0=Sunday, 1=Monday, etc.)`
+	);
+
+	if (!settings.weeklyLoopActive) {
+		console.log(
+			"[Weekly Check] Weekly loop is not active, skipping week creation"
+		);
+		return;
+	}
+
 	if (now.day() === 0) {
 		// 0 is Sunday
-		await createNextWeek();
+		console.log("[Weekly Check] It's Sunday, creating next week...");
+		try {
+			const newWeek = await createNextWeek();
+			if (newWeek) {
+				console.log(
+					`[Weekly Check] Successfully created Week ${
+						newWeek.weekNumber
+					}: ${dayjs(newWeek.weekStartDate).format("YYYY-MM-DD")} to ${dayjs(
+						newWeek.weekEndDate
+					).format("YYYY-MM-DD")}`
+				);
+			} else {
+				console.log(
+					"[Weekly Check] Week was not created, it may already exist or there was an issue"
+				);
+			}
+		} catch (error) {
+			console.error("[Weekly Check] Error creating next week:", error);
+		}
+	} else {
+		console.log(
+			`[Weekly Check] Not Sunday (day ${now.day()}), skipping week creation`
+		);
+	}
+}
+
+// Manual function to force create the next week regardless of day
+export async function forceCreateNextWeek() {
+	const settings = await getSettings();
+	if (!settings.weeklyLoopActive) {
+		console.log("Weekly loop is not active. Cannot create next week.");
+		return false;
+	}
+
+	try {
+		const newWeek = await createNextWeek();
+		if (newWeek) {
+			console.log(
+				`Manually created Week ${newWeek.weekNumber}: ${dayjs(
+					newWeek.weekStartDate
+				).format("YYYY-MM-DD")} to ${dayjs(newWeek.weekEndDate).format(
+					"YYYY-MM-DD"
+				)}`
+			);
+			return true;
+		} else {
+			console.log("Failed to create next week or week already exists");
+			return false;
+		}
+	} catch (error) {
+		console.error("Error creating next week:", error);
+		return false;
 	}
 }
 

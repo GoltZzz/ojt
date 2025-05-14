@@ -98,6 +98,11 @@ export const index = catchAsync(async (req, res) => {
 				req.user && report.author._id.equals(req.user._id);
 		}
 
+		// Ensure week number is set
+		if (!report.weekNumber && report.weekId && report.weekId.weekNumber) {
+			report.weekNumber = report.weekId.weekNumber;
+		}
+
 		// Format dates for display using weekId
 		if (report.weekId && report.weekId.weekStartDate) {
 			report.formattedWeekPeriod = `${new Date(
@@ -315,11 +320,22 @@ export const showReport = catchAsync(async (req, res, next) => {
 	const WeeklyReports = await WeeklyReport.findById(id)
 		.populate("approvedBy", "username firstName middleName lastName")
 		.populate("author", "username firstName middleName lastName")
+		.populate("weekId")
 		.lean();
 	if (!WeeklyReports) {
 		req.flash("error", "Cannot find that weekly report!");
 		return res.redirect("/weeklyreport");
 	}
+
+	// Ensure week number is properly set for display
+	if (
+		!WeeklyReports.weekNumber &&
+		WeeklyReports.weekId &&
+		WeeklyReports.weekId.weekNumber
+	) {
+		WeeklyReports.weekNumber = WeeklyReports.weekId.weekNumber;
+	}
+
 	// Make sure archived status is available in the template
 	WeeklyReports.weekStartDate = WeeklyReports.weekStartDate
 		? WeeklyReports.weekStartDate.toLocaleDateString()

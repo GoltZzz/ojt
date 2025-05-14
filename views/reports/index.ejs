@@ -131,12 +131,20 @@
 						</div>
 					</td>
 					<td><%= report.internshipSite %></td>
-						<td>Week <%= report.weekNumber %></td>
-						<td>
-							<span class="text-nowrap">
-								<%= report.formattedWeekPeriod %>
-							</span>
-						</td>
+					<td>
+						<% if (report.weekNumber) { %>
+							Week <%= report.weekNumber %>
+						<% } else if (report.weekId && report.weekId.weekNumber) { %>
+							Week <%= report.weekId.weekNumber %>
+						<% } else { %>
+							Week Unknown
+						<% } %>
+					</td>
+					<td>
+						<span class="text-nowrap">
+							<%= report.formattedWeekPeriod %>
+						</span>
+					</td>
 					<td>
 						<% if (report.status === 'approved') { %>
 						<div class="status-badge">

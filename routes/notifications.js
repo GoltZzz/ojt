@@ -16,21 +16,38 @@ router.get("/", isLoggedIn, (req, res, next) => {
 
 	console.log("Is API request:", isApiRequest);
 
+	// Always set the content type for this route
+	res.setHeader("Content-Type", "application/json");
+
+	// Check if user is authenticated again (double-check)
+	if (!req.isAuthenticated()) {
+		console.log("User not authenticated in notifications route");
+		return res.status(401).json({ error: "Authentication required" });
+	}
+
 	if (isApiRequest) {
-		// Set the proper content type for JSON responses
-		res.setHeader("Content-Type", "application/json");
+		// Process the API request
 		return notificationsController.getUserNotifications(req, res, next);
 	}
 
 	// If it's a browser navigation (not AJAX), redirect to dashboard
 	console.log("Not an API call - redirecting to dashboard");
+	res.setHeader("Content-Type", "text/html"); // Reset content type for redirect
 	return res.redirect("/dashboard");
 });
 
 // Mark a notification as read
-router.put("/:id/read", isLoggedIn, notificationsController.markAsRead);
+router.put("/:id/read", isLoggedIn, (req, res, next) => {
+	// Set content type
+	res.setHeader("Content-Type", "application/json");
+	return notificationsController.markAsRead(req, res, next);
+});
 
 // Mark all notifications as read
-router.put("/read-all", isLoggedIn, notificationsController.markAllAsRead);
+router.put("/read-all", isLoggedIn, (req, res, next) => {
+	// Set content type
+	res.setHeader("Content-Type", "application/json");
+	return notificationsController.markAllAsRead(req, res, next);
+});
 
 export default router;

@@ -40,22 +40,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// Fetch notifications
 	function fetchNotifications() {
-		fetch("/api/notifications")
+		fetch("/api/notifications", {
+			headers: {
+				Accept: "application/json",
+				"X-Requested-With": "XMLHttpRequest",
+			},
+			credentials: "same-origin", // Include cookies for session
+		})
 			.then((response) => {
 				// Check if response is OK and is JSON
 				if (!response.ok) {
+					if (response.status === 401) {
+						// Session expired
+						console.log("Session expired, will redirect to login");
+						setTimeout(() => {
+							window.location.href = "/login";
+						}, 2000);
+						throw new Error("Session expired. Redirecting to login page.");
+					}
 					throw new Error(`HTTP error! Status: ${response.status}`);
 				}
 
 				// Check content type to ensure it's JSON
 				const contentType = response.headers.get("content-type");
 				if (!contentType || !contentType.includes("application/json")) {
+					console.error("Response is not JSON. Content-Type:", contentType);
 					throw new Error("Response is not JSON. Session might have expired.");
 				}
 
 				return response.json();
 			})
 			.then((data) => {
+				if (data.error) {
+					throw new Error(data.error);
+				}
 				console.log("Fetched notifications:", data);
 				notifications = data;
 				updateNotificationUI();
@@ -63,19 +81,29 @@ document.addEventListener("DOMContentLoaded", function () {
 			.catch((error) => {
 				console.error("Error fetching notifications:", error);
 				// If there's an error, show a message in the notification area
+				const errorMessage =
+					error.message === "Session expired. Redirecting to login page."
+						? "Your session has expired. Redirecting to login page..."
+						: "Failed to load notifications. Please refresh or log in again.";
+
 				if (notificationList) {
 					notificationList.innerHTML = `<div class="notification-empty">
 						<i class="fas fa-exclamation-triangle mb-2"></i>
-						<p>Failed to load notifications. Please refresh or log in again.</p>
+						<p>${errorMessage}</p>
 					</div>`;
 				}
 				if (mobileNotificationList) {
-					mobileNotificationList.innerHTML = notificationList.innerHTML;
+					mobileNotificationList.innerHTML = notificationList
+						? notificationList.innerHTML
+						: `<div class="notification-empty">
+						<i class="fas fa-exclamation-triangle mb-2"></i>
+						<p>${errorMessage}</p>
+					</div>`;
 				}
 				if (profileNotificationList) {
 					profileNotificationList.innerHTML = `<div class="notification-empty">
 						<i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
-						<p>Failed to load notifications. Please refresh or log in again.</p>
+						<p>${errorMessage}</p>
 					</div>`;
 				}
 			});
