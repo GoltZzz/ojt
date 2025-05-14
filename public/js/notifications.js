@@ -41,13 +41,44 @@ document.addEventListener("DOMContentLoaded", function () {
 	// Fetch notifications
 	function fetchNotifications() {
 		fetch("/api/notifications")
-			.then((response) => response.json())
+			.then((response) => {
+				// Check if response is OK and is JSON
+				if (!response.ok) {
+					throw new Error(`HTTP error! Status: ${response.status}`);
+				}
+
+				// Check content type to ensure it's JSON
+				const contentType = response.headers.get("content-type");
+				if (!contentType || !contentType.includes("application/json")) {
+					throw new Error("Response is not JSON. Session might have expired.");
+				}
+
+				return response.json();
+			})
 			.then((data) => {
 				console.log("Fetched notifications:", data);
 				notifications = data;
 				updateNotificationUI();
 			})
-			.catch((error) => console.error("Error fetching notifications:", error));
+			.catch((error) => {
+				console.error("Error fetching notifications:", error);
+				// If there's an error, show a message in the notification area
+				if (notificationList) {
+					notificationList.innerHTML = `<div class="notification-empty">
+						<i class="fas fa-exclamation-triangle mb-2"></i>
+						<p>Failed to load notifications. Please refresh or log in again.</p>
+					</div>`;
+				}
+				if (mobileNotificationList) {
+					mobileNotificationList.innerHTML = notificationList.innerHTML;
+				}
+				if (profileNotificationList) {
+					profileNotificationList.innerHTML = `<div class="notification-empty">
+						<i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+						<p>Failed to load notifications. Please refresh or log in again.</p>
+					</div>`;
+				}
+			});
 	}
 
 	// Update notification UI
@@ -369,4 +400,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// Fetch notifications every 30 seconds
 	setInterval(fetchNotifications, 30000);
+
+	// Add event listener to handle profile image loading errors
+	document.addEventListener("DOMContentLoaded", function () {
+		// Find all profile images
+		const profileImages = document.querySelectorAll(
+			'img[src*="cloudinary.com"]'
+		);
+
+		// Add error handler to each image
+		profileImages.forEach((img) => {
+			img.onerror = function () {
+				// Replace with local fallback image
+				this.src = "/image/default-profile.png";
+				// Remove the onerror handler to prevent infinite loops
+				this.onerror = null;
+			};
+		});
+	});
 });

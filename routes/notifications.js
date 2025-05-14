@@ -7,12 +7,18 @@ const router = express.Router();
 // Get all notifications for the current user
 router.get("/", isLoggedIn, (req, res, next) => {
 	console.log("Notifications API route called with method:", req.method);
-	console.log("Headers:", req.headers);
-	console.log("Is XHR:", req.xhr);
-	console.log("Is AJAX:", req.headers["x-requested-with"] === "XMLHttpRequest");
 
-	// Continue with controller if it's an API request
-	if (req.xhr || req.headers["x-requested-with"] === "XMLHttpRequest") {
+	// Check if it's an API request (XHR or has the appropriate header)
+	const isApiRequest =
+		req.xhr ||
+		req.headers["x-requested-with"] === "XMLHttpRequest" ||
+		req.headers["accept"]?.includes("application/json");
+
+	console.log("Is API request:", isApiRequest);
+
+	if (isApiRequest) {
+		// Set the proper content type for JSON responses
+		res.setHeader("Content-Type", "application/json");
 		return notificationsController.getUserNotifications(req, res, next);
 	}
 

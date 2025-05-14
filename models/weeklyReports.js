@@ -37,6 +37,10 @@ const weeklyReportSchema = new Schema({
 		ref: "Week",
 		required: true,
 	},
+	weekNumber: {
+		type: Number,
+		required: true,
+	},
 	weekStartDate: {
 		type: Date,
 		required: true,
@@ -105,5 +109,8 @@ const weeklyReportSchema = new Schema({
 		generatedFrom: String,
 	},
 });
+
+// Create a compound index to enforce one report per author per week
+weeklyReportSchema.index({ author: 1, weekNumber: 1 }, { unique: true });
 
 export default mongoose.model("WeeklyReport", weeklyReportSchema);

@@ -160,6 +160,18 @@ export const renderNewForm = async (req, res) => {
 		? dayjs(currentWeek.weekEndDate).utc().local().format("YYYY-MM-DD")
 		: "";
 
+	// Check if user already has a report for this week
+	let existingReport = null;
+	if (currentWeek) {
+		existingReport = await WeeklyReport.findOne({
+			author: req.user._id,
+			$or: [
+				{ weekNumber: currentWeek.weekNumber },
+				{ weekId: currentWeek._id },
+			],
+		}).lean();
+	}
+
 	res.render("reports/new", {
 		fullName,
 		internshipSite,
@@ -168,6 +180,7 @@ export const renderNewForm = async (req, res) => {
 		loopActive,
 		weekStartLocal,
 		weekEndLocal,
+		existingReport,
 	});
 };
 
@@ -180,22 +193,46 @@ export const createReport = catchAsync(async (req, res) => {
 			: false;
 
 	// Check if weekly loop is active and it's Saturday
-	if (!loopActive || !currentWeek || now.day() !== 6) {
+	if (!loopActive || !currentWeek) {
 		req.flash(
 			"error",
-			"You can only submit a report for the current week and only on Saturday"
+			"Weekly reporting is not active. Please wait for your admin to start the weekly loop."
 		);
 		return res.redirect("/weeklyreport/new");
 	}
 
-	// Prevent duplicate submission for this week
-	const existing = await WeeklyReport.findOne({
-		author: req.user._id,
-		weekNumber: currentWeek.weekNumber,
-	});
+	// Check if it's Saturday (day 6)
+	if (now.day() !== 6) {
+		req.flash("error", "You can only submit a report on Saturday.");
+		return res.redirect("/weeklyreport/new");
+	}
 
-	if (existing) {
-		req.flash("error", "You have already submitted a report for this week.");
+	// Prevent duplicate submission for this week - improved check using multiple criteria
+	try {
+		const existing = await WeeklyReport.findOne({
+			author: req.user._id,
+			$or: [
+				{ weekNumber: currentWeek.weekNumber },
+				{ weekId: currentWeek._id },
+			],
+		});
+
+		if (existing) {
+			console.log(
+				`Duplicate report submission detected for user ${req.user._id}, week ${currentWeek.weekNumber}`
+			);
+			req.flash(
+				"error",
+				"You have already submitted a report for this week. Please delete your existing report if you want to submit a new one."
+			);
+			return res.redirect("/weeklyreport/new");
+		}
+	} catch (error) {
+		console.error("Error checking for existing reports:", error);
+		req.flash(
+			"error",
+			"An error occurred while checking for existing reports. Please try again."
+		);
 		return res.redirect("/weeklyreport/new");
 	}
 
@@ -249,12 +286,28 @@ export const createReport = catchAsync(async (req, res) => {
 		dateSubmitted: now.toDate(),
 	});
 
-	await WeeklyReports.save();
-	req.flash(
-		"success",
-		"Successfully uploaded weekly report! Your DOCX has been converted to PDF."
-	);
-	return res.redirect(`/weeklyreport/${WeeklyReports._id}`);
+	try {
+		await WeeklyReports.save();
+		req.flash(
+			"success",
+			"Successfully uploaded weekly report! Your DOCX has been converted to PDF."
+		);
+		return res.redirect(`/weeklyreport/${WeeklyReports._id}`);
+	} catch (error) {
+		// Handle duplicate key error (MongoDB error code 11000)
+		if (error.code === 11000) {
+			console.error("Duplicate report submission detected:", error);
+			req.flash(
+				"error",
+				"You have already submitted a report for this week. Please delete your existing report if you want to submit a new one."
+			);
+			return res.redirect("/weeklyreport/new");
+		}
+
+		console.error("Error saving weekly report:", error);
+		req.flash("error", "Failed to save your weekly report. Please try again.");
+		return res.redirect("/weeklyreport/new");
+	}
 });
 
 export const showReport = catchAsync(async (req, res, next) => {
