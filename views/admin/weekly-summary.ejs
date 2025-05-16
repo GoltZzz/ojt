@@ -1,73 +1,86 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/weeklySummary.css" />
 <link rel="stylesheet" href="/css/dashboard.css" />
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" />
 
 <div class="dashboard-container">
 	<% if (loopActive) { %>
 	<div
-		class="alert alert-success d-flex align-items-center justify-content-center mb-4"
+		class="alert alert-success d-flex align-items-center justify-content-center mb-4 animate__animated animate__fadeIn"
 		role="alert">
 		<i class="fa-solid fa-circle-check me-2"></i>
 		<strong>Weekly Loop is ACTIVE.</strong> Students can submit their weekly
 		reports as scheduled.
 	</div>
 	<% } %>
-	<div class="welcome-section">
+
+	<div class="dashboard-header animate__animated animate__fadeInDown">
 		<h1><i class="fa-solid fa-calendar-week me-2"></i>Weekly Report Summary</h1>
-		<div class="card shadow-sm mb-4">
-			<div class="card-body">
-				<div class="d-flex justify-content-between align-items-center mb-3">
-					<% if (!loopActive) { %>
-					<form
-						id="start-weekly-loop-form"
-						method="POST"
-						action="/admin/weekly-summary/start"
-						class="row g-3 align-items-center flex-grow-1">
-						<% if (!(weeks && weeks.length)) { %>
-						<div class="col-12 mb-2">
-							<label for="startDate" class="form-label fw-semibold"
-								>Select Start Date
-								<span class="text-muted">(Monday)</span>:</label
-							>
-							<input
-								type="date"
-								id="startDate"
-								name="startDate"
-								class="form-control"
-								required />
-						</div>
-						<% } %>
-						<div class="col-12">
-							<button type="submit" class="btn btn-primary w-100">
-								<i class="fa-solid fa-play"></i> Start Weekly Loop
-							</button>
-						</div>
-					</form>
-					<% } else { %>
-					<div class="d-flex gap-2 w-100">
-						<form
-							method="POST"
-							action="/admin/weekly-summary/stop"
-							class="flex-grow-1">
-							<button type="submit" class="btn btn-danger w-100">
-								<i class="fa-solid fa-stop"></i> Stop Loop
-							</button>
-						</form>
-						<button
-							type="button"
-							class="btn btn-warning"
-							data-bs-toggle="modal"
-							data-bs-target="#restartModal">
-							<i class="fa-solid fa-sync"></i> Restart Loop
+		<p class="text-muted">Track and manage weekly student submissions</p>
+	</div>
+
+	<div
+		class="control-panel card shadow-sm mb-4 animate__animated animate__fadeInUp">
+		<div class="card-body">
+			<div class="d-flex justify-content-between align-items-center">
+				<% if (!loopActive) { %>
+				<form
+					id="start-weekly-loop-form"
+					method="POST"
+					action="/admin/weekly-summary/start"
+					class="row g-3 align-items-center flex-grow-1">
+					<% if (!(weeks && weeks.length)) { %>
+					<div class="col-md-8">
+						<label for="startDate" class="form-label fw-semibold">
+							<i class="fa-regular fa-calendar me-1"></i> Select Start Date
+							<span class="text-muted">(Monday)</span>:
+						</label>
+						<input
+							type="date"
+							id="startDate"
+							name="startDate"
+							class="form-control date-input"
+							required />
+					</div>
+					<div class="col-md-4 d-flex align-items-end">
+						<button type="submit" class="btn btn-primary w-100">
+							<i class="fa-solid fa-play"></i> Start Weekly Loop
 						</button>
-						<form method="POST" action="/admin/force-next-week" class="ms-2">
-							<button type="submit" class="btn btn-info">
-								<i class="fa-solid fa-forward"></i> Add New Week
-							</button>
-						</form>
+					</div>
+					<% } else { %>
+					<div class="col-12">
+						<button type="submit" class="btn btn-primary w-100">
+							<i class="fa-solid fa-play"></i> Start Weekly Loop
+						</button>
 					</div>
 					<% } %>
+				</form>
+				<% } else { %>
+				<div class="action-buttons d-flex gap-3 w-100">
+					<form
+						method="POST"
+						action="/admin/weekly-summary/stop"
+						class="flex-grow-1">
+						<button type="submit" class="btn btn-danger">
+							<i class="fa-solid fa-stop"></i> Stop Loop
+						</button>
+					</form>
+					<button
+						type="button"
+						class="btn btn-warning"
+						data-bs-toggle="modal"
+						data-bs-target="#restartModal">
+						<i class="fa-solid fa-sync"></i> Restart Loop
+					</button>
+					<form method="POST" action="/admin/force-next-week">
+						<button type="submit" class="btn btn-info">
+							<i class="fa-solid fa-forward"></i> Add New Week
+						</button>
+					</form>
 				</div>
+				<% } %>
 			</div>
 		</div>
 	</div>
@@ -79,11 +92,11 @@
 		tabindex="-1"
 		aria-labelledby="restartModalLabel"
 		aria-hidden="true">
-		<div class="modal-dialog">
+		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="restartModalLabel">
-						Restart Weekly Loop
+						<i class="fa-solid fa-sync me-2"></i> Restart Weekly Loop
 					</h5>
 					<button
 						type="button"
@@ -94,17 +107,18 @@
 				<form method="POST" action="/admin/weekly-summary/restart">
 					<div class="modal-body">
 						<div class="alert alert-warning">
-							<i class="fas fa-exclamation-triangle"></i>
+							<i class="fas fa-exclamation-triangle me-2"></i>
 							<strong>Warning:</strong> This will delete all existing weeks and
 							reports. This action cannot be undone.
 						</div>
 						<div class="mb-3">
-							<label for="restartDate" class="form-label"
-								>Select New Start Date (Monday):</label
-							>
+							<label for="restartDate" class="form-label">
+								<i class="fa-regular fa-calendar me-1"></i> Select New Start
+								Date (Monday):
+							</label>
 							<input
 								type="date"
-								class="form-control"
+								class="form-control date-input"
 								id="restartDate"
 								name="startDate"
 								required />
@@ -115,10 +129,10 @@
 							type="button"
 							class="btn btn-secondary"
 							data-bs-dismiss="modal">
-							Cancel
+							<i class="fa-solid fa-times me-1"></i> Cancel
 						</button>
 						<button type="submit" class="btn btn-warning">
-							<i class="fa-solid fa-sync"></i> Restart Loop
+							<i class="fa-solid fa-sync me-1"></i> Restart Loop
 						</button>
 					</div>
 				</form>
@@ -127,11 +141,66 @@
 	</div>
 
 	<% if (weeks && weeks.length) { %>
-	<div class="dashboard-card full-width mt-4">
-		<h3 class="mb-3">
-			<i class="fa-solid fa-list-check me-2" style="color: var(--accent)"></i
-			>Weekly Submission Status
-		</h3>
+	<div
+		class="summary-stats-container row g-4 mb-4 animate__animated animate__fadeInUp">
+		<div class="col-md-4">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-calendar-days"></i></div>
+				<div class="stats-content">
+					<h3><%= weeks.length %></h3>
+					<p>Total Weeks</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-users"></i></div>
+				<div class="stats-content">
+					<h3><%= students.length %></h3>
+					<p>Total Students</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-chart-simple"></i></div>
+				<div class="stats-content">
+					<h3 id="submissionRate">Calculating...</h3>
+					<p>Submission Rate</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="dashboard-card full-width mt-4 animate__animated animate__fadeInUp">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h3 class="mb-0">
+				<i class="fa-solid fa-list-check me-2" style="color: var(--accent)"></i
+				>Weekly Submission Status
+			</h3>
+			<div class="table-controls">
+				<div class="input-group">
+					<span class="input-group-text bg-light border-0">
+						<i class="fa-solid fa-search"></i>
+					</span>
+					<input
+						type="text"
+						id="tableSearch"
+						class="form-control search-input"
+						placeholder="Search student..." />
+				</div>
+			</div>
+		</div>
+
+		<div class="legend mb-3">
+			<span class="legend-item"
+				><i class="fas fa-check-circle text-success"></i> Approved</span
+			>
+			<span class="legend-item"
+				><i class="fa-solid fa-xmark text-danger"></i> Not Submitted</span
+			>
+		</div>
 
 		<div class="table-responsive">
 			<table
@@ -139,12 +208,21 @@
 				id="summaryTable">
 				<thead>
 					<tr>
-						<th>Week #</th>
-						<th>Date Range</th>
+						<th class="text-center">Week #</th>
+						<th class="text-center">Date Range</th>
 						<% students.forEach(student => { %>
-						<th>
-							<i class="fa-solid fa-user"></i> <%= student.firstName %> <%=
-							student.lastName %>
+						<th class="student-header">
+							<div class="d-flex flex-column align-items-center">
+								<div class="avatar-circle">
+									<span
+										><%= student.firstName.charAt(0) %><%=
+										student.lastName.charAt(0) %></span
+									>
+								</div>
+								<span class="student-name"
+									><%= student.firstName %> <%= student.lastName %></span
+								>
+							</div>
 						</th>
 						<% }) %>
 					</tr>
@@ -152,11 +230,12 @@
 				<tbody>
 					<% weeks.forEach((week, i) => { %>
 					<tr class="week-row" data-week="<%= i + 1 %>">
-						<td class="fw-bold">Week <%= i + 1 %></td>
+						<td class="fw-bold text-center">Week <%= i + 1 %></td>
 						<td>
-							<span class="badge bg-light text-dark border"
-								><%= week.startLabel %> – <%= week.endLabel %></span
-							>
+							<span class="date-badge">
+								<i class="fa-regular fa-calendar me-1"></i>
+								<%= week.startLabel %> – <%= week.endLabel %>
+							</span>
 						</td>
 						<% students.forEach(student => { %>
 						<td
@@ -167,20 +246,20 @@
 							&& status.submitted) { %>
 							<div class="submission-status" data-status="<%= status.status %>">
 								<% if (status.status === 'approved') { %>
-								<span class="text-success"
-									><i class="fas fa-check-circle fa-lg"></i
-								></span>
-								<small class="d-block text-success mt-1">Approved</small>
+								<div class="status-icon approved">
+									<i class="fas fa-check-circle fa-lg"></i>
+								</div>
+								<small class="d-block status-text approved">Approved</small>
 								<% } else if (status.status === 'rejected') { %>
-								<span class="text-danger"
-									><i class="fas fa-times-circle fa-lg"></i
-								></span>
-								<small class="d-block text-danger mt-1">Rejected</small>
+								<div class="status-icon rejected">
+									<i class="fas fa-times-circle fa-lg"></i>
+								</div>
+								<small class="d-block status-text rejected">Rejected</small>
 								<% } else { %>
-								<span class="text-warning"
-									><i class="fas fa-clock fa-lg"></i
-								></span>
-								<small class="d-block text-warning mt-1">Pending</small>
+								<div class="status-icon pending">
+									<i class="fas fa-clock fa-lg"></i>
+								</div>
+								<small class="d-block status-text pending">Pending</small>
 								<% } %>
 								<small class="d-block text-muted mt-1">
 									<%= new Date(status.submittedAt).toLocaleDateString() %>
@@ -188,9 +267,9 @@
 							</div>
 							<% } else { %>
 							<div class="submission-status" data-status="notSubmitted">
-								<span class="text-danger"
-									><i class="fa-solid fa-xmark"></i
-								></span>
+								<div class="status-icon not-submitted">
+									<i class="fa-solid fa-xmark"></i>
+								</div>
 								<small class="d-block text-muted mt-1">No Submission</small>
 							</div>
 							<% } %>
@@ -209,12 +288,70 @@
 	// Validate restart date is a Monday
 	document
 		.getElementById("restartDate")
-		.addEventListener("change", function () {
+		?.addEventListener("change", function () {
 			const date = new Date(this.value);
 			if (date.getDay() !== 1) {
 				// 1 is Monday
 				alert("Please select a Monday as the start date.");
 				this.value = "";
 			}
+		});
+
+	// Also validate start date if it exists
+	document.getElementById("startDate")?.addEventListener("change", function () {
+		const date = new Date(this.value);
+		if (date.getDay() !== 1) {
+			// 1 is Monday
+			alert("Please select a Monday as the start date.");
+			this.value = "";
+		}
+	});
+
+	// Calculate submission rate
+	document.addEventListener("DOMContentLoaded", function () {
+		const submissionRateEl = document.getElementById("submissionRate");
+		if (submissionRateEl) {
+			const statusCells = document.querySelectorAll(".student-cell");
+			let submittedCount = 0;
+			let totalCells = statusCells.length;
+
+			statusCells.forEach((cell) => {
+				const statusEl = cell.querySelector(".submission-status");
+				const status = statusEl?.dataset?.status;
+				if (status && status !== "notSubmitted") {
+					submittedCount++;
+				}
+			});
+
+			const rate =
+				totalCells > 0 ? Math.round((submittedCount / totalCells) * 100) : 0;
+			submissionRateEl.textContent = rate + "%";
+		}
+	});
+
+	// Search functionality
+	document
+		.getElementById("tableSearch")
+		?.addEventListener("input", function () {
+			const searchTerm = this.value.toLowerCase();
+			const rows = document.querySelectorAll("#summaryTable tbody tr");
+
+			rows.forEach((row) => {
+				let found = false;
+				const cells = row.querySelectorAll("td.student-cell");
+
+				cells.forEach((cell) => {
+					const studentName = cell.dataset.student.toLowerCase();
+					if (studentName.includes(searchTerm)) {
+						found = true;
+					}
+				});
+
+				if (found || searchTerm === "") {
+					row.style.display = "";
+				} else {
+					row.style.display = "none";
+				}
+			});
 		});
 </script>
