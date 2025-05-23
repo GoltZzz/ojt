@@ -5,35 +5,6 @@
 	rel="stylesheet"
 	href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" />
 
-<style>
-	/* Fix layout issues */
-	.wrapper {
-		display: flex !important;
-		flex-direction: row !important;
-	}
-
-	.main-content {
-		flex: 1 !important;
-		margin-left: 250px !important;
-		width: calc(100% - 250px) !important;
-	}
-
-	.content-container {
-		width: 100% !important;
-	}
-
-	@media (max-width: 991.98px) {
-		.wrapper {
-			flex-direction: column !important;
-		}
-
-		.main-content {
-			margin-left: 0 !important;
-			width: 100% !important;
-		}
-	}
-</style>
-
 <div class="dashboard-container">
 	<% if (loopActive) { %>
 	<div
@@ -236,7 +207,8 @@
 				<div class="d-flex align-items-center">
 					<label class="me-2">Students per page:</label>
 					<select id="studentsPerPage" class="form-select form-select-sm">
-						<option value="10" selected>10</option>
+						<option value="5" selected>5</option>
+						<option value="10">10</option>
 						<option value="20">20</option>
 						<option value="30">30</option>
 						<option value="50">50</option>
@@ -486,7 +458,6 @@
 	/* Responsive table */
 	.summary-table {
 		table-layout: fixed;
-		width: 100%;
 	}
 
 	.summary-table th:first-child,
@@ -502,28 +473,6 @@
 	.summary-table th:nth-child(n + 3),
 	.summary-table td:nth-child(n + 3) {
 		width: 120px;
-	}
-
-	/* Fix table overflow */
-	.table-responsive {
-		overflow-x: auto;
-		max-width: 100%;
-	}
-
-	/* Fix for sticky columns background */
-	.table tbody tr:nth-child(even) .sticky-col {
-		background-color: var(--border-light);
-	}
-
-	.table tbody tr:hover .sticky-col {
-		background-color: var(--accent-light);
-	}
-
-	/* Improve dashboard container */
-	.dashboard-container {
-		width: 100%;
-		max-width: 100%;
-		padding: 20px 10px;
 	}
 </style>
 
@@ -639,7 +588,7 @@
 	function initPagination() {
 		// Make pagination variables global for search functionality
 		window.currentPage = 1;
-		window.studentsPerPage = 10;
+		window.studentsPerPage = 5;
 		const totalStudents = document.querySelectorAll(
 			"#summaryTable thead th.student-header"
 		).length;
@@ -780,35 +729,4 @@
 			}
 		});
 	}
-
-	// Fix layout issues
-	document.addEventListener("DOMContentLoaded", function () {
-		// Apply layout fixes
-		document.querySelector(".wrapper").style.display = "flex";
-		document.querySelector(".wrapper").style.flexDirection = "row";
-
-		document.querySelector(".main-content").style.flex = "1";
-		document.querySelector(".main-content").style.marginLeft = "250px";
-		document.querySelector(".main-content").style.width = "calc(100% - 250px)";
-
-		document.querySelector(".content-container").style.width = "100%";
-
-		// Handle responsive layout
-		function adjustLayout() {
-			if (window.innerWidth <= 991.98) {
-				document.querySelector(".wrapper").style.flexDirection = "column";
-				document.querySelector(".main-content").style.marginLeft = "0";
-				document.querySelector(".main-content").style.width = "100%";
-			} else {
-				document.querySelector(".wrapper").style.flexDirection = "row";
-				document.querySelector(".main-content").style.marginLeft = "250px";
-				document.querySelector(".main-content").style.width =
-					"calc(100% - 250px)";
-			}
-		}
-
-		// Run on load and resize
-		adjustLayout();
-		window.addEventListener("resize", adjustLayout);
-	});
 </script>

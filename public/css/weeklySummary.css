@@ -24,20 +24,12 @@ body {
 	font-family: "Inter", "Segoe UI", "Roboto", Arial, sans-serif;
 	font-size: 1.05rem;
 	line-height: 1.6;
-	overflow-x: hidden;
 }
 
 .dashboard-container {
-	max-width: 100%;
+	max-width: 1200px;
 	margin: 0 auto;
-	padding: 20px 10px 40px 10px;
-	width: 100%;
-}
-
-@media (max-width: 991.98px) {
-	.dashboard-container {
-		padding: 10px 5px 20px 5px;
-	}
+	padding: 40px 20px 80px 20px;
 }
 
 /* Dashboard header */

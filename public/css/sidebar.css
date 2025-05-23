@@ -2,12 +2,6 @@
 	width: 250px;
 	min-height: 100vh;
 	background: linear-gradient(45deg, #2193b0, #6dd5ed);
-	position: fixed;
-	left: 0;
-	top: 0;
-	bottom: 0;
-	z-index: 1000;
-	overflow-y: auto;
 }
 
 .desktop-sidebar h2 {
