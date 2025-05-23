@@ -5,6 +5,35 @@
 	rel="stylesheet"
 	href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" />
 
+<style>
+	/* Fix layout issues */
+	.wrapper {
+		display: flex !important;
+		flex-direction: row !important;
+	}
+
+	.main-content {
+		flex: 1 !important;
+		margin-left: 250px !important;
+		width: calc(100% - 250px) !important;
+	}
+
+	.content-container {
+		width: 100% !important;
+	}
+
+	@media (max-width: 991.98px) {
+		.wrapper {
+			flex-direction: column !important;
+		}
+
+		.main-content {
+			margin-left: 0 !important;
+			width: 100% !important;
+		}
+	}
+</style>
+
 <div class="dashboard-container">
 	<% if (loopActive) { %>
 	<div
@@ -202,6 +231,35 @@
 			>
 		</div>
 
+		<div class="student-display-controls mb-3">
+			<div class="d-flex align-items-center justify-content-between flex-wrap">
+				<div class="d-flex align-items-center">
+					<label class="me-2">Students per page:</label>
+					<select id="studentsPerPage" class="form-select form-select-sm">
+						<option value="10" selected>10</option>
+						<option value="20">20</option>
+						<option value="30">30</option>
+						<option value="50">50</option>
+						<option value="all">All</option>
+					</select>
+				</div>
+				<div class="pagination-controls">
+					<button id="prevPage" class="btn btn-sm btn-outline-secondary">
+						<i class="fas fa-chevron-left"></i> Previous
+					</button>
+					<span id="pageInfo" class="mx-2">Page 1 of 1</span>
+					<button id="nextPage" class="btn btn-sm btn-outline-secondary">
+						Next <i class="fas fa-chevron-right"></i>
+					</button>
+				</div>
+				<div>
+					<button id="toggleCompactView" class="btn btn-sm btn-outline-primary">
+						<i class="fas fa-compress"></i> Toggle Compact View
+					</button>
+				</div>
+			</div>
+		</div>
+
 		<ul class="nav nav-tabs mb-3" id="reportTabs" role="tablist">
 			<li class="nav-item" role="presentation">
 				<button
@@ -239,14 +297,14 @@
 				aria-labelledby="weekly-tab">
 				<div class="table-responsive">
 					<table
-						class="table table-bordered table-hover align-middle"
+						class="table table-bordered table-hover align-middle summary-table"
 						id="summaryTable">
 						<thead>
 							<tr>
-								<th class="text-center">Week #</th>
-								<th class="text-center">Date Range</th>
-								<% students.forEach(student => { %>
-								<th class="student-header">
+								<th class="text-center sticky-col">Week #</th>
+								<th class="text-center sticky-col">Date Range</th>
+								<% students.forEach((student, index) => { %>
+								<th class="student-header" data-student-index="<%= index %>">
 									<div class="d-flex flex-column align-items-center">
 										<div class="avatar-circle">
 											<span
@@ -265,17 +323,20 @@
 						<tbody>
 							<% weeks.forEach((week, i) => { %>
 							<tr class="week-row" data-week="<%= i + 1 %>">
-								<td class="fw-bold text-center">Week <%= i + 1 %></td>
-								<td>
+								<td class="fw-bold text-center sticky-col">
+									Week <%= i + 1 %>
+								</td>
+								<td class="sticky-col">
 									<span class="date-badge">
 										<i class="fa-regular fa-calendar me-1"></i>
 										<%= week.startLabel %> – <%= week.endLabel %>
 									</span>
 								</td>
-								<% students.forEach(student => { %>
+								<% students.forEach((student, index) => { %>
 								<td
 									class="text-center student-cell"
 									data-student="<%= student.firstName %> <%= student.lastName %>"
+									data-student-index="<%= index %>"
 									data-date="<%= week.startLabel %>">
 									<% const status = week.submissions[student._id]; %> <% if
 									(status && status.submitted) { %>
@@ -314,14 +375,14 @@
 				aria-labelledby="time-tab">
 				<div class="table-responsive">
 					<table
-						class="table table-bordered table-hover align-middle"
+						class="table table-bordered table-hover align-middle summary-table"
 						id="timeReportTable">
 						<thead>
 							<tr>
-								<th class="text-center">Week #</th>
-								<th class="text-center">Date Range</th>
-								<% students.forEach(student => { %>
-								<th class="student-header">
+								<th class="text-center sticky-col">Week #</th>
+								<th class="text-center sticky-col">Date Range</th>
+								<% students.forEach((student, index) => { %>
+								<th class="student-header" data-student-index="<%= index %>">
 									<div class="d-flex flex-column align-items-center">
 										<div class="avatar-circle">
 											<span
@@ -340,17 +401,20 @@
 						<tbody>
 							<% weeks.forEach((week, i) => { %>
 							<tr class="week-row" data-week="<%= i + 1 %>">
-								<td class="fw-bold text-center">Week <%= i + 1 %></td>
-								<td>
+								<td class="fw-bold text-center sticky-col">
+									Week <%= i + 1 %>
+								</td>
+								<td class="sticky-col">
 									<span class="date-badge">
 										<i class="fa-regular fa-calendar me-1"></i>
 										<%= week.startLabel %> – <%= week.endLabel %>
 									</span>
 								</td>
-								<% students.forEach(student => { %>
+								<% students.forEach((student, index) => { %>
 								<td
 									class="text-center student-cell"
 									data-student="<%= student.firstName %> <%= student.lastName %>"
+									data-student-index="<%= index %>"
 									data-date="<%= week.startLabel %>">
 									<% const timeStatus = week.timeSubmissions[student._id]; %> <%
 									if (timeStatus && timeStatus.submitted) { %>
@@ -386,6 +450,82 @@
 	</div>
 	<% } %>
 </div>
+
+<style>
+	/* Sticky first two columns */
+	.sticky-col {
+		position: sticky;
+		left: 0;
+		background-color: #fff;
+		z-index: 1;
+	}
+
+	.sticky-col:nth-child(2) {
+		left: 80px; /* Adjust based on the width of the first column */
+	}
+
+	/* Compact view styles */
+	.compact-view .student-header .avatar-circle {
+		width: 30px;
+		height: 30px;
+		font-size: 12px;
+	}
+
+	.compact-view .student-header .student-name {
+		font-size: 11px;
+	}
+
+	.compact-view .submission-status .status-icon {
+		transform: scale(0.8);
+	}
+
+	.compact-view .submission-status small {
+		font-size: 10px;
+	}
+
+	/* Responsive table */
+	.summary-table {
+		table-layout: fixed;
+		width: 100%;
+	}
+
+	.summary-table th:first-child,
+	.summary-table td:first-child {
+		width: 80px;
+	}
+
+	.summary-table th:nth-child(2),
+	.summary-table td:nth-child(2) {
+		width: 150px;
+	}
+
+	.summary-table th:nth-child(n + 3),
+	.summary-table td:nth-child(n + 3) {
+		width: 120px;
+	}
+
+	/* Fix table overflow */
+	.table-responsive {
+		overflow-x: auto;
+		max-width: 100%;
+	}
+
+	/* Fix for sticky columns background */
+	.table tbody tr:nth-child(even) .sticky-col {
+		background-color: var(--border-light);
+	}
+
+	.table tbody tr:hover .sticky-col {
+		background-color: var(--accent-light);
+	}
+
+	/* Improve dashboard container */
+	.dashboard-container {
+		width: 100%;
+		max-width: 100%;
+		padding: 20px 10px;
+	}
+</style>
 
 <script>
 	// Validate restart date is a Monday
@@ -430,6 +570,12 @@
 				totalCells > 0 ? Math.round((submittedCount / totalCells) * 100) : 0;
 			submissionRateEl.textContent = rate + "%";
 		}
+
+		// Initialize student pagination
+		initPagination();
+
+		// Initialize compact view toggle
+		initCompactView();
 	});
 
 	// Search functionality
@@ -437,25 +583,232 @@
 		.getElementById("tableSearch")
 		?.addEventListener("input", function () {
 			const searchTerm = this.value.toLowerCase();
-			const activeTab = document.querySelector(".tab-pane.active");
-			const rows = activeTab.querySelectorAll("tbody tr");
 
-			rows.forEach((row) => {
-				let found = false;
-				const cells = row.querySelectorAll("td.student-cell");
+			// Reset pagination to first page when searching
+			if (window.currentPage !== 1 && searchTerm.length > 0) {
+				window.currentPage = 1;
+				updatePageInfo();
+			}
 
-				cells.forEach((cell) => {
-					const studentName = cell.dataset.student.toLowerCase();
-					if (studentName.includes(searchTerm)) {
-						found = true;
-					}
-				});
+			// Get all student headers and find matching ones
+			const studentHeaders = document.querySelectorAll(".student-header");
+			const matchingIndexes = [];
 
-				if (found || searchTerm === "") {
-					row.style.display = "";
-				} else {
-					row.style.display = "none";
+			studentHeaders.forEach((header, index) => {
+				const studentName = header
+					.querySelector(".student-name")
+					.textContent.toLowerCase();
+				if (studentName.includes(searchTerm)) {
+					matchingIndexes.push(index);
 				}
 			});
+
+			// If we have a search term, show only matching students
+			if (searchTerm.length > 0) {
+				document.querySelectorAll(".summary-table").forEach((table) => {
+					// Update headers
+					const headers = table.querySelectorAll("th.student-header");
+					headers.forEach((header, index) => {
+						if (matchingIndexes.includes(index)) {
+							header.style.display = "";
+						} else {
+							header.style.display = "none";
+						}
+					});
+
+					// Update cells
+					const rows = table.querySelectorAll("tbody tr");
+					rows.forEach((row) => {
+						const cells = row.querySelectorAll("td.student-cell");
+						cells.forEach((cell, index) => {
+							if (matchingIndexes.includes(index)) {
+								cell.style.display = "";
+							} else {
+								cell.style.display = "none";
+							}
+						});
+					});
+				});
+			} else {
+				// If no search term, revert to pagination
+				updateStudentVisibility();
+			}
 		});
+
+	// Student pagination functionality
+	function initPagination() {
+		// Make pagination variables global for search functionality
+		window.currentPage = 1;
+		window.studentsPerPage = 10;
+		const totalStudents = document.querySelectorAll(
+			"#summaryTable thead th.student-header"
+		).length;
+		window.totalPages = Math.ceil(totalStudents / window.studentsPerPage);
+
+		// Initialize pagination
+		updatePageInfo();
+		updateStudentVisibility();
+
+		// Handle students per page change
+		document
+			.getElementById("studentsPerPage")
+			.addEventListener("change", function () {
+				const value = this.value;
+				if (value === "all") {
+					window.studentsPerPage = totalStudents;
+				} else {
+					window.studentsPerPage = parseInt(value);
+				}
+
+				window.totalPages = Math.ceil(totalStudents / window.studentsPerPage);
+				window.currentPage = 1; // Reset to first page
+				updatePageInfo();
+				updateStudentVisibility();
+			});
+
+		// Handle previous page button
+		document.getElementById("prevPage").addEventListener("click", function () {
+			if (window.currentPage > 1) {
+				window.currentPage--;
+				updatePageInfo();
+				updateStudentVisibility();
+			}
+		});
+
+		// Handle next page button
+		document.getElementById("nextPage").addEventListener("click", function () {
+			if (window.currentPage < window.totalPages) {
+				window.currentPage++;
+				updatePageInfo();
+				updateStudentVisibility();
+			}
+		});
+
+		// Add keyboard navigation
+		document.addEventListener("keydown", function (e) {
+			// Only if we're not in an input field
+			if (
+				document.activeElement.tagName !== "INPUT" &&
+				document.activeElement.tagName !== "SELECT" &&
+				document.activeElement.tagName !== "TEXTAREA"
+			) {
+				// Left arrow for previous page
+				if (e.key === "ArrowLeft" && window.currentPage > 1) {
+					window.currentPage--;
+					updatePageInfo();
+					updateStudentVisibility();
+				}
+
+				// Right arrow for next page
+				if (e.key === "ArrowRight" && window.currentPage < window.totalPages) {
+					window.currentPage++;
+					updatePageInfo();
+					updateStudentVisibility();
+				}
+			}
+		});
+	}
+
+	// Update page info text
+	function updatePageInfo() {
+		document.getElementById(
+			"pageInfo"
+		).textContent = `Page ${window.currentPage} of ${window.totalPages}`;
+
+		// Update button states
+		document.getElementById("prevPage").disabled = window.currentPage === 1;
+		document.getElementById("nextPage").disabled =
+			window.currentPage === window.totalPages;
+	}
+
+	// Update which students are visible based on current page
+	function updateStudentVisibility() {
+		// Clear search when updating visibility through pagination
+		const searchInput = document.getElementById("tableSearch");
+		if (searchInput.value.length > 0) {
+			searchInput.value = "";
+		}
+
+		const startIndex = (window.currentPage - 1) * window.studentsPerPage;
+		const endIndex = Math.min(
+			startIndex + window.studentsPerPage,
+			document.querySelectorAll("#summaryTable thead th.student-header").length
+		);
+
+		// Apply to both tables
+		document.querySelectorAll(".summary-table").forEach((table) => {
+			// Update headers
+			const headers = table.querySelectorAll("th.student-header");
+			headers.forEach((header, index) => {
+				if (index >= startIndex && index < endIndex) {
+					header.style.display = "";
+				} else {
+					header.style.display = "none";
+				}
+			});
+
+			// Update cells
+			const rows = table.querySelectorAll("tbody tr");
+			rows.forEach((row) => {
+				const cells = row.querySelectorAll("td.student-cell");
+				cells.forEach((cell, index) => {
+					if (index >= startIndex && index < endIndex) {
+						cell.style.display = "";
+					} else {
+						cell.style.display = "none";
+					}
+				});
+			});
+		});
+	}
+
+	// Compact view toggle functionality
+	function initCompactView() {
+		const toggleButton = document.getElementById("toggleCompactView");
+		const tables = document.querySelectorAll(".summary-table");
+
+		toggleButton.addEventListener("click", function () {
+			tables.forEach((table) => {
+				table.classList.toggle("compact-view");
+			});
+
+			// Update button text
+			if (tables[0].classList.contains("compact-view")) {
+				toggleButton.innerHTML = '<i class="fas fa-expand"></i> Normal View';
+			} else {
+				toggleButton.innerHTML = '<i class="fas fa-compress"></i> Compact View';
+			}
+		});
+	}
+
+	// Fix layout issues
+	document.addEventListener("DOMContentLoaded", function () {
+		// Apply layout fixes
+		document.querySelector(".wrapper").style.display = "flex";
+		document.querySelector(".wrapper").style.flexDirection = "row";
+
+		document.querySelector(".main-content").style.flex = "1";
+		document.querySelector(".main-content").style.marginLeft = "250px";
+		document.querySelector(".main-content").style.width = "calc(100% - 250px)";
+
+		document.querySelector(".content-container").style.width = "100%";
+
+		// Handle responsive layout
+		function adjustLayout() {
+			if (window.innerWidth <= 991.98) {
+				document.querySelector(".wrapper").style.flexDirection = "column";
+				document.querySelector(".main-content").style.marginLeft = "0";
+				document.querySelector(".main-content").style.width = "100%";
+			} else {
+				document.querySelector(".wrapper").style.flexDirection = "row";
+				document.querySelector(".main-content").style.marginLeft = "250px";
+				document.querySelector(".main-content").style.width =
+					"calc(100% - 250px)";
+			}
+		}
+
+		// Run on load and resize
+		adjustLayout();
+		window.addEventListener("resize", adjustLayout);
+	});
 </script>

@@ -24,12 +24,20 @@ body {
 	font-family: "Inter", "Segoe UI", "Roboto", Arial, sans-serif;
 	font-size: 1.05rem;
 	line-height: 1.6;
+	overflow-x: hidden;
 }
 
 .dashboard-container {
-	max-width: 1200px;
+	max-width: 100%;
 	margin: 0 auto;
-	padding: 40px 20px 80px 20px;
+	padding: 20px 10px 40px 10px;
+	width: 100%;
+}
+
+@media (max-width: 991.98px) {
+	.dashboard-container {
+		padding: 10px 5px 20px 5px;
+	}
 }
 
 /* Dashboard header */
@@ -219,6 +227,63 @@ body {
 	background: var(--accent-light);
 }
 
+/* Enhanced table for many students */
+.table-responsive {
+	overflow-x: auto;
+	position: relative;
+	max-width: 100%;
+	margin-bottom: 1rem;
+	-webkit-overflow-scrolling: touch;
+}
+
+.summary-table {
+	width: 100%;
+	table-layout: fixed;
+}
+
+/* Sticky columns */
+.sticky-col {
+	position: sticky;
+	left: 0;
+	z-index: 2;
+	background: inherit;
+}
+
+.sticky-col:nth-child(1) {
+	z-index: 3;
+	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.sticky-col:nth-child(2) {
+	left: 80px;
+	z-index: 2;
+	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Student pagination controls */
+.student-display-controls {
+	background: var(--accent-light);
+	border-radius: var(--border-radius-sm);
+	padding: 12px 16px;
+	margin-bottom: 20px;
+}
+
+.pagination-controls {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#pageInfo {
+	font-weight: 500;
+	color: var(--primary);
+}
+
+#studentsPerPage {
+	width: auto;
+	min-width: 80px;
+}
+
 /* Status indicators */
 .date-badge {
 	background: var(--accent-light);
@@ -241,11 +306,43 @@ body {
 	justify-content: center;
 	font-weight: bold;
 	margin-bottom: 5px;
+	transition: all 0.2s ease;
 }
 
 .student-name {
 	font-size: 0.9rem;
 	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 110px;
+	margin: 0 auto;
+	transition: all 0.2s ease;
+}
+
+/* Compact view styles */
+.compact-view .avatar-circle {
+	width: 30px;
+	height: 30px;
+	font-size: 12px;
+}
+
+.compact-view .student-name {
+	font-size: 11px;
+	max-width: 90px;
+}
+
+.compact-view .table th,
+.compact-view .table td {
+	padding: 10px 8px;
+}
+
+.compact-view .submission-status small {
+	font-size: 10px;
+}
+
+.compact-view .status-icon {
+	transform: scale(0.8);
+	margin-bottom: 2px;
 }
 
 .student-header {
@@ -374,44 +471,70 @@ body {
 	max-width: 300px;
 }
 
-/* Responsive */
+/* Media queries for responsive design */
 @media (max-width: 992px) {
 	.dashboard-container {
-		padding: 24px 16px 40px 16px;
+		padding: 20px 15px 60px 15px;
 	}
 	.dashboard-card,
 	.card {
-		padding: 24px 16px;
+		padding: 24px 18px;
+	}
+
+	.student-display-controls {
+		padding: 10px;
+	}
+
+	.student-display-controls .d-flex {
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.pagination-controls {
+		width: 100%;
+		margin: 10px 0;
 	}
 }
 
 @media (max-width: 768px) {
 	.action-buttons {
 		flex-direction: column;
-		gap: 10px;
+		gap: 12px;
 	}
 	.legend {
-		flex-direction: column;
-		gap: 8px;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 10px;
+	}
+
+	.avatar-circle {
+		width: 30px;
+		height: 30px;
+		font-size: 12px;
+	}
+
+	.student-name {
+		font-size: 11px;
+		max-width: 80px;
 	}
 }
 
 @media (max-width: 576px) {
 	.dashboard-container {
-		padding: 16px 8px 24px 8px;
+		padding: 15px 10px 40px 10px;
 	}
 	.dashboard-card,
 	.card {
-		padding: 16px 8px;
+		padding: 18px 14px;
 		border-radius: var(--border-radius-sm);
 	}
 	.dashboard-header h1 {
-		font-size: 1.5rem;
+		font-size: 1.8rem;
 	}
 	.table th,
 	.table td {
-		font-size: 0.85rem;
-		padding: 10px 5px;
+		padding: 10px 8px;
+		font-size: 0.9rem;
 	}
 	.stats-card {
 		padding: 16px;
@@ -419,9 +542,17 @@ body {
 	.stats-icon {
 		width: 40px;
 		height: 40px;
-		font-size: 1.2rem;
 	}
 	.stats-content h3 {
 		font-size: 1.5rem;
+	}
+
+	.sticky-col:nth-child(2) {
+		left: 60px;
+	}
+
+	.date-badge {
+		font-size: 0.8rem;
+		padding: 5px 8px;
 	}
 }
