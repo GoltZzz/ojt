@@ -122,13 +122,13 @@ export async function getWeeklySummary(req, res) {
 			week.submissions[student._id] = {
 				submitted: !!weeklyReport,
 				submittedAt: weeklyReport?.dateSubmitted,
-				status: weeklyReport?.status || "not submitted",
+				status: weeklyReport ? "approved" : "not submitted",
 			};
 
 			week.timeSubmissions[student._id] = {
 				submitted: !!timeReport,
 				submittedAt: timeReport?.dateSubmitted,
-				status: timeReport?.status || "not submitted",
+				status: timeReport ? "approved" : "not submitted",
 			};
 		});
 	});

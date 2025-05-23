@@ -200,9 +200,6 @@
 			<span class="legend-item"
 				><i class="fa-solid fa-xmark text-danger"></i> Not Submitted</span
 			>
-			<span class="legend-item"
-				><i class="fas fa-clock text-warning"></i> Pending</span
-			>
 		</div>
 
 		<ul class="nav nav-tabs mb-3" id="reportTabs" role="tablist">
@@ -285,22 +282,10 @@
 									<div
 										class="submission-status"
 										data-status="<%= status.status %>">
-										<% if (status.status === 'approved') { %>
 										<div class="status-icon approved">
 											<i class="fas fa-check-circle fa-lg"></i>
 										</div>
 										<small class="d-block status-text approved">Approved</small>
-										<% } else if (status.status === 'rejected') { %>
-										<div class="status-icon rejected">
-											<i class="fas fa-times-circle fa-lg"></i>
-										</div>
-										<small class="d-block status-text rejected">Rejected</small>
-										<% } else { %>
-										<div class="status-icon pending">
-											<i class="fas fa-clock fa-lg"></i>
-										</div>
-										<small class="d-block status-text pending">Pending</small>
-										<% } %>
 										<small class="d-block text-muted mt-1">
 											<%= new Date(status.submittedAt).toLocaleDateString() %>
 										</small>
@@ -372,22 +357,10 @@
 									<div
 										class="submission-status"
 										data-status="<%= timeStatus.status %>">
-										<% if (timeStatus.status === 'approved') { %>
 										<div class="status-icon approved">
 											<i class="fas fa-check-circle fa-lg"></i>
 										</div>
 										<small class="d-block status-text approved">Approved</small>
-										<% } else if (timeStatus.status === 'rejected') { %>
-										<div class="status-icon rejected">
-											<i class="fas fa-times-circle fa-lg"></i>
-										</div>
-										<small class="d-block status-text rejected">Rejected</small>
-										<% } else { %>
-										<div class="status-icon pending">
-											<i class="fas fa-clock fa-lg"></i>
-										</div>
-										<small class="d-block status-text pending">Pending</small>
-										<% } %>
 										<small class="d-block text-muted mt-1">
 											<%= new Date(timeStatus.submittedAt).toLocaleDateString()
 											%>
