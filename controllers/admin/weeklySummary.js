@@ -1,4 +1,5 @@
 import WeeklyReport from "../../models/weeklyReports.js";
+import TimeReport from "../../models/timeReport.js";
 import User from "../../models/users.js";
 import Week from "../../models/week.js";
 import dayjs from "dayjs";
@@ -58,10 +59,21 @@ export async function getWeeklySummary(req, res) {
 	const students = await getAllStudents();
 	const weeks = await Week.find().sort({ weekNumber: 1 });
 
-	// Fetch all reports with proper population
-	const reports = await WeeklyReport.find({
+	// Fetch all weekly reports with proper population
+	const weeklyReports = await WeeklyReport.find({
 		$or: [
 			{ weekNumber: { $in: weeks.map((w) => w.weekNumber) } },
+			{ weekStartDate: { $in: weeks.map((w) => w.weekStartDate) } },
+		],
+	})
+		.populate("author")
+		.populate("weekId")
+		.lean();
+
+	// Fetch all time reports with proper population
+	const timeReports = await TimeReport.find({
+		$or: [
+			{ weekId: { $in: weeks.map((w) => w._id) } },
 			{ weekStartDate: { $in: weeks.map((w) => w.weekStartDate) } },
 		],
 	})
@@ -75,6 +87,7 @@ export async function getWeeklySummary(req, res) {
 	// Build submission status per week per student
 	weeks.forEach((week) => {
 		week.submissions = {};
+		week.timeSubmissions = {};
 		week.startLabel = week.weekStartDate
 			? dayjs(week.weekStartDate).format("MMM D")
 			: "-";
@@ -83,8 +96,8 @@ export async function getWeeklySummary(req, res) {
 			: "-";
 
 		students.forEach((student) => {
-			// Find matching report for this student and week using all available matching criteria
-			const report = reports.find(
+			// Find matching weekly report for this student and week using all available matching criteria
+			const weeklyReport = weeklyReports.find(
 				(r) =>
 					r.author &&
 					r.author._id.toString() === student._id.toString() &&
@@ -95,10 +108,27 @@ export async function getWeeklySummary(req, res) {
 							r.weekStartDate.getTime() === week.weekStartDate.getTime()))
 			);
 
+			// Find matching time report for this student and week
+			const timeReport = timeReports.find(
+				(r) =>
+					r.author &&
+					r.author._id.toString() === student._id.toString() &&
+					((r.weekId && r.weekId.toString() === week._id.toString()) ||
+						(r.weekStartDate &&
+							week.weekStartDate &&
+							r.weekStartDate.getTime() === week.weekStartDate.getTime()))
+			);
+
 			week.submissions[student._id] = {
-				submitted: !!report,
-				submittedAt: report?.dateSubmitted,
-				status: report?.status || "not submitted",
+				submitted: !!weeklyReport,
+				submittedAt: weeklyReport?.dateSubmitted,
+				status: weeklyReport?.status || "not submitted",
+			};
+
+			week.timeSubmissions[student._id] = {
+				submitted: !!timeReport,
+				submittedAt: timeReport?.dateSubmitted,
+				status: timeReport?.status || "not submitted",
 			};
 		});
 	});
