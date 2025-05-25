@@ -1,24 +1,30 @@
-import NodeCache from "node-cache";
+/**
+ * Simple in-memory cache manager for the application
+ * Used to cache rendered Excel files and other expensive operations
+ */
 
-// Create cache instance with default TTL of 1 hour
-const cache = new NodeCache({
-	stdTTL: 3600,
-	checkperiod: 120,
-	useClones: false,
-});
+// In-memory cache storage
+const cache = new Map();
 
 /**
- * Create/update a cache entry
+ * Create a cache entry
  * @param {string} key - Cache key
  * @param {any} data - Data to cache
- * @param {number} ttl - Time to live in seconds
- * @returns {boolean} Success status
+ * @param {number} expiresInSeconds - Time to live in seconds
+ * @returns {Promise<boolean>} - Success status
  */
-export const createCache = async (key, data, ttl = 3600) => {
+export const createCache = async (key, data, expiresInSeconds = 3600) => {
 	try {
-		return cache.set(key, data, ttl);
+		const expiresAt = Date.now() + expiresInSeconds * 1000;
+
+		cache.set(key, {
+			data,
+			expiresAt,
+		});
+
+		return true;
 	} catch (error) {
-		console.error(`Error setting cache for ${key}:`, error);
+		console.error("Error creating cache:", error);
 		return false;
 	}
 };
@@ -26,91 +32,103 @@ export const createCache = async (key, data, ttl = 3600) => {
 /**
  * Get data from cache
  * @param {string} key - Cache key
- * @returns {any} Cached data or null
+ * @returns {Promise<any>} - Cached data or null if not found/expired
  */
 export const getFromCache = async (key) => {
 	try {
-		return cache.get(key);
+		const cacheEntry = cache.get(key);
+
+		// Check if entry exists and is not expired
+		if (cacheEntry && cacheEntry.expiresAt > Date.now()) {
+			return cacheEntry.data;
+		}
+
+		// If expired, remove it
+		if (cacheEntry) {
+			cache.delete(key);
+		}
+
+		return null;
 	} catch (error) {
-		console.error(`Error getting cache for ${key}:`, error);
+		console.error("Error getting from cache:", error);
 		return null;
 	}
 };
 
 /**
- * Remove data from cache
+ * Clear a specific cache entry
  * @param {string} key - Cache key
- * @returns {number} Number of deleted entries
+ * @returns {Promise<boolean>} - Success status
  */
-export const deleteFromCache = async (key) => {
+export const clearCache = async (key) => {
 	try {
-		return cache.del(key);
+		return cache.delete(key);
 	} catch (error) {
-		console.error(`Error deleting cache for ${key}:`, error);
-		return 0;
+		console.error("Error clearing cache:", error);
+		return false;
 	}
 };
 
 /**
- * Clear cache using wildcard pattern
- * @param {string} pattern - Key pattern with * as wildcard
- * @returns {number} Number of deleted entries
+ * Clear all expired cache entries
+ * @returns {Promise<number>} - Number of cleared entries
  */
-export const clearCache = async (pattern) => {
+export const clearExpiredCache = async () => {
 	try {
-		if (!pattern.includes("*")) {
-			return await deleteFromCache(pattern);
-		}
+		let cleared = 0;
+		const now = Date.now();
 
-		// Convert pattern to regex
-		const regexPattern = new RegExp(pattern.replace(/\*/g, ".*"));
-
-		// Get all keys and filter by pattern
-		const keys = cache.keys();
-		let deletedCount = 0;
-
-		for (const key of keys) {
-			if (regexPattern.test(key)) {
-				if (cache.del(key)) {
-					deletedCount++;
-				}
+		for (const [key, entry] of cache.entries()) {
+			if (entry.expiresAt <= now) {
+				cache.delete(key);
+				cleared++;
 			}
 		}
 
-		return deletedCount;
+		return cleared;
 	} catch (error) {
-		console.error(`Error clearing cache with pattern ${pattern}:`, error);
+		console.error("Error clearing expired cache:", error);
 		return 0;
 	}
 };
 
 /**
  * Get cache statistics
- * @returns {Object} Cache stats
+ * @returns {Promise<Object>} - Cache statistics
  */
-export const getCacheStats = () => {
-	return cache.getStats();
-};
-
-/**
- * Flush all cache
- * @returns {boolean} Success status
- */
-export const flushAll = () => {
+export const getCacheStats = async () => {
 	try {
-		cache.flushAll();
-		return true;
-	} catch (error) {
-		console.error("Error flushing cache:", error);
-		return false;
-	}
-};
+		const now = Date.now();
+		let expired = 0;
+		let active = 0;
+		let totalSize = 0;
 
-export default {
-	createCache,
-	getFromCache,
-	deleteFromCache,
-	clearCache,
-	getCacheStats,
-	flushAll,
+		for (const [key, entry] of cache.entries()) {
+			if (entry.expiresAt <= now) {
+				expired++;
+			} else {
+				active++;
+				// Rough estimate of memory usage
+				totalSize += JSON.stringify(entry.data).length * 2; // Unicode characters are 2 bytes
+			}
+		}
+
+		return {
+			total: cache.size,
+			active,
+			expired,
+			totalSizeBytes: totalSize,
+			totalSizeKB: Math.round(totalSize / 1024),
+		};
+	} catch (error) {
+		console.error("Error getting cache stats:", error);
+		return {
+			total: 0,
+			active: 0,
+			expired: 0,
+			totalSizeBytes: 0,
+			totalSizeKB: 0,
+			error: error.message,
+		};
+	}
 };

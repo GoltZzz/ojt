@@ -1,9 +1,3 @@
-/**
- * Custom Modal Implementation
- * A lightweight, customizable modal system to replace Bootstrap modals
- */
-
-// Only define the class if it doesn't already exist
 if (typeof window.CustomModal === "undefined") {
 	class CustomModal {
 		constructor(id, options = {}) {

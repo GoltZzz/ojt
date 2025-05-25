@@ -134,6 +134,13 @@ const timeReportSchema = new Schema({
 		default: "",
 	},
 	excelFile: FileMetadataSchema,
+	pdfFile: {
+		filename: String,
+		path: String,
+		mimetype: String,
+		size: Number,
+		generatedFrom: String,
+	},
 	versions: [VersionSchema],
 	annotations: [AnnotationSchema],
 	summary: {

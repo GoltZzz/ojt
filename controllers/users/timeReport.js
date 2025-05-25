@@ -3,6 +3,7 @@ import TimeReport from "../../models/timeReport.js";
 import Week from "../../models/week.js";
 import dayjs from "dayjs";
 import excelService from "../../utils/excelService.js";
+import excelRendererService from "../../utils/excelRendererService.js";
 import crypto from "crypto";
 import path from "path";
 import fs from "fs/promises";
@@ -12,6 +13,10 @@ import {
 	getFromCache,
 	clearCache,
 } from "../../utils/cacheManager.js";
+import User from "../../models/users.js";
+import { xlsxUpload } from "../../utils/localUpload.js";
+import mongoose from "mongoose";
+import { convertXlsxToPdf } from "../../utils/pdfGenerators/xlsxToPdfConverter.js";
 
 // Constants
 const CACHE_TTL = 3600; // 1 hour cache lifetime
@@ -220,6 +225,16 @@ const uploadXlsxAndShowExcel = async (req, res) => {
 			return res.redirect(`/timereport/${existingReport._id}`);
 		}
 
+		// Convert Excel to PDF (like weekly reports do)
+		let pdfFile = null;
+		try {
+			pdfFile = await convertXlsxToPdf(req.file, fullName);
+		} catch (error) {
+			console.error("PDF conversion error:", error);
+			req.flash("error", `Failed to convert Excel to PDF: ${error.message}`);
+			return res.redirect("/timereport/new");
+		}
+
 		// Parse Excel file to extract metadata and preview
 		let parseResult;
 		let previewPath = null;
@@ -271,6 +286,8 @@ const uploadXlsxAndShowExcel = async (req, res) => {
 					},
 				}),
 			},
+			// Add the PDF file like weekly reports
+			pdfFile,
 		});
 
 		// If we have extracted week data, update the time report
@@ -288,8 +305,12 @@ const uploadXlsxAndShowExcel = async (req, res) => {
 		// Clear cached data for this user
 		await clearCache(`time-reports-${req.user._id}-*`);
 
-		// Redirect to show route with the uploaded filename
-		res.redirect(`/timereport/show/${encodeURIComponent(req.file.filename)}`);
+		req.flash(
+			"success",
+			"Successfully uploaded time report! Your Excel file has been converted to PDF."
+		);
+		// Redirect to show route with the timeReport ID instead of filename
+		res.redirect(`/timereport/${timeReport._id}`);
 	} catch (error) {
 		console.error("Error uploading XLSX:", error);
 		res.status(500).send("Failed to upload XLSX: " + error.message);
@@ -300,15 +321,22 @@ const uploadXlsxAndShowExcel = async (req, res) => {
  * Display the Excel file viewer
  */
 const showExcel = async (req, res) => {
+	console.log("showExcel called with req.params:", req.params);
+	console.log("showExcel called with req.url:", req.url);
 	const { filename } = req.params;
 	if (!filename) {
 		return res.status(400).send("No file specified.");
 	}
 
+	// Make sure we're just using the basename of the file, not a full path
+	const safeFilename = path.basename(filename);
+	console.log("Original filename:", filename);
+	console.log("Using safe filename in showExcel:", safeFilename);
+
 	try {
 		// Find the timeReport by Excel filename
 		const timeReport = await TimeReport.findOne({
-			"excelFile.filename": filename,
+			"excelFile.filename": safeFilename,
 		})
 			.populate({
 				path: "annotations.author",
@@ -332,8 +360,11 @@ const showExcel = async (req, res) => {
 		const protocol = req.protocol;
 
 		// Create absolute URL with proper encoding
-		const fileUrl = `${protocol}://${host}/uploads/excel/${encodeURIComponent(
-			filename
+		// Make sure we use https for external viewers if possible
+		const externalProtocol =
+			process.env.NODE_ENV === "production" ? "https" : protocol;
+		const fileUrl = `${externalProtocol}://${host}/uploads/excel/${encodeURIComponent(
+			safeFilename
 		)}`;
 
 		// For Microsoft Office Web Viewer
@@ -347,13 +378,23 @@ const showExcel = async (req, res) => {
 			fileUrl
 		)}`;
 
+		// Another alternative Microsoft URL format with UI
+		const msViewerAltUrl2 = `https://view.officeapps.live.com/op/view.aspx?ui=en-US&rs=en-US&src=${encodeURIComponent(
+			fileUrl
+		)}`;
+
 		// For Google Docs Viewer
 		const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(
 			fileUrl
 		)}&embedded=true`;
 
+		// Office Online viewer with different parameters
+		const office365ViewerUrl = `https://view.officeapps.live.com/op/view.aspx?ui=en-US&rs=en-US&wopisrc=${encodeURIComponent(
+			fileUrl
+		)}&wdEnableRoaming=1&wdOrigin=${encodeURIComponent(host)}`;
+
 		// Direct file access (for download links)
-		const directFileUrl = `/uploads/excel/${encodeURIComponent(filename)}`;
+		const directFileUrl = `/uploads/excel/${encodeURIComponent(safeFilename)}`;
 
 		// Check for parsed data and preview image
 		let parsedData = null;
@@ -374,19 +415,223 @@ const showExcel = async (req, res) => {
 			)}`;
 		}
 
+		// Generate server-side rendered HTML for the Excel file
+		const filePath = path.join(
+			process.cwd(),
+			"public/uploads/excel",
+			safeFilename
+		);
+
+		// Use cache key based on file path and last modified time to avoid re-rendering unchanged files
+		const fileStats = await fs.stat(filePath);
+		const cacheKey = `excel-render-${safeFilename}-${fileStats.mtimeMs}`;
+
+		let serverRenderedHtml = await getFromCache(cacheKey);
+
+		if (!serverRenderedHtml) {
+			try {
+				// Render the Excel file to HTML
+				const renderResult = await excelRendererService.renderToHtml(filePath);
+				serverRenderedHtml = renderResult;
+
+				// Cache the result for future requests
+				await createCache(cacheKey, serverRenderedHtml, 3600); // Cache for 1 hour
+
+				// If we don't have a preview image yet, generate one
+				if (!previewUrl && timeReport) {
+					const previewPath = await excelRendererService.generatePreviewImage(
+						filePath
+					);
+
+					if (previewPath) {
+						// Update the timeReport with the new preview path
+						if (!timeReport.excelFile.preview) {
+							timeReport.excelFile.preview = {};
+						}
+
+						timeReport.excelFile.preview.path = previewPath;
+						timeReport.excelFile.preview.generated = new Date();
+						await timeReport.save();
+
+						// Set the preview URL for the current request
+						previewUrl = `/uploads/excel/previews/${path.basename(
+							previewPath
+						)}`;
+					}
+				}
+			} catch (renderError) {
+				console.error("Error rendering Excel file:", renderError);
+				// Continue without server-rendered HTML if there's an error
+				serverRenderedHtml = null;
+			}
+		}
+
+		console.log(
+			"About to render showExcel template with filename:",
+			safeFilename
+		);
 		// Render the showExcel template with all necessary data
 		res.render("timeReport/showExcel", {
-			filename,
+			excelFilename: safeFilename,
 			timeReport: timeReport || null,
 			fileUrl,
 			msViewerUrl,
 			msViewerAltUrl,
+			msViewerAltUrl2,
 			googleViewerUrl,
+			office365ViewerUrl,
 			directFileUrl,
 			parsedData,
 			previewUrl,
+			serverRenderedHtml,
 			annotations: timeReport ? timeReport.annotations : [],
 			versions: timeReport ? timeReport.versions : [],
+		});
+	} catch (error) {
+		console.error("Error showing Excel file:", error);
+		res.status(500).send("Error displaying Excel file: " + error.message);
+	}
+};
+
+/**
+ * Display the server-rendered Excel file viewer
+ */
+const showServerExcel = async (req, res) => {
+	try {
+		console.log("showServerExcel called with params:", req.params);
+		const { filename } = req.params;
+		if (!filename) {
+			console.log("No filename provided");
+			return res.status(400).send("No file specified.");
+		}
+
+		// Make sure we're just using the basename of the file, not a full path
+		const safeFilename = path.basename(filename);
+		console.log("Using safe filename:", safeFilename);
+
+		// Find the timeReport by Excel filename
+		const timeReport = await TimeReport.findOne({
+			"excelFile.filename": safeFilename,
+		})
+			.populate({
+				path: "annotations.author",
+				model: "User",
+				select: "firstName lastName",
+			})
+			.populate({
+				path: "versions.updatedBy",
+				model: "User",
+				select: "firstName lastName",
+			});
+
+		console.log("Found timeReport:", timeReport ? "Yes" : "No");
+
+		if (timeReport) {
+			// Register this view for analytics
+			await timeReport.registerView();
+		}
+
+		// Direct file access (for download links)
+		const directFileUrl = `/uploads/excel/${encodeURIComponent(safeFilename)}`;
+
+		// Check for preview image
+		let previewUrl = null;
+
+		if (
+			timeReport &&
+			timeReport.excelFile &&
+			timeReport.excelFile.preview &&
+			timeReport.excelFile.preview.path
+		) {
+			previewUrl = `/uploads/excel/previews/${path.basename(
+				timeReport.excelFile.preview.path
+			)}`;
+		}
+
+		// Generate server-side rendered HTML for the Excel file
+		const filePath = path.join(
+			process.cwd(),
+			"public/uploads/excel",
+			safeFilename
+		);
+		console.log("Looking for Excel file at:", filePath);
+
+		// Check if file exists
+		try {
+			await fs.access(filePath);
+			console.log("Excel file exists");
+		} catch (err) {
+			console.error("Excel file does not exist:", err.message);
+			return res.status(404).send("Excel file not found");
+		}
+
+		// Use cache key based on file path and last modified time to avoid re-rendering unchanged files
+		const fileStats = await fs.stat(filePath);
+		const cacheKey = `excel-render-${safeFilename}-${fileStats.mtimeMs}`;
+
+		let serverRenderedHtml = await getFromCache(cacheKey);
+		console.log("Found cached render:", serverRenderedHtml ? "Yes" : "No");
+
+		if (!serverRenderedHtml) {
+			try {
+				// Render the Excel file to HTML
+				console.log("Attempting to render Excel file...");
+				const renderResult = await excelRendererService.renderToHtml(filePath);
+				serverRenderedHtml = renderResult;
+				console.log("Excel rendering successful");
+
+				// Cache the result for future requests
+				await createCache(cacheKey, serverRenderedHtml, 3600); // Cache for 1 hour
+
+				// If we don't have a preview image yet, generate one
+				if (!previewUrl && timeReport) {
+					console.log("Generating preview image...");
+					const previewPath = await excelRendererService.generatePreviewImage(
+						filePath
+					);
+
+					if (previewPath) {
+						console.log("Preview image generated:", previewPath);
+						// Update the timeReport with the new preview path
+						if (!timeReport.excelFile.preview) {
+							timeReport.excelFile.preview = {};
+						}
+
+						timeReport.excelFile.preview.path = previewPath;
+						timeReport.excelFile.preview.generated = new Date();
+						await timeReport.save();
+
+						// Set the preview URL for the current request
+						previewUrl = `/uploads/excel/previews/${path.basename(
+							previewPath
+						)}`;
+					}
+				}
+			} catch (renderError) {
+				console.error("Error rendering Excel file:", renderError);
+				// Continue without server-rendered HTML if there's an error
+				serverRenderedHtml = null;
+			}
+		}
+
+		console.log("About to render serverExcelViewer template");
+		console.log("Variables being passed to template:");
+		console.log("- excelFilename:", safeFilename);
+		console.log("- timeReport:", timeReport ? "exists" : "null");
+		console.log("- directFileUrl:", directFileUrl);
+		console.log("- previewUrl:", previewUrl);
+		console.log("- currentUser:", req.user ? "exists" : "null");
+
+		// Render the serverExcelViewer template with all necessary data
+		res.render("timeReport/serverExcelViewer", {
+			excelFilename: safeFilename,
+			timeReport: timeReport || null,
+			directFileUrl,
+			previewUrl,
+			serverRenderedHtml,
+			annotations: timeReport ? timeReport.annotations : [],
+			versions: timeReport ? timeReport.versions : [],
+			currentUser: req.user,
 		});
 	} catch (error) {
 		console.error("Error showing Excel file:", error);
@@ -420,15 +665,7 @@ const showTimeReport = async (req, res) => {
 		// Register this view for analytics
 		await timeReport.registerView();
 
-		// If the timeReport has an Excel file attached
-		if (timeReport.excelFile && timeReport.excelFile.filename) {
-			// Redirect to the Excel viewer page
-			return res.redirect(
-				`/timereport/show/${encodeURIComponent(timeReport.excelFile.filename)}`
-			);
-		}
-
-		// For legacy time reports without Excel files, show a simple view
+		// Display the time report with PDF if available
 		res.render("timeReport/show", { timeReport });
 	} catch (error) {
 		console.error("Error finding time report:", error);
@@ -613,6 +850,7 @@ export default {
 	createTimeReport,
 	uploadXlsxAndShowExcel,
 	showExcel,
+	showServerExcel,
 	showTimeReport,
 	deleteTimeReport,
 	addAnnotation,

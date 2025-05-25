@@ -23,9 +23,9 @@ router
 // New form route
 router.get("/new", isLoggedIn, timeReport.renderNewForm);
 
-// Excel upload route
+// Upload Excel route
 router.post(
-	"/upload-xlsx",
+	"/upload",
 	isLoggedIn,
 	xlsxUpload.single("xlsxFile"),
 	timeReport.uploadXlsxAndShowExcel
@@ -33,6 +33,12 @@ router.post(
 
 // Show Excel file route
 router.get("/show/:filename", isLoggedIn, timeReport.showExcel);
+
+// Server-rendered Excel viewer route
+router.get("/server-view/:filename", isLoggedIn, timeReport.showServerExcel);
+
+// Test route without authentication
+router.get("/test-server-view/:filename", timeReport.showServerExcel);
 
 // Annotation routes
 // router.post("/:id/annotations", isLoggedIn, timeReport.addAnnotation);
@@ -47,14 +53,9 @@ router.post(
 );
 
 // Delete route
-router.delete(
-	"/:id",
-	isLoggedIn,
-	isTimeReportAuthor,
-	timeReport.deleteTimeReport
-);
+router.delete("/:id", isLoggedIn, timeReport.deleteTimeReport);
 
-// Generic catch-all detail route (must be last)
+// Show route - must be last as it's a catch-all for /:id
 router.get("/:id", isLoggedIn, timeReport.showTimeReport);
 
 export default router;

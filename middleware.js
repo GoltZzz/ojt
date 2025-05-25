@@ -32,6 +32,22 @@ export const isAuthor = async (req, res, next) => {
 		req.flash("error", "You are not authorized to do that!");
 		return res.redirect(`/weeklyreport/${id}`);
 	}
+
+	// Special case: Allow deletion even for approved reports
+	if (req.method === "DELETE") {
+		// Add report to request for use in subsequent middleware/routes
+		req.report = report;
+		return next();
+	}
+
+	// For non-DELETE operations, check if the report is approved
+	if (report.status === "approved" && req.method !== "GET") {
+		req.flash("error", "You cannot modify an approved report!");
+		return res.redirect(`/weeklyreport/${id}`);
+	}
+
+	// Add report to request for use in subsequent middleware/routes
+	req.report = report;
 	next();
 };
 
@@ -47,6 +63,19 @@ export const isTimeReportAuthor = async (req, res, next) => {
 
 		if (!timeReport.author.equals(req.user._id)) {
 			req.flash("error", "You are not authorized to modify this time report!");
+			return res.redirect(`/timereport/${id}`);
+		}
+
+		// Special case: Allow deletion even for approved reports
+		if (req.method === "DELETE") {
+			// Add timeReport to request for use in subsequent middleware/routes
+			req.timeReport = timeReport;
+			return next();
+		}
+
+		// For non-DELETE operations, check if the report is approved
+		if (timeReport.status === "approved" && req.method !== "GET") {
+			req.flash("error", "You cannot modify an approved report!");
 			return res.redirect(`/timereport/${id}`);
 		}
 

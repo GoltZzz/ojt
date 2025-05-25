@@ -41,6 +41,11 @@ const isReportAuthor = (reportType) => {
 				return res.redirect(`${redirectPath}/${id}`);
 			}
 
+			// Special case: Allow deletion even for approved reports
+			if (req.method === "DELETE") {
+				return next();
+			}
+
 			// If the report is approved, don't allow edits (rejected reports can be edited)
 			if (report.status === "approved") {
 				req.flash("error", "You cannot modify an approved report");

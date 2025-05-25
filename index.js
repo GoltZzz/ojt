@@ -16,6 +16,7 @@ import pendingReportsCount from "./middleware/pendingReportsCount.js";
 import cron from "node-cron";
 import { checkAndCreateNextWeek } from "./controllers/admin/weeklySummary.js";
 import multer from "multer";
+import fs from "fs";
 
 const app = express();
 
@@ -62,13 +63,39 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/pdfs", express.static(path.join(__dirname, "uploads/pdfs")));
+
+// Ensure uploads/excel/previews directory exists
+const previewsDir = path.join(process.cwd(), "public/uploads/excel/previews");
+if (!fs.existsSync(previewsDir)) {
+	console.log(`Creating directory: ${previewsDir}`);
+	fs.mkdirSync(previewsDir, { recursive: true });
+}
+
 app.use(
 	"/uploads/excel",
 	(req, res, next) => {
 		// Set proper headers for Excel files
 		res.setHeader("Access-Control-Allow-Origin", "*");
-		// Don't force content type - let the browser detect it
-		// res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+		res.setHeader(
+			"Access-Control-Allow-Headers",
+			"Content-Type, Content-Disposition"
+		);
+		res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+		res.setHeader("Cross-Origin-Embedder-Policy", "credentialless");
+
+		// Set content type based on file extension
+		const filePath = req.path;
+		if (filePath.endsWith(".xlsx")) {
+			res.setHeader(
+				"Content-Type",
+				"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+			);
+		} else if (filePath.endsWith(".xls")) {
+			res.setHeader("Content-Type", "application/vnd.ms-excel");
+		}
+
+		// Set content disposition to inline to allow viewing in browser
 		res.setHeader("Content-Disposition", "inline");
 		next();
 	},
@@ -136,45 +163,6 @@ app.use("/", userRoutes);
 app.get("/", async (req, res) => {
 	const userCount = await User.countDocuments({});
 	res.render("home", { hasUsers: userCount > 0 });
-});
-
-const storage = multer.diskStorage({
-	destination: function (req, file, cb) {
-		cb(null, "uploads/excel");
-	},
-	filename: function (req, file, cb) {
-		cb(null, Date.now() + "-" + file.originalname);
-	},
-});
-const fileFilter = (req, file, cb) => {
-	if (
-		file.mimetype ===
-		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-	) {
-		cb(null, true);
-	} else {
-		cb(new Error("Only .xlsx files are allowed!"), false);
-	}
-};
-const upload = multer({ storage, fileFilter });
-
-app.get("/excel/upload", (req, res) => {
-	res.render("excel_upload");
-});
-
-app.post("/excel/upload", upload.single("excelFile"), (req, res) => {
-	if (!req.file) {
-		return res.status(400).send("No file uploaded or invalid file type.");
-	}
-	res.redirect(`/excel/show/${encodeURIComponent(req.file.filename)}`);
-});
-
-app.get("/excel/show/:filename", (req, res) => {
-	const filename = req.params.filename;
-	const fileUrl = `${req.protocol}://${req.get(
-		"host"
-	)}/uploads/excel/${encodeURIComponent(filename)}`;
-	res.render("excel_show", { fileUrl, filename });
 });
 
 app.all("*", (req, res, next) => {

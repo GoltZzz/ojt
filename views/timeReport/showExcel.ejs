@@ -72,7 +72,7 @@
 		<div class="col-md-4 text-end">
 			<div class="d-grid gap-2">
 				<a
-					href="/uploads/excel/<%= filename %>"
+					href="/uploads/excel/<%= excelFilename %>"
 					download
 					class="btn btn-primary">
 					<i class="fas fa-file-download"></i> Download Excel File
@@ -94,138 +94,286 @@
 		</div>
 	</div>
 
-	<div class="card mb-4">
-		<div
-			class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-			<h4 class="mb-0">Excel Time Report Viewer</h4>
-			<div class="dropdown">
-				<button
-					class="btn btn-sm btn-light dropdown-toggle"
-					type="button"
-					id="viewerOptions"
-					data-bs-toggle="dropdown"
-					aria-expanded="false">
-					Viewer Options
-				</button>
-				<ul
-					class="dropdown-menu dropdown-menu-end"
-					aria-labelledby="viewerOptions">
-					<li>
-						<button class="dropdown-item" id="jsViewerBtn" type="button">
-							JS Viewer (Recommended)
-						</button>
-					</li>
-					<li>
-						<button class="dropdown-item" id="msViewerBtn" type="button">
-							Microsoft Viewer
-						</button>
-					</li>
-					<li>
-						<button class="dropdown-item" id="msAltViewerBtn" type="button">
-							Microsoft Alt Viewer
-						</button>
-					</li>
-					<li>
-						<button class="dropdown-item" id="googleViewerBtn" type="button">
-							Google Viewer
-						</button>
-					</li>
-					<li>
-						<button class="dropdown-item" id="embedViewerBtn" type="button">
-							Basic Viewer
-						</button>
-					</li>
-					<li><hr class="dropdown-divider" /></li>
-					<li>
-						<a class="dropdown-item" href="<%= directFileUrl %>" download
-							>Download File</a
+	<div class="card mb-4 shadow-sm border-0">
+		<div class="card-header bg-gradient-primary text-white border-0">
+			<div
+				class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+				<div class="d-flex align-items-center">
+					<div class="me-3">
+						<i class="fas fa-file-excel fa-2x opacity-75"></i>
+					</div>
+					<div>
+						<h4 class="mb-1 fw-bold">Excel Time Report Viewer</h4>
+						<small class="opacity-75"
+							>Interactive spreadsheet viewer with formula support</small
 						>
-					</li>
-				</ul>
+					</div>
+				</div>
+				<div class="btn-toolbar" role="toolbar">
+					<div class="btn-group me-2" role="group">
+						<button id="toggleViewBtn" class="btn btn-light btn-sm">
+							<i class="fas fa-exchange-alt me-1"></i>
+							<span class="d-none d-sm-inline">Toggle View</span>
+						</button>
+						<a
+							href="/timereport/server-view/<%= excelFilename %>"
+							class="btn btn-light btn-sm">
+							<i class="fas fa-server me-1"></i>
+							<span class="d-none d-sm-inline">Server View</span>
+						</a>
+					</div>
+					<div class="btn-group" role="group">
+						<a
+							href="/uploads/excel/<%= excelFilename %>"
+							download
+							class="btn btn-outline-light btn-sm">
+							<i class="fas fa-download me-1"></i>
+							<span class="d-none d-sm-inline">Download</span>
+						</a>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div class="card-body p-0">
-			<div id="jsViewer" style="display: none">
-				<div class="p-3">
-					<div class="alert alert-info mb-4">
-						<i class="fas fa-info-circle me-2"></i>
-						This viewer shows a simplified version of the Excel file directly in
-						your browser.
+			<!-- Server Rendered Excel Preview (default) -->
+			<div id="serverRenderedViewer">
+				<div class="excel-viewer-container">
+					<div id="server-excel-container" class="h-100">
+						<% if (typeof serverRenderedHtml === 'object' && serverRenderedHtml
+						&& serverRenderedHtml.sheets) { %>
+						<div class="server-excel-viewer">
+							<!-- Enhanced Sheet tabs -->
+							<div class="sheet-tabs-container bg-light border-bottom">
+								<div class="container-fluid px-3 py-2">
+									<div
+										class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+										<div class="sheet-tabs flex-grow-1">
+											<ul class="nav nav-pills nav-fill" role="tablist">
+												<% serverRenderedHtml.sheets.forEach((sheet, index) => {
+												%>
+												<li class="nav-item" role="presentation">
+													<button
+														class="nav-link <%= index === 0 ? 'active' : '' %> rounded-pill px-3"
+														onclick="showServerSheet('<%= sheet.name %>')"
+														data-sheet-name="<%= sheet.name %>"
+														type="button"
+														role="tab">
+														<i class="fas fa-table me-1"></i>
+														<%= sheet.name %> <% if (sheet.hasFormulas) { %>
+														<span
+															class="badge bg-primary ms-1"
+															title="Contains formulas"
+															>ƒ</span
+														>
+														<% } %>
+													</button>
+												</li>
+												<% }); %>
+											</ul>
+										</div>
+										<div class="sheet-info text-muted small">
+											<i class="fas fa-info-circle me-1"></i>
+											<span class="d-none d-md-inline">Showing </span><%=
+											serverRenderedHtml.metadata.renderedSheets %> of <%=
+											serverRenderedHtml.metadata.totalSheets %> sheets
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Enhanced Sheet content -->
+							<div class="sheet-content-wrapper">
+								<% serverRenderedHtml.sheets.forEach((sheet, index) => { %>
+								<div
+									class="server-sheet-container <%= index === 0 ? 'server-sheet-active' : '' %>"
+									id="server-sheet-<%= sheet.name %>">
+									<!-- Sheet content with modern styling -->
+									<div class="excel-content-area"><%- sheet.html %></div>
+
+									<% if (sheet.isTruncated) { %>
+									<div class="alert alert-info mx-3 mb-3 border-0 shadow-sm">
+										<div class="d-flex align-items-center">
+											<i class="fas fa-info-circle text-info me-2"></i>
+											<div class="flex-grow-1">
+												<strong>Content Truncated</strong>
+												<p class="mb-2 small">
+													This sheet has been truncated for optimal performance.
+												</p>
+											</div>
+											<a
+												href="/uploads/excel/<%= excelFilename %>"
+												download
+												class="btn btn-sm btn-outline-info">
+												<i class="fas fa-download me-1"></i>Download Full File
+											</a>
+										</div>
+									</div>
+									<% } %>
+								</div>
+								<% }); %>
+							</div>
+						</div>
+						<% } else { %>
+						<div class="excel-error-state p-4 text-center">
+							<div class="py-5">
+								<i
+									class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+								<h5 class="fw-bold">Server Rendering Unavailable</h5>
+								<p class="text-muted mb-4">
+									Could not generate a server-side preview for this Excel file.
+								</p>
+								<div
+									class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+									<a
+										href="/timereport/show/<%= excelFilename %>"
+										class="btn btn-primary">
+										<i class="fas fa-desktop me-1"></i> Try Office Viewer
+									</a>
+									<a
+										href="/uploads/excel/<%= excelFilename %>"
+										download
+										class="btn btn-outline-secondary">
+										<i class="fas fa-download me-1"></i> Download File
+									</a>
+								</div>
+							</div>
+						</div>
+						<% } %>
 					</div>
-					<div id="sheetjs-container" class="border rounded p-2 my-3">
+				</div>
+			</div>
+
+			<!-- Simple Excel Preview -->
+			<div id="simpleViewer" style="display: none">
+				<div class="excel-viewer-container">
+					<div id="excel-preview-container" class="h-100">
 						<div id="loading-indicator" class="text-center py-5">
-							<div class="spinner-border text-primary" role="status">
+							<div class="spinner-border text-primary mb-3" role="status">
 								<span class="visually-hidden">Loading...</span>
 							</div>
-							<p class="mt-3">Loading Excel file...</p>
+							<h6 class="fw-bold">Loading Preview...</h6>
+							<p class="text-muted small">Processing Excel file data</p>
 						</div>
-						<div
-							id="excel-data"
-							class="overflow-auto"
-							style="max-height: 500px"></div>
+						<div id="excel-preview" class="excel-content-area"></div>
 					</div>
 				</div>
 			</div>
-			<div id="msViewer">
-				<iframe
-					src="<%= msViewerUrl %>"
-					width="100%"
-					height="600px"
-					style="border: none"
-					id="msOfficeFrame"></iframe>
-			</div>
-			<div id="msAltViewer" style="display: none">
-				<iframe
-					src="<%= msViewerAltUrl %>"
-					width="100%"
-					height="600px"
-					style="border: none"
-					id="msAltOfficeFrame"></iframe>
-			</div>
-			<div id="googleViewer" style="display: none">
-				<iframe
-					src="<%= googleViewerUrl %>"
-					width="100%"
-					height="600px"
-					style="border: none"
-					id="googleFrame"></iframe>
-			</div>
-			<div id="embedViewer" style="display: none">
-				<div class="text-center p-4">
-					<p class="mb-4 text-muted">
-						Basic preview may not work for all Excel files. If you see an error,
-						please try another viewer option or download the file.
-					</p>
-					<object
-						data="/uploads/excel/<%= filename %>"
-						type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-						width="100%"
-						height="500px">
-						<div class="alert alert-warning mt-3">
-							<i class="fas fa-exclamation-circle me-2"></i>
-							Your browser doesn't support direct Excel previews. Please use
-							another viewer option or download the file.
+
+			<!-- Enhanced iframe viewer -->
+			<div id="defaultViewer" style="display: none">
+				<div class="office-viewer-container">
+					<!-- Enhanced error container -->
+					<div
+						id="frame-error-container"
+						style="display: none"
+						class="alert alert-warning mx-3 mt-3 border-0 shadow-sm">
+						<div class="d-flex align-items-start">
+							<i class="fas fa-exclamation-triangle text-warning me-3 mt-1"></i>
+							<div class="flex-grow-1">
+								<h6 class="fw-bold mb-2">Microsoft Office Viewer Blocked</h6>
+								<p class="mb-3 small">
+									Microsoft is preventing the viewer from being embedded due to
+									security restrictions (X-Frame-Options: sameorigin).
+								</p>
+								<div class="d-flex flex-column flex-sm-row gap-2">
+									<button id="switchToServerBtn" class="btn btn-primary btn-sm">
+										<i class="fas fa-server me-1"></i> Use Server Viewer
+									</button>
+									<a
+										href="/uploads/excel/<%= excelFilename %>"
+										download
+										class="btn btn-outline-secondary btn-sm">
+										<i class="fas fa-download me-1"></i> Download File
+									</a>
+								</div>
+							</div>
 						</div>
-					</object>
+					</div>
+
+					<!-- Modern iframe container -->
+					<div class="iframe-container">
+						<iframe
+							src="https://view.officeapps.live.com/op/embed.aspx?src=<%= encodeURIComponent(fileUrl) %>"
+							class="office-iframe"
+							id="officeFrame"
+							sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
+							loading="lazy"
+							referrerpolicy="no-referrer"
+							allow="fullscreen"
+							onerror="handleFrameError()"></iframe>
+					</div>
+
+					<!-- Enhanced alternative viewers -->
+					<div class="alternative-viewers p-3" style="display: none">
+						<div class="text-center">
+							<h6 class="fw-bold mb-3">Alternative Viewers</h6>
+							<div
+								class="btn-group-vertical btn-group-sm d-sm-none"
+								role="group">
+								<button id="tryAltMsViewer" class="btn btn-outline-primary">
+									<i class="fas fa-sync-alt me-1"></i> Microsoft Viewer Alt 1
+								</button>
+								<button id="tryAltMsViewer2" class="btn btn-outline-primary">
+									<i class="fas fa-sync-alt me-1"></i> Microsoft Viewer Alt 2
+								</button>
+								<button id="tryOffice365Viewer" class="btn btn-outline-primary">
+									<i class="fab fa-microsoft me-1"></i> Office 365 Viewer
+								</button>
+								<button id="tryGoogleViewer" class="btn btn-outline-secondary">
+									<i class="fab fa-google me-1"></i> Google Docs Viewer
+								</button>
+							</div>
+							<div class="btn-group d-none d-sm-flex" role="group">
+								<button
+									id="tryAltMsViewer"
+									class="btn btn-outline-primary btn-sm">
+									<i class="fas fa-sync-alt me-1"></i> Alt MS Viewer 1
+								</button>
+								<button
+									id="tryAltMsViewer2"
+									class="btn btn-outline-primary btn-sm">
+									<i class="fas fa-sync-alt me-1"></i> Alt MS Viewer 2
+								</button>
+								<button
+									id="tryOffice365Viewer"
+									class="btn btn-outline-primary btn-sm">
+									<i class="fab fa-microsoft me-1"></i> Office 365
+								</button>
+								<button
+									id="tryGoogleViewer"
+									class="btn btn-outline-secondary btn-sm">
+									<i class="fab fa-google me-1"></i> Google Docs
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
-			</div>
-			<div
-				id="viewError"
-				class="p-5 text-center bg-light"
-				style="display: none">
-				<div class="py-5">
-					<i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
-					<h5>Unable to display the Excel file</h5>
-					<p class="text-muted mb-4">
-						The viewer is having trouble displaying this file. You can still
-						download it to view locally.
-					</p>
-					<a
-						href="/uploads/excel/<%= filename %>"
-						class="btn btn-primary"
-						download>
-						<i class="fas fa-download me-2"></i>Download Excel File
-					</a>
+
+				<!-- Enhanced fallback message -->
+				<div
+					id="fallbackMessage"
+					class="excel-error-state p-4 text-center"
+					style="display: none">
+					<div class="py-4">
+						<i class="fas fa-times-circle text-danger fa-3x mb-3"></i>
+						<h5 class="fw-bold">Microsoft Viewer Unavailable</h5>
+						<p class="text-muted mb-4">
+							The Microsoft Office viewer is currently not available. Please try
+							an alternative option.
+						</p>
+						<div
+							class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+							<button id="showSimpleViewBtn" class="btn btn-primary">
+								<i class="fas fa-table me-1"></i> Show Simple View
+							</button>
+							<a
+								href="/uploads/excel/<%= excelFilename %>"
+								download
+								class="btn btn-outline-secondary">
+								<i class="fas fa-download me-1"></i> Download Excel
+							</a>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -416,251 +564,887 @@ currentUser._id.toString()) { %>
 </div>
 <% } %>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+	/* Modern Excel Viewer Styles */
+	.bg-gradient-primary {
+		background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+	}
+
+	/* Excel Viewer Container */
+	.excel-viewer-container {
+		min-height: 600px;
+		background: #f8f9fa;
+	}
+
+	.excel-content-area {
+		padding: 1rem;
+		overflow: auto;
+		max-height: 70vh;
+		background: white;
+		border-radius: 0.375rem;
+		margin: 1rem;
+		box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+	}
+
+	/* Enhanced Sheet Tabs */
+	.sheet-tabs-container {
+		background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+		border-bottom: 2px solid #dee2e6;
+	}
+
+	.sheet-tabs .nav-pills .nav-link {
+		color: #6c757d;
+		background: transparent;
+		border: 1px solid transparent;
+		transition: all 0.3s ease;
+		font-weight: 500;
+		font-size: 0.875rem;
+	}
+
+	.sheet-tabs .nav-pills .nav-link:hover {
+		color: #007bff;
+		background: rgba(0, 123, 255, 0.1);
+		border-color: rgba(0, 123, 255, 0.2);
+		transform: translateY(-1px);
+	}
+
+	.sheet-tabs .nav-pills .nav-link.active {
+		color: white;
+		background: #007bff;
+		border-color: #007bff;
+		box-shadow: 0 0.25rem 0.5rem rgba(0, 123, 255, 0.3);
+	}
+
+	.sheet-info {
+		font-size: 0.75rem;
+		white-space: nowrap;
+	}
+
+	/* Sheet Content Wrapper */
+	.sheet-content-wrapper {
+		background: #f8f9fa;
+		min-height: 500px;
+	}
+
+	/* Server-rendered Excel styles */
+	.server-excel-viewer {
+		font-family: "Segoe UI", "Calibri", sans-serif;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		background: #f8f9fa;
+	}
+
+	.excel-sheet {
+		margin-bottom: 0;
+		background: white;
+		border-radius: 0.375rem;
+		overflow: hidden;
+		box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+	}
+
+	.excel-table {
+		border-collapse: collapse;
+		width: 100%;
+		font-size: 0.875rem;
+		background: white;
+	}
+
+	.excel-table th,
+	.excel-table td {
+		border: 1px solid #e9ecef;
+		padding: 0.5rem 0.75rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		max-width: 150px;
+		position: relative;
+		transition: all 0.2s ease;
+	}
+
+	.corner-header {
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		width: 40px;
+		font-weight: 600;
+		color: #6c757d;
+	}
+
+	.row-header,
+	.col-header {
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		font-weight: 600;
+		text-align: center;
+		color: #495057;
+		font-size: 0.8rem;
+	}
+
+	/* Enhanced Formula Cell Styles */
+	.formula-cell {
+		background: linear-gradient(135deg, #f8f8ff 0%, #f0f0ff 100%);
+		color: #0066cc;
+		position: relative;
+		font-weight: 500;
+	}
+
+	.formula-cell.formula-highlighted {
+		background: linear-gradient(135deg, #e6f3ff 0%, #cce7ff 100%) !important;
+		border: 2px solid #007bff !important;
+		box-shadow: 0 0 0.5rem rgba(0, 123, 255, 0.25);
+		transform: scale(1.02);
+	}
+
+	.formula-cell::before {
+		content: "ƒ";
+		position: absolute;
+		top: 2px;
+		right: 4px;
+		font-size: 10px;
+		color: #007bff;
+		font-weight: bold;
+		opacity: 0.8;
+		background: rgba(255, 255, 255, 0.9);
+		border-radius: 50%;
+		width: 16px;
+		height: 16px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.formula-cell.formula-highlighted::before {
+		opacity: 1;
+		color: #0056b3;
+		background: rgba(255, 255, 255, 1);
+	}
+
+	/* Enhanced Cell Type Styles */
+	.date-cell {
+		color: #198754;
+		background: linear-gradient(135deg, #f0fff4 0%, #e6ffed 100%);
+		font-weight: 500;
+	}
+
+	.number-cell {
+		font-family: "SF Mono", "Monaco", "Consolas", monospace;
+		text-align: right;
+		background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+		color: #495057;
+		font-weight: 500;
+	}
+
+	.boolean-cell {
+		text-align: center;
+		font-weight: bold;
+		color: #6f42c1;
+		background: linear-gradient(135deg, #f8f5ff 0%, #f0ebff 100%);
+	}
+
+	.error-cell {
+		background: linear-gradient(135deg, #ffe6e6 0%, #ffcccc 100%);
+		color: #dc3545;
+		font-weight: bold;
+	}
+
+	.text-cell {
+		color: #212529;
+		background: white;
+	}
+
+	.total-header {
+		font-weight: bold;
+		background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+		border: 2px solid #ffc107;
+		color: #856404;
+	}
+
+	/* Enhanced Formula Controls */
+	.formula-controls {
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		border: 1px solid #dee2e6;
+		border-radius: 0.5rem;
+		padding: 1rem;
+		margin: 1rem;
+		box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+	}
+
+	.formula-controls .form-check-input:checked {
+		background-color: #007bff;
+		border-color: #007bff;
+		box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+	}
+
+	.formula-controls .form-check-label {
+		cursor: pointer;
+		user-select: none;
+		font-weight: 500;
+		color: #495057;
+		transition: color 0.2s ease;
+	}
+
+	.formula-controls .form-check-label:hover {
+		color: #007bff;
+	}
+
+	.formula-controls .form-check-label i {
+		margin-right: 0.5rem;
+		width: 1rem;
+		text-align: center;
+	}
+
+	/* Cell Content Toggle */
+	.cell-value,
+	.cell-formula {
+		display: inline;
+		transition: all 0.3s ease;
+	}
+
+	.show-formulas .cell-value {
+		display: none;
+	}
+
+	.show-formulas .cell-formula {
+		display: inline;
+		font-family: "SF Mono", "Monaco", "Consolas", monospace;
+		color: #0066cc;
+		font-weight: 600;
+		background: rgba(0, 102, 204, 0.1);
+		padding: 0.125rem 0.25rem;
+		border-radius: 0.25rem;
+	}
+
+	/* Enhanced Tooltips */
+	.excel-table td[title] {
+		cursor: help;
+	}
+
+	.excel-table td[data-has-formula="true"] {
+		cursor: pointer;
+	}
+
+	/* Enhanced Hover Effects */
+	.excel-table td:hover {
+		background: linear-gradient(
+			135deg,
+			rgba(0, 123, 255, 0.1) 0%,
+			rgba(0, 123, 255, 0.05) 100%
+		) !important;
+		transform: scale(1.02);
+		z-index: 10;
+		box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+	}
+
+	.formula-cell:hover {
+		background: linear-gradient(
+			135deg,
+			rgba(0, 123, 255, 0.2) 0%,
+			rgba(0, 123, 255, 0.1) 100%
+		) !important;
+	}
+
+	/* Modern iframe container */
+	.iframe-container {
+		position: relative;
+		height: 600px;
+		background: #f8f9fa;
+		border-radius: 0.375rem;
+		margin: 1rem;
+		overflow: hidden;
+		box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+	}
+
+	.office-iframe {
+		width: 100%;
+		height: 100%;
+		border: none;
+		border-radius: 0.375rem;
+	}
+
+	/* Error states */
+	.excel-error-state {
+		background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+		border-radius: 0.5rem;
+		margin: 1rem;
+	}
+
+	.excel-error-state i {
+		opacity: 0.7;
+	}
+
+	/* Sheet display classes */
+	.server-sheet-container {
+		display: none;
+		animation: fadeIn 0.3s ease-in-out;
+	}
+
+	.server-sheet-active {
+		display: block;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	/* Enhanced responsive styles */
+	@media (max-width: 768px) {
+		.excel-content-area {
+			margin: 0.5rem;
+			padding: 0.5rem;
+			max-height: 60vh;
+		}
+
+		.formula-controls {
+			margin: 0.5rem;
+			padding: 0.75rem;
+			flex-direction: column;
+		}
+
+		.formula-controls .form-check {
+			margin-bottom: 0.75rem;
+		}
+
+		.excel-table th,
+		.excel-table td {
+			max-width: 80px;
+			font-size: 0.75rem;
+			padding: 0.375rem 0.5rem;
+		}
+
+		.sheet-tabs .nav-pills .nav-link {
+			font-size: 0.75rem;
+			padding: 0.375rem 0.75rem;
+		}
+
+		.iframe-container {
+			height: 400px;
+			margin: 0.5rem;
+		}
+
+		.excel-error-state {
+			margin: 0.5rem;
+			padding: 1rem;
+		}
+	}
+
+	@media (max-width: 576px) {
+		.excel-table th,
+		.excel-table td {
+			max-width: 60px;
+			font-size: 0.7rem;
+			padding: 0.25rem 0.375rem;
+		}
+
+		.corner-header {
+			width: 30px;
+		}
+
+		.formula-cell::before {
+			font-size: 8px;
+			width: 12px;
+			height: 12px;
+		}
+	}
+
+	/* Dark mode enhancements */
+	@media (prefers-color-scheme: dark) {
+		.excel-viewer-container {
+			background: #1a1a1a;
+		}
+
+		.excel-content-area {
+			background: #2d2d2d;
+			color: #e9ecef;
+		}
+
+		.sheet-tabs-container {
+			background: linear-gradient(to bottom, #2d2d2d, #1a1a1a);
+			border-bottom-color: #495057;
+		}
+
+		.excel-table {
+			background: #2d2d2d;
+			color: #e9ecef;
+		}
+
+		.excel-table th,
+		.excel-table td {
+			border-color: #495057;
+		}
+
+		.corner-header,
+		.row-header,
+		.col-header {
+			background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+			color: #adb5bd;
+		}
+
+		.formula-cell {
+			background: linear-gradient(135deg, #2a2a40 0%, #1a1a30 100%);
+			color: #88ccff;
+		}
+
+		.formula-controls {
+			background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+			border-color: #495057;
+			color: #e9ecef;
+		}
+
+		.excel-error-state {
+			background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+			color: #e9ecef;
+		}
+	}
+
+	/* Loading animations */
+	.spinner-border {
+		animation: spinner-border 0.75s linear infinite;
+	}
+
+	@keyframes spinner-border {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	/* Button enhancements */
+	.btn {
+		transition: all 0.3s ease;
+		font-weight: 500;
+	}
+
+	.btn:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+	}
+
+	.btn-group .btn:hover {
+		transform: none;
+	}
+
+	/* Card enhancements */
+	.card {
+		transition: all 0.3s ease;
+	}
+
+	.card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+	}
+</style>
+
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
-		const msViewerBtn = document.getElementById("msViewerBtn");
-		const msAltViewerBtn = document.getElementById("msAltViewerBtn");
-		const googleViewerBtn = document.getElementById("googleViewerBtn");
-		const embedViewerBtn = document.getElementById("embedViewerBtn");
-		const jsViewerBtn = document.getElementById("jsViewerBtn");
+		const toggleViewBtn = document.getElementById("toggleViewBtn");
+		const showSimpleViewBtn = document.getElementById("showSimpleViewBtn");
+		const switchToServerBtn = document.getElementById("switchToServerBtn");
+		const serverRenderedViewer = document.getElementById(
+			"serverRenderedViewer"
+		);
+		const simpleViewer = document.getElementById("simpleViewer");
+		const defaultViewer = document.getElementById("defaultViewer");
+		const officeFrame = document.getElementById("officeFrame");
+		const fallbackMessage = document.getElementById("fallbackMessage");
+		const alternativeViewers = document.querySelector(".alternative-viewers");
+		const tryAltMsViewer = document.getElementById("tryAltMsViewer");
+		const tryAltMsViewer2 = document.getElementById("tryAltMsViewer2");
+		const tryOffice365Viewer = document.getElementById("tryOffice365Viewer");
+		const tryGoogleViewer = document.getElementById("tryGoogleViewer");
+		const frameErrorContainer = document.getElementById(
+			"frame-error-container"
+		);
 
-		const jsViewer = document.getElementById("jsViewer");
-		const msViewer = document.getElementById("msViewer");
-		const msAltViewer = document.getElementById("msAltViewer");
-		const googleViewer = document.getElementById("googleViewer");
-		const embedViewer = document.getElementById("embedViewer");
+		// Current view state: 'server' (default), 'simple', or 'office'
+		let currentView = "server";
+		let excelDataLoaded = false;
+		let viewerAttempts = 0;
 
-		const viewError = document.getElementById("viewError");
-		const msOfficeFrame = document.getElementById("msOfficeFrame");
-		const msAltOfficeFrame = document.getElementById("msAltOfficeFrame");
-		const googleFrame = document.getElementById("googleFrame");
+		// Switch to server view button
+		if (switchToServerBtn) {
+			switchToServerBtn.addEventListener("click", function () {
+				switchToServerView();
+			});
+		}
 
-		// Load and display the Excel file using SheetJS
-		function loadExcelWithSheetJS() {
-			const loadingIndicator = document.getElementById("loading-indicator");
-			const excelDataContainer = document.getElementById("excel-data");
+		// Function to switch to server view
+		function switchToServerView() {
+			currentView = "server";
+			serverRenderedViewer.style.display = "block";
+			simpleViewer.style.display = "none";
+			defaultViewer.style.display = "none";
+			toggleViewBtn.innerHTML = '<i class="fas fa-desktop"></i> Office View';
+		}
 
-			// Show loading indicator
-			loadingIndicator.style.display = "block";
-			excelDataContainer.innerHTML = "";
+		// Function to switch to simple view
+		function switchToSimpleView() {
+			currentView = "simple";
+			serverRenderedViewer.style.display = "none";
+			simpleViewer.style.display = "block";
+			defaultViewer.style.display = "none";
+			toggleViewBtn.innerHTML = '<i class="fas fa-desktop"></i> Office View';
 
-			// Create a download link with fallback message
-			setTimeout(function () {
-				// If still loading after 5 seconds, show an error/fallback
-				if (loadingIndicator.style.display === "block") {
-					loadingIndicator.style.display = "none";
-					excelDataContainer.innerHTML = `
-						<div class="alert alert-warning my-4">
-							<h5><i class="fas fa-exclamation-triangle me-2"></i>Viewer is taking too long to load</h5>
-							<p class="mb-3">We're having trouble displaying the Excel file in the browser.</p>
-							<a href="<%= directFileUrl %>" download class="btn btn-primary">
-								<i class="fas fa-download me-2"></i>Download Excel File
-							</a>
-						</div>
-					`;
-				}
-			}, 5000);
-
-			try {
-				// Simple direct approach - create an iframe pointing to the file
-				excelDataContainer.innerHTML = `
-					<div class="text-center py-3">
-						<p class="text-muted mb-3">Preview may be limited based on your browser capabilities</p>
-						<div class="embed-responsive embed-responsive-16by9">
-							<iframe src="<%= directFileUrl %>" width="100%" height="450" class="border-0"></iframe>
-						</div>
-						<div class="mt-4">
-							<a href="<%= directFileUrl %>" download class="btn btn-primary">
-								<i class="fas fa-download me-2"></i>Download for Best Viewing
-							</a>
-						</div>
-					</div>
-				`;
-				loadingIndicator.style.display = "none";
-			} catch (error) {
-				console.error("Error with simplified viewer:", error);
-				// Show fallback message if simplified viewer fails
-				loadingIndicator.style.display = "none";
-				excelDataContainer.innerHTML = `
-					<div class="alert alert-danger">
-						<i class="fas fa-exclamation-circle me-2"></i>
-						Error loading Excel file: ${error.message}
-						<div class="mt-3">
-							<a href="<%= directFileUrl %>" download class="btn btn-primary">
-								<i class="fas fa-download me-2"></i>Download Excel File
-							</a>
-						</div>
-					</div>
-				`;
+			// Load Excel data if not already loaded
+			if (!excelDataLoaded) {
+				loadSimpleExcelPreview();
 			}
 		}
 
-		// Check Microsoft viewer after a timeout
-		setTimeout(function () {
-			// Start with JS viewer by default
-			switchToJsViewer();
-		}, 800);
+		// Function to switch to office view
+		function switchToOfficeView() {
+			currentView = "office";
+			serverRenderedViewer.style.display = "none";
+			simpleViewer.style.display = "none";
+			defaultViewer.style.display = "block";
+			toggleViewBtn.innerHTML = '<i class="fas fa-server"></i> Server View';
+		}
 
-		function checkAndSwitchIfNeeded() {
-			// First try the standard Microsoft viewer
-			if (checkIframeForErrors(msOfficeFrame)) {
+		// Toggle between views
+		toggleViewBtn.addEventListener("click", function () {
+			if (currentView === "server" || currentView === "simple") {
+				switchToOfficeView();
+			} else {
+				switchToServerView();
+			}
+		});
+
+		// Show simple view button in fallback message
+		if (showSimpleViewBtn) {
+			showSimpleViewBtn.addEventListener("click", function () {
+				switchToSimpleView();
+			});
+		}
+
+		// Check if Microsoft Viewer is working after a delay
+		setTimeout(checkOfficeViewer, 2000);
+
+		// Also check for frame errors after a short delay
+		setTimeout(checkForFrameErrors, 3000);
+
+		// Show alternative viewers after a delay
+		setTimeout(() => {
+			if (alternativeViewers) {
+				alternativeViewers.style.display = "block";
+			}
+		}, 5000);
+
+		// Function to check for X-Frame-Options errors
+		function checkForFrameErrors() {
+			// Check if the iframe is empty or has an error page
+			if (!officeFrame) return;
+
+			const frameHeight = officeFrame.clientHeight;
+			const frameWidth = officeFrame.clientWidth;
+
+			// If the frame is very small, it likely failed to load
+			if (frameHeight < 100 || frameWidth < 100) {
 				console.log(
-					"Microsoft viewer showing errors, trying alternative viewer"
+					"Frame appears empty or has error - showing frame error message"
 				);
-				switchToMsAltViewer();
-
-				// Check the alternative viewer after a delay
-				setTimeout(function () {
-					if (checkIframeForErrors(msAltOfficeFrame)) {
-						console.log(
-							"Microsoft alternative viewer showing errors, trying Google"
-						);
-						switchToGoogleViewer();
-
-						// Finally try Google, then fall back to JS viewer
-						setTimeout(function () {
-							if (checkIframeForErrors(googleFrame)) {
-								console.log("Google viewer showing errors, using JS viewer");
-								switchToJsViewer();
-							}
-						}, 3000);
-					}
-				}, 3000);
+				if (frameErrorContainer) {
+					frameErrorContainer.style.display = "block";
+				}
 			}
-		}
 
-		// More robust error checking function
-		function checkIframeForErrors(frame) {
+			// Try to detect if the content is an error page
 			try {
-				// If we can't access the iframe content due to CORS, assume it's working
-				// But check for visible indicators that suggest an error
-				const frameHeight = frame.clientHeight;
-				const frameVisible = frame.offsetParent !== null;
-				const frameLoaded =
-					frame.complete !== undefined ? frame.complete : true;
-
-				// Also check if the iframe has a src attribute and it's not empty
-				const hasSrc = frame.src && frame.src.length > 0;
-
-				return !frameLoaded || !frameVisible || frameHeight < 100 || !hasSrc;
+				const iframeContent = officeFrame.contentWindow.document.body.innerHTML;
+				if (
+					iframeContent &&
+					(iframeContent.includes("refused to connect") ||
+						iframeContent.includes("X-Frame-Options") ||
+						iframeContent.includes("sameorigin"))
+				) {
+					console.log("X-Frame-Options error detected");
+					if (frameErrorContainer) {
+						frameErrorContainer.style.display = "block";
+					}
+				}
 			} catch (e) {
-				console.log("Error checking iframe:", e);
-				// If there's an error checking, we'll assume the frame is OK
-				return false;
+				// CORS will prevent accessing the content, which is expected
+				console.log("Cannot access iframe content due to CORS (expected)");
 			}
 		}
 
-		// Add event listener for JS viewer button
-		jsViewerBtn.addEventListener("click", function () {
-			switchToJsViewer();
-		});
+		function checkOfficeViewer() {
+			if (!officeFrame) return;
 
-		msViewerBtn.addEventListener("click", function () {
-			switchToMsViewer();
-		});
+			try {
+				// Try to detect if iframe loaded properly
+				if (officeFrame.contentWindow.document) {
+					console.log("Office frame accessible, likely working");
+				}
+			} catch (e) {
+				// If we can't access the iframe due to CORS, it's normal
+				// We'll check if it's working after some time
+				console.log(
+					"Cannot access iframe content due to CORS, will check later"
+				);
 
-		msAltViewerBtn.addEventListener("click", function () {
-			switchToMsAltViewer();
-		});
-
-		googleViewerBtn.addEventListener("click", function () {
-			switchToGoogleViewer();
-		});
-
-		embedViewerBtn.addEventListener("click", function () {
-			switchToEmbedViewer();
-		});
-
-		function switchToJsViewer() {
-			jsViewer.style.display = "block";
-			msViewer.style.display = "none";
-			msAltViewer.style.display = "none";
-			googleViewer.style.display = "none";
-			embedViewer.style.display = "none";
-			viewError.style.display = "none";
-
-			jsViewerBtn.classList.add("active");
-			msViewerBtn.classList.remove("active");
-			msAltViewerBtn.classList.remove("active");
-			googleViewerBtn.classList.remove("active");
-			embedViewerBtn.classList.remove("active");
-
-			// Load the Excel file
-			loadExcelWithSheetJS();
+				// Set a timeout to check if the viewer appears to be working
+				setTimeout(checkOfficeViewerVisually, 5000);
+			}
 		}
 
-		function switchToMsViewer() {
-			jsViewer.style.display = "none";
-			msViewer.style.display = "block";
-			msAltViewer.style.display = "none";
-			googleViewer.style.display = "none";
-			embedViewer.style.display = "none";
-			viewError.style.display = "none";
+		function checkOfficeViewerVisually() {
+			if (!officeFrame) return;
 
-			jsViewerBtn.classList.remove("active");
-			msViewerBtn.classList.add("active");
-			msAltViewerBtn.classList.remove("active");
-			googleViewerBtn.classList.remove("active");
-			embedViewerBtn.classList.remove("active");
+			// If the iframe height is very small, it probably failed to load properly
+			if (officeFrame.clientHeight < 100) {
+				console.log("Office viewer appears to have failed (small height)");
+				showFallbackMessage();
+			}
+
+			// Show alternative viewers in any case after a delay
+			if (alternativeViewers) {
+				alternativeViewers.style.display = "block";
+			}
 		}
 
-		function switchToMsAltViewer() {
-			jsViewer.style.display = "none";
-			msViewer.style.display = "none";
-			msAltViewer.style.display = "block";
-			googleViewer.style.display = "none";
-			embedViewer.style.display = "none";
-			viewError.style.display = "none";
-
-			jsViewerBtn.classList.remove("active");
-			msViewerBtn.classList.remove("active");
-			msAltViewerBtn.classList.add("active");
-			googleViewerBtn.classList.remove("active");
-			embedViewerBtn.classList.remove("active");
+		function showFallbackMessage() {
+			if (fallbackMessage) {
+				fallbackMessage.style.display = "block";
+			}
 		}
 
-		function switchToGoogleViewer() {
-			jsViewer.style.display = "none";
-			msViewer.style.display = "none";
-			msAltViewer.style.display = "none";
-			googleViewer.style.display = "block";
-			embedViewer.style.display = "none";
-			viewError.style.display = "none";
+		// Handle iframe load errors
+		window.handleFrameError = function () {
+			console.log("Frame error event triggered");
+			if (frameErrorContainer) {
+				frameErrorContainer.style.display = "block";
+			}
+		};
 
-			jsViewerBtn.classList.remove("active");
-			msViewerBtn.classList.remove("active");
-			msAltViewerBtn.classList.remove("active");
-			googleViewerBtn.classList.add("active");
-			embedViewerBtn.classList.remove("active");
+		// Alternative Microsoft Viewer
+		if (tryAltMsViewer) {
+			tryAltMsViewer.addEventListener("click", function () {
+				viewerAttempts++;
+				officeFrame.src = "<%= msViewerAltUrl %>";
+				this.disabled = true;
+				this.innerHTML =
+					'<i class="fas fa-check me-1"></i> Trying Alt Viewer 1';
+			});
 		}
 
-		function switchToEmbedViewer() {
-			jsViewer.style.display = "none";
-			msViewer.style.display = "none";
-			msAltViewer.style.display = "none";
-			googleViewer.style.display = "none";
-			embedViewer.style.display = "block";
-			viewError.style.display = "none";
-
-			jsViewerBtn.classList.remove("active");
-			msViewerBtn.classList.remove("active");
-			msAltViewerBtn.classList.remove("active");
-			googleViewerBtn.classList.remove("active");
-			embedViewerBtn.classList.add("active");
+		// Alternative Microsoft Viewer 2
+		if (tryAltMsViewer2) {
+			tryAltMsViewer2.addEventListener("click", function () {
+				viewerAttempts++;
+				officeFrame.src = "<%= msViewerAltUrl2 %>";
+				this.disabled = true;
+				this.innerHTML =
+					'<i class="fas fa-check me-1"></i> Trying Alt Viewer 2';
+			});
 		}
 
-		// Monitor for errors in iframes
-		msOfficeFrame.addEventListener("error", function () {
-			switchToMsAltViewer();
-		});
+		// Office 365 Viewer
+		if (tryOffice365Viewer) {
+			tryOffice365Viewer.addEventListener("click", function () {
+				viewerAttempts++;
+				officeFrame.src = "<%= office365ViewerUrl %>";
+				this.disabled = true;
+				this.innerHTML = '<i class="fas fa-check me-1"></i> Trying Office 365';
+			});
+		}
 
-		msAltOfficeFrame.addEventListener("error", function () {
-			switchToGoogleViewer();
-		});
+		// Google Docs Viewer
+		if (tryGoogleViewer) {
+			tryGoogleViewer.addEventListener("click", function () {
+				viewerAttempts++;
+				officeFrame.src = "<%= googleViewerUrl %>";
+				this.disabled = true;
+				this.innerHTML =
+					'<i class="fas fa-check me-1"></i> Trying Google Viewer';
+			});
+		}
 
-		googleFrame.addEventListener("error", function () {
-			switchToJsViewer();
-		});
+		// Function to switch between server-rendered sheets
+		window.showServerSheet = function (sheetName) {
+			// Hide all sheets
+			const sheetContainers = document.querySelectorAll(
+				".server-sheet-container"
+			);
+			sheetContainers.forEach((container) => {
+				container.classList.remove("server-sheet-active");
+			});
+
+			// Show the selected sheet
+			const selectedSheet = document.getElementById(
+				`server-sheet-${sheetName}`
+			);
+			if (selectedSheet) {
+				selectedSheet.classList.add("server-sheet-active");
+			}
+
+			// Update active tab
+			const tabs = document.querySelectorAll(".sheet-tabs .nav-link");
+			tabs.forEach((tab) => {
+				tab.classList.remove("active");
+				if (tab.dataset.sheetName === sheetName) {
+					tab.classList.add("active");
+				}
+			});
+		};
+
+		// Formula Toggle Functions
+		window.toggleFormulas = function (sheetName, showFormulas) {
+			const sheet = document.querySelector(`[data-sheet-name="${sheetName}"]`);
+			if (!sheet) return;
+
+			if (showFormulas) {
+				sheet.classList.add("show-formulas");
+			} else {
+				sheet.classList.remove("show-formulas");
+			}
+
+			// Update all formula cells in this sheet
+			const formulaCells = sheet.querySelectorAll('[data-has-formula="true"]');
+			formulaCells.forEach((cell) => {
+				const valueSpan = cell.querySelector(".cell-value");
+				const formulaSpan = cell.querySelector(".cell-formula");
+
+				if (showFormulas) {
+					if (valueSpan) valueSpan.style.display = "none";
+					if (formulaSpan) formulaSpan.style.display = "inline";
+				} else {
+					if (valueSpan) valueSpan.style.display = "inline";
+					if (formulaSpan) formulaSpan.style.display = "none";
+				}
+			});
+
+			// Store preference in localStorage
+			localStorage.setItem(`showFormulas_${sheetName}`, showFormulas);
+		};
+
+		window.toggleFormulaHighlight = function (sheetName, highlight) {
+			const sheet = document.querySelector(`[data-sheet-name="${sheetName}"]`);
+			if (!sheet) return;
+
+			const formulaCells = sheet.querySelectorAll(".formula-cell");
+			formulaCells.forEach((cell) => {
+				if (highlight) {
+					cell.classList.add("formula-highlighted");
+				} else {
+					cell.classList.remove("formula-highlighted");
+				}
+			});
+
+			// Store preference in localStorage
+			localStorage.setItem(`highlightFormulas_${sheetName}`, highlight);
+		};
+
+		// Enhanced tooltip functionality for formula cells
+		function initializeFormulaTooltips() {
+			const formulaCells = document.querySelectorAll(
+				'[data-has-formula="true"]'
+			);
+
+			formulaCells.forEach((cell) => {
+				// Add click handler to copy formula
+				cell.addEventListener("click", function (e) {
+					const formula = this.getAttribute("data-formula");
+					if (formula) {
+						// Try to copy to clipboard
+						if (navigator.clipboard) {
+							navigator.clipboard
+								.writeText("=" + formula)
+								.then(() => {
+									showToast("Formula copied to clipboard!", "success");
+								})
+								.catch(() => {
+									showToast("Could not copy formula", "warning");
+								});
+						} else {
+							// Fallback for older browsers
+							const textArea = document.createElement("textarea");
+							textArea.value = "=" + formula;
+							document.body.appendChild(textArea);
+							textArea.select();
+							try {
+								document.execCommand("copy");
+								showToast("Formula copied to clipboard!", "success");
+							} catch (err) {
+								showToast("Could not copy formula", "warning");
+							}
+							document.body.removeChild(textArea);
+						}
+					}
+				});
+
+				// Enhanced hover effect
+				cell.addEventListener("mouseenter", function () {
+					this.style.transform = "scale(1.02)";
+					this.style.zIndex = "10";
+				});
+
+				cell.addEventListener("mouseleave", function () {
+					this.style.transform = "scale(1)";
+					this.style.zIndex = "auto";
+				});
+			});
+		}
+
+		// Toast notification function
+		function showToast(message, type = "info") {
+			// Create toast element
+			const toast = document.createElement("div");
+			toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+			toast.style.cssText =
+				"top: 20px; right: 20px; z-index: 9999; min-width: 250px;";
+			toast.innerHTML = `
+				${message}
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			`;
+
+			document.body.appendChild(toast);
+
+			// Auto-remove after 3 seconds
+			setTimeout(() => {
+				if (toast.parentNode) {
+					toast.parentNode.removeChild(toast);
+				}
+			}, 3000);
+		}
+
+		// Initialize formula functionality when DOM is ready
+		function initializeFormulaFeatures() {
+			// Initialize tooltips
+			initializeFormulaTooltips();
+
+			// Restore user preferences from localStorage
+			const sheets = document.querySelectorAll(".excel-sheet");
+			sheets.forEach((sheet) => {
+				const sheetName = sheet.getAttribute("data-sheet-name");
+
+				// Restore formula display preference
+				const showFormulas =
+					localStorage.getItem(`showFormulas_${sheetName}`) === "true";
+				const showFormulasCheckbox = document.getElementById(
+					`showFormulas_${sheetName}`
+				);
+				if (showFormulasCheckbox) {
+					showFormulasCheckbox.checked = showFormulas;
+					toggleFormulas(sheetName, showFormulas);
+				}
+
+				// Restore highlight preference
+				const highlightFormulas =
+					localStorage.getItem(`highlightFormulas_${sheetName}`) !== "false"; // Default to true
+				const highlightCheckbox = document.getElementById(
+					`highlightFormulas_${sheetName}`
+				);
+				if (highlightCheckbox) {
+					highlightCheckbox.checked = highlightFormulas;
+					toggleFormulaHighlight(sheetName, highlightFormulas);
+				}
+			});
+		}
+
+		// Initialize formula features after a short delay to ensure DOM is ready
+		setTimeout(initializeFormulaFeatures, 100);
 	});
 </script>

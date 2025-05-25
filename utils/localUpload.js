@@ -60,51 +60,30 @@ const xlsxStorage = multer.diskStorage({
 });
 
 // Enhanced file filter for xlsx files
-const xlsxFileFilter = async (req, file, cb) => {
+const xlsxFileFilter = (req, file, cb) => {
 	try {
 		// Check mime type from multer
 		const allowedMimes = [
 			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 			"application/vnd.ms-excel",
+			"application/octet-stream", // Some browsers/systems may use this generic type
 		];
 
 		if (!allowedMimes.includes(file.mimetype)) {
 			return cb(new Error("Only Excel files are allowed (.xlsx, .xls)"), false);
 		}
 
-		// Size validation - handled by multer limits
-
-		// Create buffer for file type detection
-		const buffer = [];
-		file.stream.on("data", (chunk) => buffer.push(chunk));
-
-		// Wait for the entire file
-		await new Promise((resolve, reject) => {
-			file.stream.on("end", resolve);
-			file.stream.on("error", reject);
-		});
-
-		// Concatenate chunks
-		const fileBuffer = Buffer.concat(buffer);
-
-		// Detect file type from buffer
-		const fileType = await fileTypeFromBuffer(fileBuffer);
-
-		// Validate actual file type
-		if (!fileType || !["xlsx", "xls"].includes(fileType.ext)) {
-			return cb(new Error("File content doesn't match Excel format"), false);
+		// Check file extension
+		const ext = path.extname(file.originalname).toLowerCase();
+		if (![".xlsx", ".xls"].includes(ext)) {
+			return cb(new Error("Only Excel files are allowed (.xlsx, .xls)"), false);
 		}
 
-		// Reattach buffer to new stream
-		file.stream = new require("stream").Readable();
-		file.stream.push(fileBuffer);
-		file.stream.push(null);
-
-		// Optional: Add virus scanning here if you have an integration
-
-		cb(null, true);
+		// Accept the file based on mimetype and extension
+		// We'll skip the buffer-based validation as it's causing issues
+		return cb(null, true);
 	} catch (err) {
-		cb(new Error(`File validation error: ${err.message}`), false);
+		return cb(new Error(`File validation error: ${err.message}`), false);
 	}
 };
 

@@ -4,7 +4,7 @@
 <div class="container mt-4">
 	<h1 class="mb-4">Upload Time Report (Excel to PDF)</h1>
 	<form
-		action="/timereport/upload-xlsx"
+		action="/timereport/upload"
 		method="POST"
 		enctype="multipart/form-data"
 		class="validated-form needs-validation">
@@ -93,30 +93,18 @@
 				name="xlsxFile"
 				accept=".xlsx"
 				required />
+			<div class="form-text">
+				Upload your time report in Excel format. Must be less than 10MB. The
+				file will be automatically converted to PDF for viewing.
+			</div>
 		</div>
 		<div class="text-center mt-4">
-			<button type="submit" class="btn btn-primary">Upload & Convert</button>
+			<button type="submit" class="btn btn-primary">
+				Upload & Convert to PDF
+			</button>
 			<a href="/timereport" class="btn btn-secondary ms-2">Cancel</a>
 		</div>
 	</form>
-	<% if (typeof pdfFile !== 'undefined' && pdfFile) { %>
-	<div class="mt-5">
-		<h2>Converted PDF Preview</h2>
-		<div class="mb-3">
-			<a
-				href="/pdfs/<%= pdfFile.filename %>"
-				target="_blank"
-				class="btn btn-primary"
-				>Download PDF</a
-			>
-		</div>
-		<iframe
-			src="/pdfs/<%= pdfFile.filename %>"
-			width="100%"
-			height="600px"
-			style="border: 1px solid #ccc"></iframe>
-	</div>
-	<% } %>
 </div>
 
 <script>
