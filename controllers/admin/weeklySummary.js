@@ -257,7 +257,33 @@ export async function checkAndCreateNextWeek() {
 
 	if (now.day() === 0) {
 		// 0 is Sunday
-		console.log("[Weekly Check] It's Sunday, creating next week...");
+		console.log(
+			"[Weekly Check] It's Sunday, checking if next week needs to be created..."
+		);
+
+		// Check if we need to create a week for the upcoming Monday
+		const nextMonday = now.add(1, "day").startOf("day"); // Tomorrow (Monday)
+		const nextFriday = nextMonday.add(4, "day").endOf("day"); // Friday of next week
+
+		// Check if a week already exists for next Monday
+		const existingWeek = await Week.findOne({
+			weekStartDate: {
+				$gte: nextMonday.toDate(),
+				$lt: nextMonday.add(1, "day").toDate(),
+			},
+		});
+
+		if (existingWeek) {
+			console.log(
+				`[Weekly Check] Week ${
+					existingWeek.weekNumber
+				} already exists for ${nextMonday.format(
+					"YYYY-MM-DD"
+				)}, no action needed`
+			);
+			return;
+		}
+
 		try {
 			const newWeek = await createNextWeek();
 			if (newWeek) {

@@ -231,7 +231,6 @@
 				data-custom-message="Time report has been archived successfully"
 				data-action-type="archive"
 				class="d-inline">
-				<!-- Hidden textarea to store the archive reason -->
 				<input
 					type="hidden"
 					id="hiddenArchiveReason"
@@ -244,10 +243,7 @@
 		</div>
 	</div>
 </div>
-<% } %>
-
-<!-- Unarchive Time Report Modal (Admin Only) -->
-<% if (currentUser.role === 'admin' && timeReport.archived) { %>
+<% } %> <% if (currentUser.role === 'admin' && timeReport.archived) { %>
 <div
 	class="custom-modal-overlay"
 	id="unarchiveTimeReportModal"

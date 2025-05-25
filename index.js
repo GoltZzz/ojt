@@ -181,6 +181,16 @@ cron.schedule("1 0 * * 0", async () => {
 	console.log("Checked and created next week (if needed)");
 });
 
+// Startup check: if it's Sunday and server starts after midnight, check if we need to create this week's entry
+(async () => {
+	try {
+		console.log("Server starting up - checking if week creation is needed...");
+		await checkAndCreateNextWeek();
+	} catch (error) {
+		console.error("Error during startup week check:", error);
+	}
+})();
+
 app.listen(3000, () => {
 	console.log("Server is running on port 3000");
 });
