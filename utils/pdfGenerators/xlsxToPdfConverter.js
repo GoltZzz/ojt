@@ -107,47 +107,84 @@ async function optimizeExcelForPdf(xlsxPath) {
 				worksheet.pageSetup.printArea = `${startCell.address}:${endCell.address}`;
 			}
 
-			// Optimize column widths for maximum readability and width
+			// Optimize column widths with special focus on activity column readability
 			const totalCols = maxCol - minCol + 1;
 			if (totalCols > 0) {
 				// Calculate optimal column width for absolute maximum landscape width
-				// Landscape A4 with absolute minimal margins = ~26cm usable width
-				const availableWidth = 30; // Maximum possible width utilization
-				const baseWidth = availableWidth / totalCols;
+				// Landscape A4 with absolute minimal margins = ~30cm usable width
+				const availableWidth = 35; // Increased total available width
 
-				// Set very generous column width ranges for maximum readability
-				const minWidth = 12; // Increased minimum for better readability
-				const maxWidth = 60; // Very wide maximum for activity descriptions
-				const optimalWidth = Math.max(minWidth, Math.min(maxWidth, baseWidth));
+				// Define column-specific width allocations for time reports
+				// Typical time report structure: Date | Activity | Items | Duration | Total(S) | Total(H)
+				const columnWidthRatios = {
+					0: 0.12, // Date column - 12% of width
+					1: 0.55, // Activity column - 55% of width (MUCH MORE SPACE)
+					2: 0.08, // Items column - 8% of width
+					3: 0.1, // Duration column - 10% of width
+					4: 0.08, // Total(S) column - 8% of width
+					5: 0.07, // Total(H) column - 7% of width
+				};
 
 				for (let col = minCol; col <= maxCol; col++) {
 					const column = worksheet.getColumn(col);
+					const colIndex = col - minCol; // 0-based index
 
-					// Analyze content to determine if column needs more space
+					// Analyze content to determine if this is likely an activity column
 					let maxContentLength = 0;
+					let isLikelyActivityColumn = false;
+
 					for (let row = minRow; row <= maxRow; row++) {
 						const cell = worksheet.getCell(row, col);
 						if (cell.value) {
 							const cellText = cell.value.toString();
 							maxContentLength = Math.max(maxContentLength, cellText.length);
+
+							// Check if this looks like an activity column (long descriptive text)
+							if (
+								cellText.length > 20 &&
+								(cellText.includes(" ") || cellText.includes("."))
+							) {
+								isLikelyActivityColumn = true;
+							}
 						}
 					}
 
-					// Adjust width based on content length for maximum readability
-					let adjustedWidth = optimalWidth;
-					if (maxContentLength > 30) {
-						adjustedWidth = Math.min(maxWidth, optimalWidth * 2.0); // Double width for very long activity descriptions
-					} else if (maxContentLength > 20) {
-						adjustedWidth = Math.min(maxWidth, optimalWidth * 1.8); // Much more generous for long content
-					} else if (maxContentLength > 10) {
-						adjustedWidth = Math.min(maxWidth, optimalWidth * 1.4); // Generous for medium content
-					} else if (maxContentLength > 5) {
-						adjustedWidth = Math.min(maxWidth, optimalWidth * 1.2); // Slight increase for short content
+					// Set column width based on predefined ratios or content analysis
+					let adjustedWidth;
+
+					if (columnWidthRatios[colIndex]) {
+						// Use predefined ratio for known column positions
+						adjustedWidth = availableWidth * columnWidthRatios[colIndex];
+
+						// Give extra space to activity column (index 1) or any column with long content
+						if (colIndex === 1 || isLikelyActivityColumn) {
+							adjustedWidth = Math.max(adjustedWidth, availableWidth * 0.55); // Ensure at least 55% width
+							console.log(
+								`📝 Activity column detected at index ${colIndex}, setting width to ${adjustedWidth}`
+							);
+						}
 					} else {
-						adjustedWidth = Math.max(minWidth, optimalWidth); // Keep minimum width even for very short content
+						// Fallback for additional columns
+						const baseWidth = availableWidth / totalCols;
+
+						if (isLikelyActivityColumn || maxContentLength > 30) {
+							adjustedWidth = Math.min(60, baseWidth * 3.0); // Triple width for activity-like content
+						} else if (maxContentLength > 20) {
+							adjustedWidth = Math.min(40, baseWidth * 2.0); // Double width for long content
+						} else if (maxContentLength > 10) {
+							adjustedWidth = Math.min(25, baseWidth * 1.5); // 1.5x width for medium content
+						} else {
+							adjustedWidth = Math.max(8, baseWidth); // Minimum width for short content
+						}
 					}
 
+					// Apply the calculated width
 					column.width = adjustedWidth;
+
+					// Log width assignment for debugging
+					console.log(
+						`📊 Column ${colIndex} (${col}): width=${adjustedWidth}, maxLength=${maxContentLength}, isActivity=${isLikelyActivityColumn}`
+					);
 				}
 			}
 
