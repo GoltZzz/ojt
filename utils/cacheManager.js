@@ -56,16 +56,32 @@ export const getFromCache = async (key) => {
 };
 
 /**
- * Clear a specific cache entry
- * @param {string} key - Cache key
- * @returns {Promise<boolean>} - Success status
+ * Clear cache entries by exact key or pattern
+ * @param {string} key - Cache key or pattern (supports * wildcard at the end)
+ * @returns {Promise<number>} - Number of cleared entries
  */
 export const clearCache = async (key) => {
 	try {
-		return cache.delete(key);
+		// Check if it's a wildcard pattern
+		if (key.endsWith("*")) {
+			const prefix = key.slice(0, -1); // Remove the * at the end
+			let cleared = 0;
+
+			for (const [cacheKey] of cache.entries()) {
+				if (cacheKey.startsWith(prefix)) {
+					cache.delete(cacheKey);
+					cleared++;
+				}
+			}
+
+			return cleared;
+		} else {
+			// Exact key match
+			return cache.delete(key) ? 1 : 0;
+		}
 	} catch (error) {
 		console.error("Error clearing cache:", error);
-		return false;
+		return 0;
 	}
 };
 

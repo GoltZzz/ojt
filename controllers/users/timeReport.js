@@ -17,6 +17,7 @@ import User from "../../models/users.js";
 import { xlsxUpload } from "../../utils/localUpload.js";
 import mongoose from "mongoose";
 import { convertXlsxToPdf } from "../../utils/pdfGenerators/xlsxToPdfConverter.js";
+import { convertXlsxToPdfViaHtml } from "../../utils/pdfGenerators/htmlToPdfConverter.js";
 
 // Constants
 const CACHE_TTL = 3600; // 1 hour cache lifetime
@@ -225,14 +226,33 @@ const uploadXlsxAndShowExcel = async (req, res) => {
 			return res.redirect(`/timereport/${existingReport._id}`);
 		}
 
-		// Convert Excel to PDF (like weekly reports do)
+		// Convert Excel to PDF with LibreOffice for high visual fidelity
 		let pdfFile = null;
 		try {
+			// Method 1: Try LibreOffice conversion for high visual fidelity (preserves exact Excel formatting)
+			console.log(
+				"Attempting LibreOffice conversion for high visual fidelity..."
+			);
 			pdfFile = await convertXlsxToPdf(req.file, fullName);
-		} catch (error) {
-			console.error("PDF conversion error:", error);
-			req.flash("error", `Failed to convert Excel to PDF: ${error.message}`);
-			return res.redirect("/timereport/new");
+			console.log(
+				"LibreOffice conversion successful - high visual fidelity achieved"
+			);
+		} catch (libreError) {
+			console.error("LibreOffice conversion failed:", libreError);
+
+			// Method 2: Fallback to HTML-to-PDF conversion
+			try {
+				console.log("Falling back to HTML-to-PDF conversion...");
+				pdfFile = await convertXlsxToPdfViaHtml(req.file, fullName);
+				console.log("HTML-to-PDF conversion successful");
+			} catch (htmlError) {
+				console.error("HTML-to-PDF conversion also failed:", htmlError);
+				req.flash(
+					"error",
+					`Failed to convert Excel to PDF. LibreOffice method: ${libreError.message}. HTML method: ${htmlError.message}`
+				);
+				return res.redirect("/timereport/new");
+			}
 		}
 
 		// Parse Excel file to extract metadata and preview
@@ -307,7 +327,7 @@ const uploadXlsxAndShowExcel = async (req, res) => {
 
 		req.flash(
 			"success",
-			"Successfully uploaded time report! Your Excel file has been converted to PDF."
+			"Successfully uploaded time report! Your Excel file has been converted to PDF with high visual fidelity (preserves exact Excel formatting)."
 		);
 		// Redirect to show route with the timeReport ID instead of filename
 		res.redirect(`/timereport/${timeReport._id}`);

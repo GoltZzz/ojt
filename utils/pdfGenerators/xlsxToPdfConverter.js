@@ -65,20 +65,21 @@ async function optimizeExcelForPdf(xlsxPath) {
 
 		// Process each worksheet
 		workbook.worksheets.forEach((worksheet) => {
-			// Set page setup for better PDF layout with wider landscape layout
+			// Set page setup for maximum width PDF layout with enhanced readability
 			worksheet.pageSetup = {
 				orientation: "landscape",
 				paperSize: 9, // A4
-				fitToPage: true,
-				fitToWidth: 1,
-				fitToHeight: 0, // Allow multiple pages vertically if needed
+				fitToPage: false, // Disable fit to page to allow custom scaling
+				fitToWidth: 0, // Disable fit to width
+				fitToHeight: 0, // Disable fit to height
+				scale: 100, // Use 100% scale for maximum clarity
 				margins: {
-					left: 0.3, // Reduced from 0.5 for wider layout
-					right: 0.3, // Reduced from 0.5 for wider layout
-					top: 0.4, // Slightly reduced from 0.5
-					bottom: 0.4, // Slightly reduced from 0.5
-					header: 0.2, // Reduced from 0.3
-					footer: 0.2, // Reduced from 0.3
+					left: 0.1, // Absolute minimum margins
+					right: 0.1, // Absolute minimum margins
+					top: 0.2,
+					bottom: 0.2,
+					header: 0.05,
+					footer: 0.05,
 				},
 				printArea: undefined, // Will be set based on actual data
 				showGridLines: true,
@@ -106,17 +107,17 @@ async function optimizeExcelForPdf(xlsxPath) {
 				worksheet.pageSetup.printArea = `${startCell.address}:${endCell.address}`;
 			}
 
-			// Optimize column widths for landscape PDF with wider layout
+			// Optimize column widths for maximum readability and width
 			const totalCols = maxCol - minCol + 1;
 			if (totalCols > 0) {
-				// Calculate optimal column width for landscape page with wider layout
-				// Landscape A4 has about 25cm width, with reduced margins = ~24cm usable
-				const availableWidth = 24; // Increased from 22 due to smaller margins
+				// Calculate optimal column width for absolute maximum landscape width
+				// Landscape A4 with absolute minimal margins = ~26cm usable width
+				const availableWidth = 30; // Maximum possible width utilization
 				const baseWidth = availableWidth / totalCols;
 
-				// Set minimum and maximum widths for better space utilization
-				const minWidth = 10; // Reduced from 12 to allow more columns
-				const maxWidth = 30; // Increased from 25 for wider columns when needed
+				// Set very generous column width ranges for maximum readability
+				const minWidth = 12; // Increased minimum for better readability
+				const maxWidth = 60; // Very wide maximum for activity descriptions
 				const optimalWidth = Math.max(minWidth, Math.min(maxWidth, baseWidth));
 
 				for (let col = minCol; col <= maxCol; col++) {
@@ -132,49 +133,51 @@ async function optimizeExcelForPdf(xlsxPath) {
 						}
 					}
 
-					// Adjust width based on content length for wider layout
+					// Adjust width based on content length for maximum readability
 					let adjustedWidth = optimalWidth;
-					if (maxContentLength > 20) {
-						adjustedWidth = Math.min(maxWidth, optimalWidth * 1.4); // More generous for long content
-					} else if (maxContentLength > 12) {
-						adjustedWidth = Math.min(maxWidth, optimalWidth * 1.2); // Moderate increase
-					} else if (maxContentLength < 6) {
-						adjustedWidth = Math.max(minWidth, optimalWidth * 0.9); // Slight reduction for short content
+					if (maxContentLength > 30) {
+						adjustedWidth = Math.min(maxWidth, optimalWidth * 2.0); // Double width for very long activity descriptions
+					} else if (maxContentLength > 20) {
+						adjustedWidth = Math.min(maxWidth, optimalWidth * 1.8); // Much more generous for long content
+					} else if (maxContentLength > 10) {
+						adjustedWidth = Math.min(maxWidth, optimalWidth * 1.4); // Generous for medium content
+					} else if (maxContentLength > 5) {
+						adjustedWidth = Math.min(maxWidth, optimalWidth * 1.2); // Slight increase for short content
+					} else {
+						adjustedWidth = Math.max(minWidth, optimalWidth); // Keep minimum width even for very short content
 					}
 
 					column.width = adjustedWidth;
 				}
 			}
 
-			// Set more comfortable row heights
+			// Set more comfortable row heights for better readability
 			worksheet.eachRow((row) => {
-				if (!row.height || row.height > 25) {
-					row.height = 20; // Increased from 15 for better readability
-				} else if (row.height < 15) {
-					row.height = 18; // Minimum comfortable height
+				// Set generous row heights for better text visibility
+				if (!row.height || row.height > 30) {
+					row.height = 25; // Increased from 20 for better readability
+				} else if (row.height < 20) {
+					row.height = 22; // Increased minimum height
 				}
 			});
 
-			// Improve text formatting for better readability
+			// Improve text formatting for maximum readability
 			worksheet.eachRow((row) => {
 				row.eachCell((cell) => {
-					// Set better alignment and spacing
+					// Set better alignment and spacing for readability
 					cell.alignment = {
 						...cell.alignment,
-						vertical: "middle", // Changed from 'top' to 'middle'
+						vertical: "middle",
 						horizontal: cell.alignment?.horizontal || "left",
-						wrapText:
-							cell.value &&
-							typeof cell.value === "string" &&
-							cell.value.length > 25,
-						indent: 0.5, // Add slight indentation for better readability
+						wrapText: true, // Always enable text wrapping for better readability
+						indent: 0.3, // Slight indentation for better readability
 					};
 
-					// Ensure proper font size for readability
-					if (!cell.font || !cell.font.size || cell.font.size < 10) {
+					// Ensure larger font size for better readability
+					if (!cell.font || !cell.font.size || cell.font.size < 11) {
 						cell.font = {
 							...cell.font,
-							size: 11, // Slightly larger font for better readability
+							size: 12, // Increased font size for better readability
 							name: "Calibri", // Use a clean, readable font
 						};
 					}

@@ -52,8 +52,13 @@ router.post(
 	timeReport.createNewVersion
 );
 
-// Delete route
-router.delete("/:id", isLoggedIn, timeReport.deleteTimeReport);
+// Delete route - now with proper authorization middleware
+router.delete(
+	"/:id",
+	isLoggedIn,
+	isTimeReportAuthor,
+	timeReport.deleteTimeReport
+);
 
 // Show route - must be last as it's a catch-all for /:id
 router.get("/:id", isLoggedIn, timeReport.showTimeReport);
