@@ -1,6 +1,7 @@
 import catchAsync from "../../utils/catchAsync.js";
 import TimeReport from "../../models/timeReport.js";
 import Week from "../../models/week.js";
+import Notification from "../../models/notification.js";
 import dayjs from "dayjs";
 import excelService from "../../utils/excelService.js";
 import excelRendererService from "../../utils/excelRendererService.js";
@@ -695,11 +696,12 @@ const showTimeReport = async (req, res) => {
 };
 
 /**
- * Delete a time report
+ * Delete a time report (requires password confirmation for owners)
  */
 const deleteTimeReport = async (req, res) => {
 	try {
 		const { id } = req.params;
+		const { password } = req.body;
 		const timeReport = await TimeReport.findById(id);
 
 		if (!timeReport) {
@@ -707,8 +709,21 @@ const deleteTimeReport = async (req, res) => {
 			return res.redirect("/timereport");
 		}
 
-		// Check if user is the author of the time report
-		if (timeReport.author.toString() !== req.user._id.toString()) {
+		// Check if user is the author of the time report or an admin
+		const isAuthor = timeReport.author.toString() === req.user._id.toString();
+		const isAdmin = req.user && req.user.role === "admin";
+
+		// Admins cannot delete time reports - they can only archive/unarchive
+		if (isAdmin && !isAuthor) {
+			req.flash(
+				"error",
+				"Admins can only archive/unarchive time reports. Use the archive function instead."
+			);
+			return res.redirect(`/timereport/${id}`);
+		}
+
+		// Only the author can delete their own time report
+		if (!isAuthor) {
 			req.flash(
 				"error",
 				"You do not have permission to delete this time report!"
@@ -716,68 +731,222 @@ const deleteTimeReport = async (req, res) => {
 			return res.redirect("/timereport");
 		}
 
-		// Save the excel file information for cleanup
-		const excelFile = timeReport.excelFile;
-		const versions = timeReport.versions || [];
-
-		// Delete the time report from the database
-		await TimeReport.findByIdAndDelete(id);
-
-		// Clean up files
-		try {
-			// Delete the main file
-			if (excelFile && excelFile.filename) {
-				const filePath = path.join(
-					process.cwd(),
-					"public/uploads/excel",
-					excelFile.filename
-				);
-				await fs
-					.unlink(filePath)
-					.catch((e) => console.warn(`Could not delete file ${filePath}:`, e));
-
-				// Delete preview if it exists
-				if (excelFile.preview && excelFile.preview.path) {
-					await fs
-						.unlink(excelFile.preview.path)
-						.catch((e) =>
-							console.warn(
-								`Could not delete preview ${excelFile.preview.path}:`,
-								e
-							)
-						);
-				}
-			}
-
-			// Clean up version files from archive
-			for (const version of versions) {
-				if (version.excelFile && version.excelFile.path) {
-					await fs
-						.unlink(version.excelFile.path)
-						.catch((e) =>
-							console.warn(
-								`Could not delete version file ${version.excelFile.path}:`,
-								e
-							)
-						);
-				}
-			}
-		} catch (cleanupError) {
-			console.warn("Error cleaning up files:", cleanupError);
-			// Continue even if file cleanup fails
+		// Check if password was provided
+		if (!password) {
+			req.flash("error", "Password is required to delete a time report");
+			return res.redirect(`/timereport/${id}`);
 		}
 
-		// Clear cached data for this user
-		await clearCache(`time-reports-${req.user._id}-*`);
+		// Verify the password using passport-local-mongoose's authenticate method
+		try {
+			req.user.authenticate(password, async (err, user, passwordError) => {
+				if (err) {
+					console.error("Authentication error:", err);
+					req.flash("error", "An error occurred during authentication");
+					return res.redirect(`/timereport/${id}`);
+				}
 
-		req.flash("success", "Time report successfully deleted!");
-		res.redirect("/timereport");
+				if (!user) {
+					req.flash("error", "Incorrect password");
+					return res.redirect(`/timereport/${id}`);
+				}
+
+				// Password is correct, proceed with deletion
+				console.log(
+					`User ${req.user._id} deleting time report ${timeReport._id}`
+				);
+
+				// Save the excel file information for cleanup
+				const excelFile = timeReport.excelFile;
+				const versions = timeReport.versions || [];
+
+				try {
+					// Delete the time report from the database
+					await TimeReport.findByIdAndDelete(id);
+
+					// Clean up files
+					try {
+						// Delete the main file
+						if (excelFile && excelFile.filename) {
+							const filePath = path.join(
+								process.cwd(),
+								"public/uploads/excel",
+								excelFile.filename
+							);
+							await fs
+								.unlink(filePath)
+								.catch((e) =>
+									console.warn(`Could not delete file ${filePath}:`, e)
+								);
+
+							// Delete preview if it exists
+							if (excelFile.preview && excelFile.preview.path) {
+								await fs
+									.unlink(excelFile.preview.path)
+									.catch((e) =>
+										console.warn(
+											`Could not delete preview ${excelFile.preview.path}:`,
+											e
+										)
+									);
+							}
+						}
+
+						// Clean up version files from archive
+						for (const version of versions) {
+							if (version.excelFile && version.excelFile.path) {
+								await fs
+									.unlink(version.excelFile.path)
+									.catch((e) =>
+										console.warn(
+											`Could not delete version file ${version.excelFile.path}:`,
+											e
+										)
+									);
+							}
+						}
+					} catch (cleanupError) {
+						console.warn("Error cleaning up files:", cleanupError);
+						// Continue even if file cleanup fails
+					}
+
+					// Clear cached data for this user
+					await clearCache(`time-reports-${req.user._id}-*`);
+
+					req.flash("success", "Time report successfully deleted!");
+					res.redirect("/timereport");
+				} catch (error) {
+					console.error("Error deleting time report:", error);
+					req.flash("error", "Failed to delete time report. Please try again.");
+					res.redirect(`/timereport/${id}`);
+				}
+			});
+		} catch (error) {
+			console.error("Error during password verification:", error);
+			req.flash("error", "An error occurred during password verification");
+			res.redirect(`/timereport/${id}`);
+		}
 	} catch (error) {
-		console.error("Error deleting time report:", error);
+		console.error("Error in deleteTimeReport:", error);
 		req.flash("error", "Error deleting time report");
 		res.redirect("/timereport");
 	}
 };
+
+/**
+ * Archive a time report (admin only)
+ */
+const archiveTimeReport = catchAsync(async (req, res) => {
+	const { id } = req.params;
+	console.log(`⏳ Running archive for time report ID: ${id}`);
+	console.log("Request body:", req.body);
+
+	const timeReport = await TimeReport.findById(id);
+
+	if (!timeReport) {
+		console.log(`❌ Time report not found with ID: ${id}`);
+		req.flash("error", "Time report not found");
+		return res.redirect("/timereport");
+	}
+
+	if (req.user.role !== "admin") {
+		console.log(`❌ User ${req.user._id} is not an admin`);
+		req.flash("error", "You don't have permission to archive time reports");
+		return res.redirect(`/timereport/${id}`);
+	}
+
+	console.log(
+		`📝 Found time report: ${timeReport._id}, current archived status: ${timeReport.archived}`
+	);
+	timeReport.archived = true;
+
+	if (req.body.archivedReason) {
+		console.log(`📝 Setting archive reason: ${req.body.archivedReason}`);
+		timeReport.archivedReason = req.body.archivedReason;
+	} else {
+		console.log("📝 No archive reason provided, using default");
+		timeReport.archivedReason = "Manually archived by admin";
+	}
+
+	await timeReport.save();
+	console.log(
+		`✅ Time report archived successfully: ${timeReport._id} with reason: ${timeReport.archivedReason}`
+	);
+
+	// Create notification for the report author
+	if (timeReport.author) {
+		const notification = new Notification({
+			recipient: timeReport.author,
+			message: `Your Time Report has been archived by an administrator${
+				req.body.archivedReason
+					? " with reason: " + req.body.archivedReason
+					: ""
+			}.`,
+			type: "info",
+			reportType: "timereport",
+			reportId: timeReport._id,
+			action: "archived",
+		});
+
+		await notification.save();
+	}
+
+	// Clear cached data for the report author
+	await clearCache(`time-reports-${timeReport.author}-*`);
+
+	req.flash("success", "Time report has been archived successfully");
+	return res.redirect("/admin/archived-reports");
+});
+
+/**
+ * Unarchive a time report (admin only)
+ */
+const unarchiveTimeReport = catchAsync(async (req, res) => {
+	const { id } = req.params;
+	console.log(`⏳ Running unarchive for time report ID: ${id}`);
+
+	const timeReport = await TimeReport.findById(id).populate("author");
+
+	if (!timeReport) {
+		console.log(`❌ Time report not found with ID: ${id}`);
+		req.flash("error", "Time report not found");
+		return res.redirect("/admin/archived-reports");
+	}
+
+	if (req.user.role !== "admin") {
+		console.log(`❌ User ${req.user._id} is not an admin`);
+		req.flash("error", "You don't have permission to unarchive time reports");
+		return res.redirect("/admin/archived-reports");
+	}
+
+	console.log(
+		`📝 Found time report: ${timeReport._id}, current archived status: ${timeReport.archived}`
+	);
+	timeReport.archived = false;
+	timeReport.archivedReason = "";
+	await timeReport.save();
+	console.log(`✅ Time report unarchived successfully: ${timeReport._id}`);
+
+	// Create notification for the report author
+	if (timeReport.author) {
+		const notification = new Notification({
+			recipient: timeReport.author._id,
+			message: `Your Time Report has been unarchived by an administrator.`,
+			type: "info",
+			reportType: "timereport",
+			reportId: timeReport._id,
+			action: "unarchived",
+		});
+
+		await notification.save();
+	}
+
+	// Clear cached data for the report author
+	await clearCache(`time-reports-${timeReport.author._id}-*`);
+
+	req.flash("success", "Time report has been unarchived successfully");
+	return res.redirect("/admin/archived-reports");
+});
 
 /**
  * Add an annotation to a time report
@@ -873,6 +1042,8 @@ export default {
 	showServerExcel,
 	showTimeReport,
 	deleteTimeReport,
+	archiveTimeReport,
+	unarchiveTimeReport,
 	addAnnotation,
 	createNewVersion,
 };

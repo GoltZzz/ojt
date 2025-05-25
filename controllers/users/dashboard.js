@@ -29,13 +29,38 @@ const renderDashboard = catchAsync(async (req, res) => {
 		const pendingReportsCount =
 			pendingWeeklyReportsCount + pendingTimeReportsCount;
 
-		// Get latest reports
-		const latestReports = await WeeklyReport.find({
+		// Get latest weekly reports
+		const latestWeeklyReports = await WeeklyReport.find({
 			author: req.user._id,
 			archived: false,
 		})
 			.sort({ dateSubmitted: -1 })
-			.limit(3);
+			.limit(2);
+
+		// Get latest time reports
+		const latestTimeReports = await TimeReport.find({
+			author: req.user._id,
+			archived: false,
+		})
+			.sort({ dateSubmitted: -1 })
+			.limit(2);
+
+		// Combine and sort all reports by date
+		const allReports = [
+			...latestWeeklyReports.map((report) => ({
+				...report.toObject(),
+				reportType: "weeklyreport",
+			})),
+			...latestTimeReports.map((report) => ({
+				...report.toObject(),
+				reportType: "timereport",
+			})),
+		];
+
+		// Sort by dateSubmitted and take the latest 3
+		const latestReports = allReports
+			.sort((a, b) => new Date(b.dateSubmitted) - new Date(a.dateSubmitted))
+			.slice(0, 3);
 
 		// Render dashboard with stats
 		res.render("contents/dashboard", {

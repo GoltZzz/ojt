@@ -1,4 +1,5 @@
 <%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/customModal.css" />
 
 <div class="container mt-4">
 	<div class="row mb-4">
@@ -29,7 +30,19 @@
 								<strong>Status:</strong>
 								<span class="badge bg-success">Approved</span>
 							</p>
-							<% } %>
+							<% } %> <% if (timeReport.archived) { %>
+							<p>
+								<strong>Archive Status:</strong>
+								<span class="badge bg-secondary">
+									<i class="fas fa-archive me-1"></i> Archived
+								</span>
+							</p>
+							<% if (timeReport.archivedReason) { %>
+							<p>
+								<strong>Archive Reason:</strong> <%= timeReport.archivedReason
+								%>
+							</p>
+							<% } %> <% } %>
 						</div>
 						<div class="col-md-6">
 							<p>
@@ -67,9 +80,46 @@
 			</div>
 		</div>
 		<div class="col-md-4 text-end">
-			<a href="/timereport" class="btn btn-secondary">
-				<i class="fas fa-arrow-left"></i> Back to Time Reports
-			</a>
+			<div class="d-grid gap-2">
+				<a href="/timereport" class="btn btn-secondary">
+					<i class="fas fa-arrow-left"></i> Back to Time Reports
+				</a>
+
+				<!-- Admin Actions -->
+				<% if (currentUser.role === 'admin') { %> <% if (!timeReport.archived) {
+				%>
+				<button
+					type="button"
+					class="btn btn-warning"
+					data-custom-modal-target="archiveTimeReportModal">
+					<i class="fas fa-archive"></i> Archive Report
+				</button>
+				<% } else { %>
+				<button
+					type="button"
+					class="btn btn-success"
+					data-custom-modal-target="unarchiveTimeReportModal">
+					<i class="fas fa-box-open"></i> Unarchive Report
+				</button>
+				<button
+					type="button"
+					class="btn btn-danger"
+					data-custom-modal-target="deleteArchivedTimeReportModal">
+					<i class="fas fa-trash me-1"></i> Delete Archived Report
+				</button>
+				<% } %> <% } %>
+
+				<!-- Author Actions -->
+				<% if (timeReport.author && timeReport.author.toString() ===
+				currentUser._id.toString()) { %>
+				<button
+					type="button"
+					class="btn btn-danger"
+					data-custom-modal-target="deleteTimeReportModal">
+					<i class="fas fa-trash me-1"></i> Delete Report
+				</button>
+				<% } %>
+			</div>
 		</div>
 	</div>
 
@@ -137,3 +187,223 @@
 	</div>
 	<% } %>
 </div>
+
+<!-- Archive Time Report Modal (Admin Only) -->
+<% if (currentUser.role === 'admin' && !timeReport.archived) { %>
+<div
+	class="custom-modal-overlay"
+	id="archiveTimeReportModal"
+	role="dialog"
+	aria-labelledby="archiveTimeReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-warning">
+			<h5 class="custom-modal-title" id="archiveTimeReportModalLabel">
+				<i class="fas fa-archive"></i>
+				Archive Time Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-file-archive custom-modal-icon text-warning"></i>
+				<h4>Are you sure you want to archive this time report?</h4>
+
+				<div class="form-group">
+					<label for="archiveReason" class="form-label">
+						<strong>Reason for archiving (optional):</strong>
+					</label>
+					<textarea
+						class="form-control"
+						id="archiveReason"
+						name="archivedReason"
+						rows="3"
+						placeholder="Enter a reason for archiving this time report"></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				id="archiveTimeReportForm"
+				action="/timereport/<%= timeReport._id %>/archive"
+				method="POST"
+				data-custom-message="Time report has been archived successfully"
+				data-action-type="archive"
+				class="d-inline">
+				<!-- Hidden textarea to store the archive reason -->
+				<input
+					type="hidden"
+					id="hiddenArchiveReason"
+					name="archivedReason"
+					value="" />
+				<button type="submit" class="custom-modal-btn custom-modal-btn-warning">
+					<i class="fas fa-archive me-1"></i> Archive Report
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Unarchive Time Report Modal (Admin Only) -->
+<% if (currentUser.role === 'admin' && timeReport.archived) { %>
+<div
+	class="custom-modal-overlay"
+	id="unarchiveTimeReportModal"
+	role="dialog"
+	aria-labelledby="unarchiveTimeReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-success">
+			<h5 class="custom-modal-title" id="unarchiveTimeReportModalLabel">
+				<i class="fas fa-box-open"></i>
+				Unarchive Time Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-box-open custom-modal-icon text-success"></i>
+				<h4>Are you sure you want to unarchive this time report?</h4>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				action="/timereport/<%= timeReport._id %>/unarchive"
+				method="POST"
+				data-custom-message="Time report has been unarchived successfully"
+				data-action-type="unarchive"
+				class="d-inline">
+				<button type="submit" class="custom-modal-btn custom-modal-btn-success">
+					<i class="fas fa-box-open me-1"></i> Unarchive Report
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Password Confirmation Modal for Delete (Report Owner Only) -->
+<% if (timeReport.author && timeReport.author.toString() ===
+currentUser._id.toString()) { %>
+<div
+	class="custom-modal-overlay"
+	id="deleteTimeReportModal"
+	role="dialog"
+	aria-labelledby="deleteTimeReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-danger">
+			<h5 class="custom-modal-title" id="deleteTimeReportModalLabel">
+				<i class="fas fa-exclamation-triangle"></i>
+				Delete Time Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i
+					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+				<h4>Are you sure you want to delete this time report?</h4>
+				<p class="text-danger mt-3">
+					<strong>This action cannot be undone.</strong>
+				</p>
+
+				<form
+					id="passwordConfirmForm"
+					action="/timereport/<%= timeReport._id %>?_method=DELETE"
+					method="POST"
+					class="text-start">
+					<div class="form-group mb-4">
+						<label for="confirmPassword" class="form-label">
+							<strong>Enter your password to confirm:</strong>
+						</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="fas fa-lock"></i></span>
+							<input
+								type="password"
+								class="form-control"
+								id="confirmPassword"
+								name="password"
+								placeholder="Enter your password"
+								required />
+						</div>
+					</div>
+					<div class="d-grid">
+						<button
+							type="submit"
+							class="custom-modal-btn custom-modal-btn-danger">
+							<i class="fas fa-trash me-1"></i> Confirm Deletion
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Delete Archived Time Report Modal (Admin Only) -->
+<% if (currentUser.role === 'admin' && timeReport.archived) { %>
+<div
+	class="custom-modal-overlay"
+	id="deleteArchivedTimeReportModal"
+	role="dialog"
+	aria-labelledby="deleteArchivedTimeReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-danger">
+			<h5 class="custom-modal-title" id="deleteArchivedTimeReportModalLabel">
+				<i class="fas fa-trash"></i>
+				Delete Archived Time Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i
+					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+				<h4>
+					Are you sure you want to permanently delete this archived time report?
+				</h4>
+				<p class="text-danger mt-3">
+					<strong>This action cannot be undone.</strong> The report and all
+					associated files will be permanently removed.
+				</p>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				action="/admin/timereport/<%= timeReport._id %>/delete"
+				method="POST"
+				data-custom-message="Archived time report has been permanently deleted"
+				data-action-type="delete"
+				class="d-inline">
+				<button type="submit" class="custom-modal-btn custom-modal-btn-danger">
+					<i class="fas fa-trash me-1"></i> Delete Permanently
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<script src="/js/customModal.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// For archive modal
+		const archiveForm = document.getElementById("archiveTimeReportForm");
+		const archiveReasonTextarea = document.getElementById("archiveReason");
+		const hiddenArchiveReason = document.getElementById("hiddenArchiveReason");
+
+		if (archiveForm && archiveReasonTextarea && hiddenArchiveReason) {
+			archiveForm.addEventListener("submit", function () {
+				hiddenArchiveReason.value = archiveReasonTextarea.value;
+			});
+		}
+	});
+</script>

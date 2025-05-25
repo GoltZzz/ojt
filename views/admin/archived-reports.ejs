@@ -222,7 +222,7 @@
 							</div>
 							<div class="custom-modal-footer">
 								<form
-									action="/<%= report.reportType %>/<%= report._id %>?_method=DELETE"
+									action="<%= report.reportType === 'timereport' ? '/admin/timereport/' + report._id + '/delete' : '/' + report.reportType + '/' + report._id + '?_method=DELETE' %>"
 									method="POST"
 									data-custom-message="Report has been deleted successfully"
 									data-action-type="delete"

@@ -73,7 +73,9 @@
 					<div class="report-item">
 						<div class="report-status-indicator <%= report.status %>"></div>
 						<div class="report-icon">
-							<% if (report.status === 'approved') { %>
+							<% if (report.reportType === 'timereport') { %>
+							<i class="fas fa-clock text-info"></i>
+							<% } else if (report.status === 'approved') { %>
 							<i class="fas fa-check-circle text-success"></i>
 							<% } else if (report.status === 'rejected') { %>
 							<i class="fas fa-times-circle text-danger"></i>
@@ -82,16 +84,24 @@
 							<% } %>
 						</div>
 						<div class="report-details">
-							<h4><%= report.studentName %></h4>
+							<h4>
+								<%= report.studentName %> <% if (report.reportType ===
+								'timereport') { %>
+								<span class="badge bg-info ms-2">Time Report</span>
+								<% } else { %>
+								<span class="badge bg-primary ms-2">Weekly Report</span>
+								<% } %>
+							</h4>
 							<p><%= report.internshipSite %></p>
 							<div class="report-meta">
 								<span class="report-date">
 									<i class="far fa-calendar-alt"></i>
-									<% if (report.weekStartDate) { %> <%= new
-									Date(report.weekStartDate).toLocaleDateString() %> <% } else {
-									%> N/A <% } %> - <% if (report.weekEndDate) { %> <%= new
-									Date(report.weekEndDate).toLocaleDateString() %> <% } else {
-									%> N/A <% } %>
+									<% if (report.weekStartDate && report.weekEndDate) { %> <%=
+									new Date(report.weekStartDate).toLocaleDateString() %> - <%=
+									new Date(report.weekEndDate).toLocaleDateString() %> <% } else
+									if (report.date) { %> <%= new
+									Date(report.date).toLocaleDateString() %> <% } else { %> N/A
+									<% } %>
 								</span>
 								<span class="report-status <%= report.status %>">
 									<%= report.status.charAt(0).toUpperCase() +
@@ -99,7 +109,9 @@
 								</span>
 							</div>
 						</div>
-						<a href="/weeklyreport/<%= report._id %>" class="report-link">
+						<a
+							href="/<%= report.reportType === 'timereport' ? 'timereport' : 'weeklyreport' %>/<%= report._id %>"
+							class="report-link">
 							<i class="fas fa-arrow-right"></i>
 						</a>
 					</div>

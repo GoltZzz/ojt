@@ -20,10 +20,10 @@ router
 		timeReport.createTimeReport
 	);
 
-// New form route
+// New route
 router.get("/new", isLoggedIn, timeReport.renderNewForm);
 
-// Upload Excel route
+// Upload route
 router.post(
 	"/upload",
 	isLoggedIn,
@@ -31,26 +31,32 @@ router.post(
 	timeReport.uploadXlsxAndShowExcel
 );
 
-// Show Excel file route
+// Excel viewer routes
 router.get("/show/:filename", isLoggedIn, timeReport.showExcel);
+router.get("/server/:filename", isLoggedIn, timeReport.showServerExcel);
 
-// Server-rendered Excel viewer route
-router.get("/server-view/:filename", isLoggedIn, timeReport.showServerExcel);
-
-// Test route without authentication
-router.get("/test-server-view/:filename", timeReport.showServerExcel);
-
-// Annotation routes
-// router.post("/:id/annotations", isLoggedIn, timeReport.addAnnotation);
-
-// Versioning routes
+// Annotation route
 router.post(
-	"/:id/versions",
+	"/:id/annotate",
+	isLoggedIn,
+	isTimeReportAuthor,
+	timeReport.addAnnotation
+);
+
+// Version route
+router.post(
+	"/:id/version",
 	isLoggedIn,
 	isTimeReportAuthor,
 	xlsxUpload.single("xlsxFile"),
 	timeReport.createNewVersion
 );
+
+// Archive route (admin only)
+router.post("/:id/archive", isLoggedIn, timeReport.archiveTimeReport);
+
+// Unarchive route (admin only)
+router.post("/:id/unarchive", isLoggedIn, timeReport.unarchiveTimeReport);
 
 // Delete route - now with proper authorization middleware
 router.delete(

@@ -143,7 +143,7 @@
 	<% if (weeks && weeks.length) { %>
 	<div
 		class="summary-stats-container row g-4 mb-4 animate__animated animate__fadeInUp">
-		<div class="col-md-4">
+		<div class="col-md-3">
 			<div class="stats-card">
 				<div class="stats-icon"><i class="fa-solid fa-calendar-days"></i></div>
 				<div class="stats-content">
@@ -152,7 +152,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-md-4">
+		<div class="col-md-3">
 			<div class="stats-card">
 				<div class="stats-icon"><i class="fa-solid fa-users"></i></div>
 				<div class="stats-content">
@@ -161,12 +161,33 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-md-4">
+		<div class="col-md-3">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-file-alt"></i></div>
+				<div class="stats-content">
+					<h3 id="weeklySubmissionRate">Calculating...</h3>
+					<p>Weekly Reports Rate</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-clock"></i></div>
+				<div class="stats-content">
+					<h3 id="timeSubmissionRate">Calculating...</h3>
+					<p>Time Reports Rate</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-md-12">
 			<div class="stats-card">
 				<div class="stats-icon"><i class="fa-solid fa-chart-simple"></i></div>
 				<div class="stats-content">
 					<h3 id="submissionRate">Calculating...</h3>
-					<p>Submission Rate</p>
+					<p>Overall Submission Rate</p>
 				</div>
 			</div>
 		</div>
@@ -502,22 +523,61 @@
 	// Calculate submission rate
 	document.addEventListener("DOMContentLoaded", function () {
 		const submissionRateEl = document.getElementById("submissionRate");
-		if (submissionRateEl) {
-			const statusCells = document.querySelectorAll("#weekly .student-cell");
-			let submittedCount = 0;
-			let totalCells = statusCells.length;
+		const weeklySubmissionRateEl = document.getElementById(
+			"weeklySubmissionRate"
+		);
+		const timeSubmissionRateEl = document.getElementById("timeSubmissionRate");
 
-			statusCells.forEach((cell) => {
+		if (submissionRateEl && weeklySubmissionRateEl && timeSubmissionRateEl) {
+			// Get cells from both weekly reports and time reports tables
+			const weeklyStatusCells = document.querySelectorAll(
+				"#weekly .student-cell"
+			);
+			const timeStatusCells = document.querySelectorAll("#time .student-cell");
+
+			let weeklySubmittedCount = 0;
+			let timeSubmittedCount = 0;
+			let totalWeeklyCells = weeklyStatusCells.length;
+			let totalTimeCells = timeStatusCells.length;
+
+			// Count weekly report submissions
+			weeklyStatusCells.forEach((cell) => {
 				const statusEl = cell.querySelector(".submission-status");
 				const status = statusEl?.dataset?.status;
 				if (status && status !== "notSubmitted") {
-					submittedCount++;
+					weeklySubmittedCount++;
 				}
 			});
 
-			const rate =
-				totalCells > 0 ? Math.round((submittedCount / totalCells) * 100) : 0;
-			submissionRateEl.textContent = rate + "%";
+			// Count time report submissions
+			timeStatusCells.forEach((cell) => {
+				const statusEl = cell.querySelector(".submission-status");
+				const status = statusEl?.dataset?.status;
+				if (status && status !== "notSubmitted") {
+					timeSubmittedCount++;
+				}
+			});
+
+			// Calculate individual submission rates
+			const weeklyRate =
+				totalWeeklyCells > 0
+					? Math.round((weeklySubmittedCount / totalWeeklyCells) * 100)
+					: 0;
+			const timeRate =
+				totalTimeCells > 0
+					? Math.round((timeSubmittedCount / totalTimeCells) * 100)
+					: 0;
+
+			// Calculate combined submission rate
+			const totalSubmitted = weeklySubmittedCount + timeSubmittedCount;
+			const totalCells = totalWeeklyCells + totalTimeCells;
+			const overallRate =
+				totalCells > 0 ? Math.round((totalSubmitted / totalCells) * 100) : 0;
+
+			// Update the display
+			weeklySubmissionRateEl.textContent = weeklyRate + "%";
+			timeSubmissionRateEl.textContent = timeRate + "%";
+			submissionRateEl.textContent = overallRate + "%";
 		}
 
 		// Initialize student pagination

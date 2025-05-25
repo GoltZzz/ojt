@@ -295,14 +295,31 @@
                 <p><strong>Excel File:</strong> <%= report.excelFile.originalName %></p>
               <% } %>
               <p><strong>Date:</strong> <%= new Date(report.date).toLocaleDateString() %></p>
+              
+              <!-- Password Confirmation -->
+              <form action="/timereport/<%= report._id %>?_method=DELETE" method="POST" id="deleteForm<%= report._id %>">
+                <div class="form-group mb-3">
+                  <label for="password<%= report._id %>" class="form-label">
+                    <strong>Enter your password to confirm:</strong>
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="password<%= report._id %>"
+                      name="password"
+                      placeholder="Enter your password"
+                      required />
+                  </div>
+                </div>
+              </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <form action="/timereport/<%= report._id %>?_method=DELETE" method="POST" class="d-inline">
-                <button type="submit" class="btn btn-danger">
-                  <i class="fas fa-trash me-1"></i> Delete
-                </button>
-              </form>
+              <button type="submit" form="deleteForm<%= report._id %>" class="btn btn-danger">
+                <i class="fas fa-trash me-1"></i> Delete
+              </button>
             </div>
           </div>
         </div>

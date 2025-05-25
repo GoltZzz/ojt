@@ -61,16 +61,44 @@ export const isTimeReportAuthor = async (req, res, next) => {
 			return res.redirect("/timereport");
 		}
 
-		if (!timeReport.author.equals(req.user._id)) {
-			req.flash("error", "You are not authorized to modify this time report!");
-			return res.redirect(`/timereport/${id}`);
-		}
+		const isAuthor = timeReport.author.equals(req.user._id);
+		const isAdmin = req.user && req.user.role === "admin";
 
-		// Special case: Allow deletion even for approved reports
-		if (req.method === "DELETE") {
+		// For archive/unarchive operations, only admins are allowed
+		if (
+			req.route.path.includes("/archive") ||
+			req.route.path.includes("/unarchive")
+		) {
+			if (!isAdmin) {
+				req.flash(
+					"error",
+					"You are not authorized to archive/unarchive time reports!"
+				);
+				return res.redirect(`/timereport/${id}`);
+			}
 			// Add timeReport to request for use in subsequent middleware/routes
 			req.timeReport = timeReport;
 			return next();
+		}
+
+		// For delete operations, only the author is allowed (admins cannot delete)
+		if (req.method === "DELETE") {
+			if (!isAuthor) {
+				req.flash(
+					"error",
+					"You are not authorized to delete this time report!"
+				);
+				return res.redirect(`/timereport/${id}`);
+			}
+			// Add timeReport to request for use in subsequent middleware/routes
+			req.timeReport = timeReport;
+			return next();
+		}
+
+		// For other operations, check if user is the author
+		if (!isAuthor) {
+			req.flash("error", "You are not authorized to modify this time report!");
+			return res.redirect(`/timereport/${id}`);
 		}
 
 		// For non-DELETE operations, check if the report is approved

@@ -9,9 +9,9 @@ import {
 	startWeeklyLoop,
 	stopWeeklyLoop,
 	restartWeeklyLoop,
-	isWeeklyLoopActive,
 	forceCreateNextWeek,
 } from "../../controllers/admin/weeklySummary.js";
+import timeReportController from "../../controllers/admin/timeReport.js";
 
 const router = express.Router();
 
@@ -59,6 +59,19 @@ router
 router
 	.route("/reports/:type/:id/unarchive")
 	.post(isLoggedIn, isAdmin, adminController.unarchiveReport);
+
+// Time report specific routes
+router
+	.route("/timereport/:id/archive")
+	.post(isLoggedIn, isAdmin, timeReportController.archiveTimeReport);
+
+router
+	.route("/timereport/:id/unarchive")
+	.post(isLoggedIn, isAdmin, timeReportController.unarchiveTimeReport);
+
+router
+	.route("/timereport/:id/delete")
+	.post(isLoggedIn, isAdmin, timeReportController.deleteTimeReport);
 
 router.get("/weekly-summary", isLoggedIn, isAdmin, getWeeklySummary);
 router.post("/weekly-summary/start", isLoggedIn, isAdmin, startWeeklyLoop);
