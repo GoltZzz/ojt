@@ -48,7 +48,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // for mongoose
-const dbUrl = "mongodb://127.0.0.1:27017/ojt";
+const dbUrl = process.env.DB_URL || "mongodb://127.0.0.1:27017/ojt";
 
 mongoose
 	.connect(dbUrl)
@@ -111,9 +111,11 @@ app.use(
 // Apply sanitization middleware to all routes
 app.use(sanitizeBody);
 
+const secret = process.env.SECRET || "thisshouldbeabettersecret!";
+
 const store = MongoDBStore.create({
 	mongoUrl: dbUrl,
-	secret: "thisshouldbeabettersecret!",
+	secret,
 	touchAfter: 24 * 60 * 60,
 });
 store.on("error", function (e) {
@@ -124,7 +126,7 @@ store.on("error", function (e) {
 const sessionConfig = {
 	store,
 	name: "session",
-	secret: "thisshouldbeabettersecret!",
+	secret,
 	resave: false,
 	saveUninitialized: false,
 	cookie: {
@@ -200,13 +202,13 @@ cron.schedule("1 0 * * 0", async () => {
 // Startup check: if it's Sunday and server starts after midnight, check if we need to create this week's entry
 (async () => {
 	try {
-		console.log("Server starting up - checking if week creation is needed...");
 		await checkAndCreateNextWeek();
 	} catch (error) {
 		console.error("Error during startup week check:", error);
 	}
 })();
 
-app.listen(3000, () => {
-	console.log("Server is running on port 3000");
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+	console.log(`Listening on port ${port}`);
 });
