@@ -1,0 +1,792 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/weeklySummary.css" />
+<link rel="stylesheet" href="/css/dashboard.css" />
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" />
+
+<div class="dashboard-container">
+	<% if (loopActive) { %>
+	<div
+		class="alert alert-success d-flex align-items-center justify-content-center mb-4 animate__animated animate__fadeIn"
+		role="alert">
+		<i class="fa-solid fa-circle-check me-2"></i>
+		<strong>Weekly Loop is ACTIVE.</strong> Students can submit their weekly
+		reports as scheduled.
+	</div>
+	<% } %>
+
+	<div class="dashboard-header animate__animated animate__fadeInDown">
+		<h1><i class="fa-solid fa-calendar-week me-2"></i>Weekly Report Summary</h1>
+		<p class="text-muted">Track and manage weekly student submissions</p>
+	</div>
+
+	<div
+		class="control-panel card shadow-sm mb-4 animate__animated animate__fadeInUp">
+		<div class="card-body">
+			<div class="d-flex justify-content-between align-items-center">
+				<% if (!loopActive) { %>
+				<form
+					id="start-weekly-loop-form"
+					method="POST"
+					action="/admin/weekly-summary/start"
+					class="row g-3 align-items-center flex-grow-1">
+					<% if (!(weeks && weeks.length)) { %>
+					<div class="col-md-8">
+						<label for="startDate" class="form-label fw-semibold">
+							<i class="fa-regular fa-calendar me-1"></i> Select Start Date
+							<span class="text-muted">(Monday)</span>:
+						</label>
+						<input
+							type="date"
+							id="startDate"
+							name="startDate"
+							class="form-control date-input"
+							required />
+					</div>
+					<div class="col-md-4 d-flex align-items-end">
+						<button type="submit" class="btn btn-primary w-100">
+							<i class="fa-solid fa-play"></i> Start Weekly Loop
+						</button>
+					</div>
+					<% } else { %>
+					<div class="col-12">
+						<button type="submit" class="btn btn-primary w-100">
+							<i class="fa-solid fa-play"></i> Start Weekly Loop
+						</button>
+					</div>
+					<% } %>
+				</form>
+				<% } else { %>
+				<div class="action-buttons d-flex gap-3 w-100">
+					<form
+						method="POST"
+						action="/admin/weekly-summary/stop"
+						class="flex-grow-1">
+						<button type="submit" class="btn btn-danger">
+							<i class="fa-solid fa-stop"></i> Stop Loop
+						</button>
+					</form>
+					<button
+						type="button"
+						class="btn btn-warning"
+						data-bs-toggle="modal"
+						data-bs-target="#restartModal">
+						<i class="fa-solid fa-sync"></i> Restart Loop
+					</button>
+					<form method="POST" action="/admin/force-next-week">
+						<button type="submit" class="btn btn-info">
+							<i class="fa-solid fa-forward"></i> Add New Week
+						</button>
+					</form>
+				</div>
+				<% } %>
+			</div>
+		</div>
+	</div>
+
+	<!-- Restart Modal -->
+	<div
+		class="modal fade"
+		id="restartModal"
+		tabindex="-1"
+		aria-labelledby="restartModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="restartModalLabel">
+						<i class="fa-solid fa-sync me-2"></i> Restart Weekly Loop
+					</h5>
+					<button
+						type="button"
+						class="btn-close"
+						data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+				<form method="POST" action="/admin/weekly-summary/restart">
+					<div class="modal-body">
+						<div class="alert alert-warning">
+							<i class="fas fa-exclamation-triangle me-2"></i>
+							<strong>Warning:</strong> This will delete all existing weeks and
+							reports. This action cannot be undone.
+						</div>
+						<div class="mb-3">
+							<label for="restartDate" class="form-label">
+								<i class="fa-regular fa-calendar me-1"></i> Select New Start
+								Date (Monday):
+							</label>
+							<input
+								type="date"
+								class="form-control date-input"
+								id="restartDate"
+								name="startDate"
+								required />
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button
+							type="button"
+							class="btn btn-secondary"
+							data-bs-dismiss="modal">
+							<i class="fa-solid fa-times me-1"></i> Cancel
+						</button>
+						<button type="submit" class="btn btn-warning">
+							<i class="fa-solid fa-sync me-1"></i> Restart Loop
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<% if (weeks && weeks.length) { %>
+	<div
+		class="summary-stats-container row g-4 mb-4 animate__animated animate__fadeInUp">
+		<div class="col-md-3">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-calendar-days"></i></div>
+				<div class="stats-content">
+					<h3><%= weeks.length %></h3>
+					<p>Total Weeks</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-users"></i></div>
+				<div class="stats-content">
+					<h3><%= students.length %></h3>
+					<p>Total Students</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-file-alt"></i></div>
+				<div class="stats-content">
+					<h3 id="weeklySubmissionRate">Calculating...</h3>
+					<p>Weekly Reports Rate</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-3">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-clock"></i></div>
+				<div class="stats-content">
+					<h3 id="timeSubmissionRate">Calculating...</h3>
+					<p>Time Reports Rate</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-md-12">
+			<div class="stats-card">
+				<div class="stats-icon"><i class="fa-solid fa-chart-simple"></i></div>
+				<div class="stats-content">
+					<h3 id="submissionRate">Calculating...</h3>
+					<p>Overall Submission Rate</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="dashboard-card full-width mt-4 animate__animated animate__fadeInUp">
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<h3 class="mb-0">
+				<i class="fa-solid fa-list-check me-2" style="color: var(--accent)"></i
+				>Weekly Submission Status
+			</h3>
+			<div class="table-controls">
+				<div class="input-group">
+					<span class="input-group-text bg-light border-0">
+						<i class="fa-solid fa-search"></i>
+					</span>
+					<input
+						type="text"
+						id="tableSearch"
+						class="form-control search-input"
+						placeholder="Search student..." />
+				</div>
+			</div>
+		</div>
+
+		<div class="legend mb-3">
+			<span class="legend-item"
+				><i class="fas fa-check-circle text-success"></i> Approved</span
+			>
+			<span class="legend-item"
+				><i class="fa-solid fa-xmark text-danger"></i> Not Submitted</span
+			>
+		</div>
+
+		<div class="student-display-controls mb-3">
+			<div class="d-flex align-items-center justify-content-between flex-wrap">
+				<div class="d-flex align-items-center">
+					<label class="me-2">Students per page:</label>
+					<select id="studentsPerPage" class="form-select form-select-sm">
+						<option value="5" selected>5</option>
+						<option value="10">10</option>
+						<option value="20">20</option>
+						<option value="30">30</option>
+						<option value="50">50</option>
+						<option value="all">All</option>
+					</select>
+				</div>
+				<div class="pagination-controls">
+					<button id="prevPage" class="btn btn-sm btn-outline-secondary">
+						<i class="fas fa-chevron-left"></i> Previous
+					</button>
+					<span id="pageInfo" class="mx-2">Page 1 of 1</span>
+					<button id="nextPage" class="btn btn-sm btn-outline-secondary">
+						Next <i class="fas fa-chevron-right"></i>
+					</button>
+				</div>
+				<div>
+					<button id="toggleCompactView" class="btn btn-sm btn-outline-primary">
+						<i class="fas fa-compress"></i> Toggle Compact View
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<ul class="nav nav-tabs mb-3" id="reportTabs" role="tablist">
+			<li class="nav-item" role="presentation">
+				<button
+					class="nav-link active"
+					id="weekly-tab"
+					data-bs-toggle="tab"
+					data-bs-target="#weekly"
+					type="button"
+					role="tab"
+					aria-controls="weekly"
+					aria-selected="true">
+					<i class="fa-solid fa-file-alt me-1"></i> Weekly Reports
+				</button>
+			</li>
+			<li class="nav-item" role="presentation">
+				<button
+					class="nav-link"
+					id="time-tab"
+					data-bs-toggle="tab"
+					data-bs-target="#time"
+					type="button"
+					role="tab"
+					aria-controls="time"
+					aria-selected="false">
+					<i class="fa-solid fa-clock me-1"></i> Time Reports
+				</button>
+			</li>
+		</ul>
+
+		<div class="tab-content" id="reportTabsContent">
+			<div
+				class="tab-pane fade show active"
+				id="weekly"
+				role="tabpanel"
+				aria-labelledby="weekly-tab">
+				<div class="table-responsive">
+					<table
+						class="table table-bordered table-hover align-middle summary-table"
+						id="summaryTable">
+						<thead>
+							<tr>
+								<th class="text-center sticky-col">Week #</th>
+								<th class="text-center sticky-col">Date Range</th>
+								<% students.forEach((student, index) => { %>
+								<th class="student-header" data-student-index="<%= index %>">
+									<div class="d-flex flex-column align-items-center">
+										<div class="avatar-circle">
+											<span
+												><%= student.firstName.charAt(0) %><%=
+												student.lastName.charAt(0) %></span
+											>
+										</div>
+										<span class="student-name"
+											><%= student.firstName %> <%= student.lastName %></span
+										>
+									</div>
+								</th>
+								<% }) %>
+							</tr>
+						</thead>
+						<tbody>
+							<% weeks.forEach((week, i) => { %>
+							<tr class="week-row" data-week="<%= i + 1 %>">
+								<td class="fw-bold text-center sticky-col">
+									Week <%= i + 1 %>
+								</td>
+								<td class="sticky-col">
+									<span class="date-badge">
+										<i class="fa-regular fa-calendar me-1"></i>
+										<%= week.startLabel %> – <%= week.endLabel %>
+									</span>
+								</td>
+								<% students.forEach((student, index) => { %>
+								<td
+									class="text-center student-cell"
+									data-student="<%= student.firstName %> <%= student.lastName %>"
+									data-student-index="<%= index %>"
+									data-date="<%= week.startLabel %>">
+									<% const status = week.submissions[student._id]; %> <% if
+									(status && status.submitted) { %>
+									<div
+										class="submission-status"
+										data-status="<%= status.status %>">
+										<div class="status-icon approved">
+											<i class="fas fa-check-circle fa-lg"></i>
+										</div>
+										<small class="d-block status-text approved">Approved</small>
+										<small class="d-block text-muted mt-1">
+											<%= new Date(status.submittedAt).toLocaleDateString() %>
+										</small>
+									</div>
+									<% } else { %>
+									<div class="submission-status" data-status="notSubmitted">
+										<div class="status-icon not-submitted">
+											<i class="fa-solid fa-xmark"></i>
+										</div>
+										<small class="d-block text-muted mt-1">No Submission</small>
+									</div>
+									<% } %>
+								</td>
+								<% }) %>
+							</tr>
+							<% }) %>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<div
+				class="tab-pane fade"
+				id="time"
+				role="tabpanel"
+				aria-labelledby="time-tab">
+				<div class="table-responsive">
+					<table
+						class="table table-bordered table-hover align-middle summary-table"
+						id="timeReportTable">
+						<thead>
+							<tr>
+								<th class="text-center sticky-col">Week #</th>
+								<th class="text-center sticky-col">Date Range</th>
+								<% students.forEach((student, index) => { %>
+								<th class="student-header" data-student-index="<%= index %>">
+									<div class="d-flex flex-column align-items-center">
+										<div class="avatar-circle">
+											<span
+												><%= student.firstName.charAt(0) %><%=
+												student.lastName.charAt(0) %></span
+											>
+										</div>
+										<span class="student-name"
+											><%= student.firstName %> <%= student.lastName %></span
+										>
+									</div>
+								</th>
+								<% }) %>
+							</tr>
+						</thead>
+						<tbody>
+							<% weeks.forEach((week, i) => { %>
+							<tr class="week-row" data-week="<%= i + 1 %>">
+								<td class="fw-bold text-center sticky-col">
+									Week <%= i + 1 %>
+								</td>
+								<td class="sticky-col">
+									<span class="date-badge">
+										<i class="fa-regular fa-calendar me-1"></i>
+										<%= week.startLabel %> – <%= week.endLabel %>
+									</span>
+								</td>
+								<% students.forEach((student, index) => { %>
+								<td
+									class="text-center student-cell"
+									data-student="<%= student.firstName %> <%= student.lastName %>"
+									data-student-index="<%= index %>"
+									data-date="<%= week.startLabel %>">
+									<% const timeStatus = week.timeSubmissions[student._id]; %> <%
+									if (timeStatus && timeStatus.submitted) { %>
+									<div
+										class="submission-status"
+										data-status="<%= timeStatus.status %>">
+										<div class="status-icon approved">
+											<i class="fas fa-check-circle fa-lg"></i>
+										</div>
+										<small class="d-block status-text approved">Approved</small>
+										<small class="d-block text-muted mt-1">
+											<%= new Date(timeStatus.submittedAt).toLocaleDateString()
+											%>
+										</small>
+									</div>
+									<% } else { %>
+									<div class="submission-status" data-status="notSubmitted">
+										<div class="status-icon not-submitted">
+											<i class="fa-solid fa-xmark"></i>
+										</div>
+										<small class="d-block text-muted mt-1">No Submission</small>
+									</div>
+									<% } %>
+								</td>
+								<% }) %>
+							</tr>
+							<% }) %>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<% } %>
+</div>
+
+<style>
+	/* Sticky first two columns */
+	.sticky-col {
+		position: sticky;
+		left: 0;
+		background-color: #fff;
+		z-index: 1;
+	}
+
+	.sticky-col:nth-child(2) {
+		left: 80px; /* Adjust based on the width of the first column */
+	}
+
+	/* Compact view styles */
+	.compact-view .student-header .avatar-circle {
+		width: 30px;
+		height: 30px;
+		font-size: 12px;
+	}
+
+	.compact-view .student-header .student-name {
+		font-size: 11px;
+	}
+
+	.compact-view .submission-status .status-icon {
+		transform: scale(0.8);
+	}
+
+	.compact-view .submission-status small {
+		font-size: 10px;
+	}
+
+	/* Responsive table */
+	.summary-table {
+		table-layout: fixed;
+	}
+
+	.summary-table th:first-child,
+	.summary-table td:first-child {
+		width: 80px;
+	}
+
+	.summary-table th:nth-child(2),
+	.summary-table td:nth-child(2) {
+		width: 150px;
+	}
+
+	.summary-table th:nth-child(n + 3),
+	.summary-table td:nth-child(n + 3) {
+		width: 120px;
+	}
+</style>
+
+<script>
+	// Validate restart date is a Monday
+	document
+		.getElementById("restartDate")
+		?.addEventListener("change", function () {
+			const date = new Date(this.value);
+			if (date.getDay() !== 1) {
+				// 1 is Monday
+				alert("Please select a Monday as the start date.");
+				this.value = "";
+			}
+		});
+
+	// Also validate start date if it exists
+	document.getElementById("startDate")?.addEventListener("change", function () {
+		const date = new Date(this.value);
+		if (date.getDay() !== 1) {
+			// 1 is Monday
+			alert("Please select a Monday as the start date.");
+			this.value = "";
+		}
+	});
+
+	// Calculate submission rate
+	document.addEventListener("DOMContentLoaded", function () {
+		const submissionRateEl = document.getElementById("submissionRate");
+		const weeklySubmissionRateEl = document.getElementById(
+			"weeklySubmissionRate"
+		);
+		const timeSubmissionRateEl = document.getElementById("timeSubmissionRate");
+
+		if (submissionRateEl && weeklySubmissionRateEl && timeSubmissionRateEl) {
+			// Get cells from both weekly reports and time reports tables
+			const weeklyStatusCells = document.querySelectorAll(
+				"#weekly .student-cell"
+			);
+			const timeStatusCells = document.querySelectorAll("#time .student-cell");
+
+			let weeklySubmittedCount = 0;
+			let timeSubmittedCount = 0;
+			let totalWeeklyCells = weeklyStatusCells.length;
+			let totalTimeCells = timeStatusCells.length;
+
+			// Count weekly report submissions
+			weeklyStatusCells.forEach((cell) => {
+				const statusEl = cell.querySelector(".submission-status");
+				const status = statusEl?.dataset?.status;
+				if (status && status !== "notSubmitted") {
+					weeklySubmittedCount++;
+				}
+			});
+
+			// Count time report submissions
+			timeStatusCells.forEach((cell) => {
+				const statusEl = cell.querySelector(".submission-status");
+				const status = statusEl?.dataset?.status;
+				if (status && status !== "notSubmitted") {
+					timeSubmittedCount++;
+				}
+			});
+
+			// Calculate individual submission rates
+			const weeklyRate =
+				totalWeeklyCells > 0
+					? Math.round((weeklySubmittedCount / totalWeeklyCells) * 100)
+					: 0;
+			const timeRate =
+				totalTimeCells > 0
+					? Math.round((timeSubmittedCount / totalTimeCells) * 100)
+					: 0;
+
+			// Calculate combined submission rate
+			const totalSubmitted = weeklySubmittedCount + timeSubmittedCount;
+			const totalCells = totalWeeklyCells + totalTimeCells;
+			const overallRate =
+				totalCells > 0 ? Math.round((totalSubmitted / totalCells) * 100) : 0;
+
+			// Update the display
+			weeklySubmissionRateEl.textContent = weeklyRate + "%";
+			timeSubmissionRateEl.textContent = timeRate + "%";
+			submissionRateEl.textContent = overallRate + "%";
+		}
+
+		// Initialize student pagination
+		initPagination();
+
+		// Initialize compact view toggle
+		initCompactView();
+	});
+
+	// Search functionality
+	document
+		.getElementById("tableSearch")
+		?.addEventListener("input", function () {
+			const searchTerm = this.value.toLowerCase();
+
+			// Reset pagination to first page when searching
+			if (window.currentPage !== 1 && searchTerm.length > 0) {
+				window.currentPage = 1;
+				updatePageInfo();
+			}
+
+			// Get all student headers and find matching ones
+			const studentHeaders = document.querySelectorAll(".student-header");
+			const matchingIndexes = [];
+
+			studentHeaders.forEach((header, index) => {
+				const studentName = header
+					.querySelector(".student-name")
+					.textContent.toLowerCase();
+				if (studentName.includes(searchTerm)) {
+					matchingIndexes.push(index);
+				}
+			});
+
+			// If we have a search term, show only matching students
+			if (searchTerm.length > 0) {
+				document.querySelectorAll(".summary-table").forEach((table) => {
+					// Update headers
+					const headers = table.querySelectorAll("th.student-header");
+					headers.forEach((header, index) => {
+						if (matchingIndexes.includes(index)) {
+							header.style.display = "";
+						} else {
+							header.style.display = "none";
+						}
+					});
+
+					// Update cells
+					const rows = table.querySelectorAll("tbody tr");
+					rows.forEach((row) => {
+						const cells = row.querySelectorAll("td.student-cell");
+						cells.forEach((cell, index) => {
+							if (matchingIndexes.includes(index)) {
+								cell.style.display = "";
+							} else {
+								cell.style.display = "none";
+							}
+						});
+					});
+				});
+			} else {
+				// If no search term, revert to pagination
+				updateStudentVisibility();
+			}
+		});
+
+	// Student pagination functionality
+	function initPagination() {
+		// Make pagination variables global for search functionality
+		window.currentPage = 1;
+		window.studentsPerPage = 5;
+		const totalStudents = document.querySelectorAll(
+			"#summaryTable thead th.student-header"
+		).length;
+		window.totalPages = Math.ceil(totalStudents / window.studentsPerPage);
+
+		// Initialize pagination
+		updatePageInfo();
+		updateStudentVisibility();
+
+		// Handle students per page change
+		document
+			.getElementById("studentsPerPage")
+			.addEventListener("change", function () {
+				const value = this.value;
+				if (value === "all") {
+					window.studentsPerPage = totalStudents;
+				} else {
+					window.studentsPerPage = parseInt(value);
+				}
+
+				window.totalPages = Math.ceil(totalStudents / window.studentsPerPage);
+				window.currentPage = 1; // Reset to first page
+				updatePageInfo();
+				updateStudentVisibility();
+			});
+
+		// Handle previous page button
+		document.getElementById("prevPage").addEventListener("click", function () {
+			if (window.currentPage > 1) {
+				window.currentPage--;
+				updatePageInfo();
+				updateStudentVisibility();
+			}
+		});
+
+		// Handle next page button
+		document.getElementById("nextPage").addEventListener("click", function () {
+			if (window.currentPage < window.totalPages) {
+				window.currentPage++;
+				updatePageInfo();
+				updateStudentVisibility();
+			}
+		});
+
+		// Add keyboard navigation
+		document.addEventListener("keydown", function (e) {
+			// Only if we're not in an input field
+			if (
+				document.activeElement.tagName !== "INPUT" &&
+				document.activeElement.tagName !== "SELECT" &&
+				document.activeElement.tagName !== "TEXTAREA"
+			) {
+				// Left arrow for previous page
+				if (e.key === "ArrowLeft" && window.currentPage > 1) {
+					window.currentPage--;
+					updatePageInfo();
+					updateStudentVisibility();
+				}
+
+				// Right arrow for next page
+				if (e.key === "ArrowRight" && window.currentPage < window.totalPages) {
+					window.currentPage++;
+					updatePageInfo();
+					updateStudentVisibility();
+				}
+			}
+		});
+	}
+
+	// Update page info text
+	function updatePageInfo() {
+		document.getElementById(
+			"pageInfo"
+		).textContent = `Page ${window.currentPage} of ${window.totalPages}`;
+
+		// Update button states
+		document.getElementById("prevPage").disabled = window.currentPage === 1;
+		document.getElementById("nextPage").disabled =
+			window.currentPage === window.totalPages;
+	}
+
+	// Update which students are visible based on current page
+	function updateStudentVisibility() {
+		// Clear search when updating visibility through pagination
+		const searchInput = document.getElementById("tableSearch");
+		if (searchInput.value.length > 0) {
+			searchInput.value = "";
+		}
+
+		const startIndex = (window.currentPage - 1) * window.studentsPerPage;
+		const endIndex = Math.min(
+			startIndex + window.studentsPerPage,
+			document.querySelectorAll("#summaryTable thead th.student-header").length
+		);
+
+		// Apply to both tables
+		document.querySelectorAll(".summary-table").forEach((table) => {
+			// Update headers
+			const headers = table.querySelectorAll("th.student-header");
+			headers.forEach((header, index) => {
+				if (index >= startIndex && index < endIndex) {
+					header.style.display = "";
+				} else {
+					header.style.display = "none";
+				}
+			});
+
+			// Update cells
+			const rows = table.querySelectorAll("tbody tr");
+			rows.forEach((row) => {
+				const cells = row.querySelectorAll("td.student-cell");
+				cells.forEach((cell, index) => {
+					if (index >= startIndex && index < endIndex) {
+						cell.style.display = "";
+					} else {
+						cell.style.display = "none";
+					}
+				});
+			});
+		});
+	}
+
+	// Compact view toggle functionality
+	function initCompactView() {
+		const toggleButton = document.getElementById("toggleCompactView");
+		const tables = document.querySelectorAll(".summary-table");
+
+		toggleButton.addEventListener("click", function () {
+			tables.forEach((table) => {
+				table.classList.toggle("compact-view");
+			});
+
+			// Update button text
+			if (tables[0].classList.contains("compact-view")) {
+				toggleButton.innerHTML = '<i class="fas fa-expand"></i> Normal View';
+			} else {
+				toggleButton.innerHTML = '<i class="fas fa-compress"></i> Compact View';
+			}
+		});
+	}
+</script>

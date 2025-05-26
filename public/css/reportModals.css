@@ -1,0 +1,175 @@
+/* Report Action Modals Styles */
+.report-modal .custom-modal {
+    max-width: 500px;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+}
+
+/* Modal headers with enhanced gradients */
+.report-modal .custom-modal-header.approve-header {
+    background: linear-gradient(135deg, #28c76f, #1f9d57);
+    padding: 1.5rem;
+}
+
+.report-modal .custom-modal-header.reject-header {
+    background: linear-gradient(135deg, #ea5455, #c62a2b);
+    padding: 1.5rem;
+}
+
+/* Modal icons with enhanced styling */
+.report-modal .custom-modal-icon {
+    font-size: 5rem;
+    margin: 0.5rem auto 1.5rem;
+    display: block;
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.report-modal .custom-modal-icon.text-success {
+    background-color: rgba(40, 199, 111, 0.1);
+    color: #28c76f;
+}
+
+.report-modal .custom-modal-icon.text-danger {
+    background-color: rgba(234, 84, 85, 0.1);
+    color: #ea5455;
+}
+
+/* Modal content with improved spacing */
+.report-modal .custom-modal-content {
+    padding: 2rem 1.5rem 1rem;
+}
+
+.report-modal .custom-modal-content h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Form elements with enhanced styling */
+.report-modal .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.report-modal .form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.report-modal .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+.report-modal .form-control:focus {
+    border-color: #2193b0;
+    box-shadow: 0 0 0 0.25rem rgba(33, 147, 176, 0.25);
+    background-color: #fff;
+}
+
+.report-modal textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.report-modal textarea.form-control::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}
+
+/* Button styles with enhanced effects */
+.report-modal .custom-modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: center;
+}
+
+.report-modal .custom-modal-btn {
+    padding: 0.875rem 2rem;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    min-width: 180px;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.report-modal .custom-modal-btn:hover {
+    transform: translateY(-3px);
+}
+
+.report-modal .custom-modal-btn-success {
+    background: linear-gradient(135deg, #28c76f, #1f9d57);
+    box-shadow: 0 8px 15px rgba(40, 199, 111, 0.3);
+}
+
+.report-modal .custom-modal-btn-danger {
+    background: linear-gradient(135deg, #ea5455, #c62a2b);
+    box-shadow: 0 8px 15px rgba(234, 84, 85, 0.3);
+}
+
+/* Required field indicator */
+.report-modal .required-field::after {
+    content: "*";
+    color: #ea5455;
+    margin-left: 4px;
+}
+
+/* Character counter for textarea */
+.report-modal .char-counter {
+    display: block;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.report-modal .char-counter.warning {
+    color: #ff9f43;
+}
+
+.report-modal .char-counter.danger {
+    color: #ea5455;
+}
+
+/* Animation for the modal content */
+.report-modal .custom-modal-content {
+    animation: modalContentFadeIn 0.5s ease-out;
+}
+
+@keyframes modalContentFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .report-modal .custom-modal {
+        width: 95%;
+    }
+    
+    .report-modal .custom-modal-btn {
+        min-width: 150px;
+        padding: 0.75rem 1.5rem;
+    }
+}

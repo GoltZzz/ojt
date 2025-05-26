@@ -87,18 +87,15 @@ textarea.form-control {
 	box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
 }
 
-/* Time input styling */
 input[type="time"] {
 	font-family: "Courier New", monospace;
 	font-size: 0.9rem;
 }
 
-/* Date input styling */
 input[type="date"] {
 	font-family: inherit;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
 	.container {
 		padding: 1rem;
@@ -110,7 +107,6 @@ input[type="date"] {
 	}
 }
 
-/* Animation for form elements */
 .mb-3 {
 	animation: fadeIn 0.5s ease-out;
 }

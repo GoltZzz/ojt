@@ -29,6 +29,7 @@
 					class="row g-3 needs-validation"
 					action="/register"
 					method="POST"
+					enctype="multipart/form-data"
 					novalidate>
 					<div class="col-md-6">
 						<label for="firstName" class="form-label">First name</label>
@@ -85,6 +86,20 @@
 								name="password"
 								id="password"
 								required />
+						</div>
+					</div>
+					<div class="col-12 mb-3">
+						<label for="profileImage" class="form-label"
+							>Profile Image (Optional)</label
+						>
+						<input
+							type="file"
+							class="form-control"
+							id="profileImage"
+							name="profileImage"
+							accept="image/jpeg,image/png,image/jpg" />
+						<div class="form-text">
+							Upload a profile picture (JPG, JPEG, or PNG, max 2MB)
 						</div>
 					</div>
 					<div class="col-12">

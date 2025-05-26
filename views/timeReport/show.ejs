@@ -1,0 +1,405 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/customModal.css" />
+
+<div class="container mt-4">
+	<div class="row mb-4">
+		<div class="col-md-8">
+			<h2>Time Report Details</h2>
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-6">
+							<% if (timeReport.studentName) { %>
+							<p><strong>Student:</strong> <%= timeReport.studentName %></p>
+							<% } %> <% if (timeReport.internshipSite) { %>
+							<p>
+								<strong>Internship Site:</strong> <%= timeReport.internshipSite
+								%>
+							</p>
+							<% } %>
+							<p>
+								<strong>Date:</strong> <%= new
+								Date(timeReport.date).toLocaleDateString() %>
+							</p>
+							<p>
+								<strong>Date Submitted:</strong> <%= new
+								Date(timeReport.dateSubmitted).toLocaleDateString() %>
+							</p>
+							<% if (timeReport.status) { %>
+							<p>
+								<strong>Status:</strong>
+								<span class="badge bg-success">Approved</span>
+							</p>
+							<% } %> <% if (timeReport.archived) { %>
+							<p>
+								<strong>Archive Status:</strong>
+								<span class="badge bg-secondary">
+									<i class="fas fa-archive me-1"></i> Archived
+								</span>
+							</p>
+							<% if (timeReport.archivedReason) { %>
+							<p>
+								<strong>Archive Reason:</strong> <%= timeReport.archivedReason
+								%>
+							</p>
+							<% } %> <% } %>
+						</div>
+						<div class="col-md-6">
+							<p>
+								<strong>Hours Worked:</strong> <%= timeReport.hoursWorked %>
+							</p>
+							<p><strong>Description:</strong> <%= timeReport.description %></p>
+							<% if (timeReport.weekStartDate && timeReport.weekEndDate) { %>
+							<p>
+								<strong>Week Period:</strong>
+								<%= new Date(timeReport.weekStartDate).toLocaleDateString() %> -
+								<%= new Date(timeReport.weekEndDate).toLocaleDateString() %>
+							</p>
+							<% } %> <% if (timeReport.excelFile &&
+							timeReport.excelFile.originalName) { %>
+							<p>
+								<strong>Excel File:</strong> <%=
+								timeReport.excelFile.originalName %>
+							</p>
+							<% } %> <% if (timeReport.excelFile &&
+							timeReport.excelFile.uploadDate) { %>
+							<p>
+								<strong>Upload Date:</strong> <%= new
+								Date(timeReport.excelFile.uploadDate).toLocaleString() %>
+							</p>
+							<% } %> <% if (timeReport.summary &&
+							timeReport.summary.totalHours) { %>
+							<p>
+								<strong>Total Hours:</strong> <%= timeReport.summary.totalHours
+								%> hours
+							</p>
+							<% } %>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4 text-end">
+			<div class="d-grid gap-2">
+				<a href="/timereport" class="btn btn-secondary">
+					<i class="fas fa-arrow-left"></i> Back to Time Reports
+				</a>
+
+				<!-- Admin Actions -->
+				<% if (currentUser.role === 'admin') { %> <% if (!timeReport.archived) {
+				%>
+				<button
+					type="button"
+					class="btn btn-warning"
+					data-custom-modal-target="archiveTimeReportModal">
+					<i class="fas fa-archive"></i> Archive Report
+				</button>
+				<% } else { %>
+				<button
+					type="button"
+					class="btn btn-success"
+					data-custom-modal-target="unarchiveTimeReportModal">
+					<i class="fas fa-box-open"></i> Unarchive Report
+				</button>
+				<button
+					type="button"
+					class="btn btn-danger"
+					data-custom-modal-target="deleteArchivedTimeReportModal">
+					<i class="fas fa-trash me-1"></i> Delete Archived Report
+				</button>
+				<% } %> <% } %>
+
+				<!-- Author Actions -->
+				<% if (timeReport.author && timeReport.author.toString() ===
+				currentUser._id.toString()) { %>
+				<button
+					type="button"
+					class="btn btn-danger"
+					data-custom-modal-target="deleteTimeReportModal">
+					<i class="fas fa-trash me-1"></i> Delete Report
+				</button>
+				<% } %>
+			</div>
+		</div>
+	</div>
+
+	<!-- PDF Display Section -->
+	<% if (timeReport.pdfFile) { %>
+	<div class="card mb-4">
+		<div class="card-header">
+			<h5>Time Report Document (PDF)</h5>
+		</div>
+		<div class="card-body">
+			<div class="mb-4">
+				<div class="pdf-viewer mb-3">
+					<iframe
+						src="<%= timeReport.pdfFile.path %>"
+						width="100%"
+						height="600px"
+						style="border: 1px solid #ddd; border-radius: 4px"
+						title="Time Report PDF">
+					</iframe>
+				</div>
+				<div class="document-download mt-3">
+					<a
+						href="<%= timeReport.pdfFile.path %>"
+						class="btn btn-success"
+						download>
+						<i class="fas fa-download me-2"></i>Download PDF File
+					</a>
+					<% if (timeReport.excelFile && timeReport.excelFile.filename) { %>
+					<a
+						href="/uploads/excel/<%= timeReport.excelFile.filename %>"
+						class="btn btn-primary ms-2"
+						download>
+						<i class="fas fa-download me-2"></i>Download Original Excel
+					</a>
+					<% } %>
+					<small class="text-muted d-block mt-2">
+						PDF Size: <%= (timeReport.pdfFile.size / 1024 / 1024).toFixed(2) %>
+						MB
+					</small>
+				</div>
+			</div>
+		</div>
+	</div>
+	<% } else { %>
+	<!-- Fallback for reports without PDF -->
+	<div class="card mb-4">
+		<div class="card-header">
+			<h5>Time Report Document</h5>
+		</div>
+		<div class="card-body">
+			<div class="alert alert-info">
+				<i class="fas fa-info-circle me-2"></i>
+				This time report was uploaded before PDF conversion was available. <% if
+				(timeReport.excelFile && timeReport.excelFile.filename) { %>
+				<br />
+				<a
+					href="/uploads/excel/<%= timeReport.excelFile.filename %>"
+					class="btn btn-primary mt-2"
+					download>
+					<i class="fas fa-download me-2"></i>Download Excel File
+				</a>
+				<% } %>
+			</div>
+		</div>
+	</div>
+	<% } %>
+</div>
+
+<!-- Archive Time Report Modal (Admin Only) -->
+<% if (currentUser.role === 'admin' && !timeReport.archived) { %>
+<div
+	class="custom-modal-overlay"
+	id="archiveTimeReportModal"
+	role="dialog"
+	aria-labelledby="archiveTimeReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-warning">
+			<h5 class="custom-modal-title" id="archiveTimeReportModalLabel">
+				<i class="fas fa-archive"></i>
+				Archive Time Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-file-archive custom-modal-icon text-warning"></i>
+				<h4>Are you sure you want to archive this time report?</h4>
+
+				<div class="form-group">
+					<label for="archiveReason" class="form-label">
+						<strong>Reason for archiving (optional):</strong>
+					</label>
+					<textarea
+						class="form-control"
+						id="archiveReason"
+						name="archivedReason"
+						rows="3"
+						placeholder="Enter a reason for archiving this time report"></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				id="archiveTimeReportForm"
+				action="/timereport/<%= timeReport._id %>/archive"
+				method="POST"
+				data-custom-message="Time report has been archived successfully"
+				data-action-type="archive"
+				class="d-inline">
+				<input
+					type="hidden"
+					id="hiddenArchiveReason"
+					name="archivedReason"
+					value="" />
+				<button type="submit" class="custom-modal-btn custom-modal-btn-warning">
+					<i class="fas fa-archive me-1"></i> Archive Report
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %> <% if (currentUser.role === 'admin' && timeReport.archived) { %>
+<div
+	class="custom-modal-overlay"
+	id="unarchiveTimeReportModal"
+	role="dialog"
+	aria-labelledby="unarchiveTimeReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-success">
+			<h5 class="custom-modal-title" id="unarchiveTimeReportModalLabel">
+				<i class="fas fa-box-open"></i>
+				Unarchive Time Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i class="fas fa-box-open custom-modal-icon text-success"></i>
+				<h4>Are you sure you want to unarchive this time report?</h4>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				action="/timereport/<%= timeReport._id %>/unarchive"
+				method="POST"
+				data-custom-message="Time report has been unarchived successfully"
+				data-action-type="unarchive"
+				class="d-inline">
+				<button type="submit" class="custom-modal-btn custom-modal-btn-success">
+					<i class="fas fa-box-open me-1"></i> Unarchive Report
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Password Confirmation Modal for Delete (Report Owner Only) -->
+<% if (timeReport.author && timeReport.author.toString() ===
+currentUser._id.toString()) { %>
+<div
+	class="custom-modal-overlay"
+	id="deleteTimeReportModal"
+	role="dialog"
+	aria-labelledby="deleteTimeReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-danger">
+			<h5 class="custom-modal-title" id="deleteTimeReportModalLabel">
+				<i class="fas fa-exclamation-triangle"></i>
+				Delete Time Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i
+					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+				<h4>Are you sure you want to delete this time report?</h4>
+				<p class="text-danger mt-3">
+					<strong>This action cannot be undone.</strong>
+				</p>
+
+				<form
+					id="passwordConfirmForm"
+					action="/timereport/<%= timeReport._id %>?_method=DELETE"
+					method="POST"
+					class="text-start">
+					<div class="form-group mb-4">
+						<label for="confirmPassword" class="form-label">
+							<strong>Enter your password to confirm:</strong>
+						</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="fas fa-lock"></i></span>
+							<input
+								type="password"
+								class="form-control"
+								id="confirmPassword"
+								name="password"
+								placeholder="Enter your password"
+								required />
+						</div>
+					</div>
+					<div class="d-grid">
+						<button
+							type="submit"
+							class="custom-modal-btn custom-modal-btn-danger">
+							<i class="fas fa-trash me-1"></i> Confirm Deletion
+						</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Delete Archived Time Report Modal (Admin Only) -->
+<% if (currentUser.role === 'admin' && timeReport.archived) { %>
+<div
+	class="custom-modal-overlay"
+	id="deleteArchivedTimeReportModal"
+	role="dialog"
+	aria-labelledby="deleteArchivedTimeReportModalLabel">
+	<div class="custom-modal">
+		<div class="custom-modal-header bg-danger">
+			<h5 class="custom-modal-title" id="deleteArchivedTimeReportModalLabel">
+				<i class="fas fa-trash"></i>
+				Delete Archived Time Report
+			</h5>
+			<button type="button" class="custom-modal-close" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="custom-modal-body">
+			<div class="custom-modal-content">
+				<i
+					class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+				<h4>
+					Are you sure you want to permanently delete this archived time report?
+				</h4>
+				<p class="text-danger mt-3">
+					<strong>This action cannot be undone.</strong> The report and all
+					associated files will be permanently removed.
+				</p>
+			</div>
+		</div>
+		<div class="custom-modal-footer">
+			<form
+				action="/admin/timereport/<%= timeReport._id %>/delete"
+				method="POST"
+				data-custom-message="Archived time report has been permanently deleted"
+				data-action-type="delete"
+				class="d-inline">
+				<button type="submit" class="custom-modal-btn custom-modal-btn-danger">
+					<i class="fas fa-trash me-1"></i> Delete Permanently
+				</button>
+			</form>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<script src="/js/customModal.js"></script>
+<script>
+	document.addEventListener("DOMContentLoaded", function () {
+		// For archive modal
+		const archiveForm = document.getElementById("archiveTimeReportForm");
+		const archiveReasonTextarea = document.getElementById("archiveReason");
+		const hiddenArchiveReason = document.getElementById("hiddenArchiveReason");
+
+		if (archiveForm && archiveReasonTextarea && hiddenArchiveReason) {
+			archiveForm.addEventListener("submit", function () {
+				hiddenArchiveReason.value = archiveReasonTextarea.value;
+			});
+		}
+	});
+</script>

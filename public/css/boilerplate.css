@@ -22,6 +22,8 @@ body {
 	overflow-y: auto;
 }
 
+/* Top Header Styles removed - notifications now only on profile page */
+
 footer {
 	flex-shrink: 0;
 	width: 100%;

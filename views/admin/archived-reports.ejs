@@ -1,0 +1,272 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/dashboard.css" />
+
+<div class="dashboard-container">
+	<div class="welcome-section">
+		<h1>Archived Reports</h1>
+		<p>View all archived reports from the system</p>
+	</div>
+
+	<div class="dashboard-card full-width">
+		<!-- Filter Section -->
+		<div class="filter-section mb-4">
+			<h4 class="mb-3">Filter Reports</h4>
+			<form id="filterForm" class="row g-3">
+				<div class="col-md-3">
+					<label for="reportType" class="form-label">Report Type</label>
+					<select class="form-select" id="reportType" name="reportType">
+						<option value="all" <%= filters && filters.reportType === 'all' ? 'selected' : '' %>>All Types</option>
+						<option value="weeklyreport" <%= filters && filters.reportType === 'weeklyreport' ? 'selected' : '' %>>Weekly Report</option>
+						<option value="timereport" <%= filters && filters.reportType === 'timereport' ? 'selected' : '' %>>Time Report</option>
+					</select>
+				</div>
+				<div class="col-md-3">
+					<label for="studentName" class="form-label">Student Name</label>
+					<input
+						type="text"
+						class="form-control"
+						id="studentName"
+						name="studentName"
+						placeholder="Search by name" />
+				</div>
+				<div class="col-md-3">
+					<label for="internshipSite" class="form-label">Internship Site</label>
+					<input
+						type="text"
+						class="form-control"
+						id="internshipSite"
+						name="internshipSite"
+						placeholder="Search by site" />
+				</div>
+				<div class="col-md-3">
+					<label for="weekPeriod" class="form-label">Week Period</label>
+					<input
+						type="date"
+						class="form-control"
+						id="weekPeriod"
+						name="weekPeriod" />
+				</div>
+				<div class="col-md-3">
+					<label for="sortBy" class="form-label">Sort By</label>
+					<select class="form-select" id="sortBy" name="sortBy">
+						<option value="dateSubmitted_desc">Date (Newest First)</option>
+						<option value="dateSubmitted_asc">Date (Oldest First)</option>
+						<option value="studentName_asc">Student Name (A-Z)</option>
+						<option value="studentName_desc">Student Name (Z-A)</option>
+						<option value="status_asc">Status (A-Z)</option>
+					</select>
+				</div>
+				<div class="col-md-3 d-flex align-items-end">
+					<button type="submit" class="btn btn-primary me-2">
+						Apply Filters
+					</button>
+					<button type="reset" class="btn btn-secondary">Reset</button>
+				</div>
+			</form>
+		</div>
+
+		<% if (archivedReports && archivedReports.length) { %>
+		<div class="table-responsive">
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th>Report Type</th>
+						<th>Student Name</th>
+						<th>Submitted By</th>
+						<th>Internship Site</th>
+						<th>Period</th>
+						<th>Status</th>
+						<th>Archived Reason</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<% archivedReports.forEach(report => { %>
+					<tr
+						class="<%= report.status === 'approved' ? 'table-success' : (report.status === 'rejected' ? 'table-danger' : '') %>">
+						<td>
+							<% if (report.reportType === 'weeklyreport') { %>
+								<span class="badge bg-primary">Weekly Report</span>
+							<% } else if (report.reportType === 'weeklyprogress') { %>
+								<span class="badge bg-purple">Weekly Progress</span>
+							<% } else if (report.reportType === 'trainingschedule') { %>
+								<span class="badge bg-teal">Training Schedule</span>
+							<% } else if (report.reportType === 'learningoutcome' || report.reportType === 'learningoutcomes') { %>
+								<span class="badge bg-orange">Learning Outcome</span>
+							<% } else if (report.reportType === 'dailyattendance') { %>
+								<span class="badge bg-indigo">Daily Attendance</span>
+							<% } else if (report.reportType === 'timereport') { %>
+								<span class="badge bg-info">Time Report</span>
+							<% } else { %>
+								<span class="badge bg-secondary">Other</span>
+							<% } %>
+						</td>
+						<td><%= report.studentName %></td>
+						<td><%= report.authorFullName || 'Unknown' %></td>
+						<td><%= report.internshipSite %></td>
+						<td>
+							<% if (report.weekStartDate && report.weekEndDate) { %>
+								<%= new Date(report.weekStartDate).toLocaleDateString() %> - <%= new Date(report.weekEndDate).toLocaleDateString() %>
+							<% } else if (report.date) { %>
+								<%= new Date(report.date).toLocaleDateString() %>
+							<% } else { %>
+								N/A
+							<% } %>
+						</td>
+						<td>
+							<% if (report.status === 'approved') { %>
+							<span class="badge bg-success">Approved</span>
+							<% } else if (report.status === 'rejected') { %>
+							<span class="badge bg-danger">Rejected</span>
+							<% } else { %>
+							<span class="badge bg-warning text-dark">Pending</span>
+							<% } %>
+						</td>
+						<td><%= report.archivedReason || 'Manually archived' %></td>
+						<td>
+							<div class="btn-group" role="group">
+								<a
+									href="/<%= report.reportType %>/<%= report._id %>"
+									class="btn btn-sm btn-info text-white">
+									<i class="fas fa-eye"></i>
+								</a>
+								<button
+									type="button"
+									class="btn btn-sm btn-success"
+									data-custom-modal-target="unarchiveModal-<%= report.reportType %>-<%= report._id %>">
+									<i class="fas fa-box-open"></i>
+								</button>
+								<button
+									type="button"
+									class="btn btn-sm btn-danger"
+									data-custom-modal-target="deleteModal-<%= report.reportType %>-<%= report._id %>">
+									<i class="fas fa-trash"></i>
+								</button>
+							</div>
+						</td>
+					</tr>
+
+					<!-- Unarchive Modal for this report -->
+					<div
+						class="custom-modal-overlay"
+						id="unarchiveModal-<%= report.reportType %>-<%= report._id %>"
+						role="dialog"
+						aria-labelledby="unarchiveModalLabel-<%= report.reportType %>-<%= report._id %>">
+						<div class="custom-modal">
+							<div class="custom-modal-header bg-success">
+								<h5
+									class="custom-modal-title"
+									id="unarchiveModalLabel-<%= report.reportType %>-<%= report._id %>">
+									<i class="fas fa-box-open"></i>
+									Unarchive Report
+								</h5>
+								<button
+									type="button"
+									class="custom-modal-close"
+									aria-label="Close">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+							<div class="custom-modal-body">
+								<div class="custom-modal-content">
+									<i class="fas fa-box-open custom-modal-icon text-success"></i>
+									<h4>Are you sure you want to unarchive this report?</h4>
+								</div>
+							</div>
+							<div class="custom-modal-footer">
+								<form
+									action="/admin/reports/<%= report.reportType %>/<%= report._id %>/unarchive"
+									method="POST"
+									data-custom-message="Report has been unarchived successfully"
+									data-action-type="unarchive"
+									class="d-inline unarchive-form">
+									<button
+										type="submit"
+										class="custom-modal-btn custom-modal-btn-success">
+										<i class="fas fa-box-open me-1"></i> Unarchive Report
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+
+					<!-- Delete Modal for this report -->
+					<div
+						class="custom-modal-overlay report-modal"
+						id="deleteModal-<%= report.reportType %>-<%= report._id %>"
+						role="dialog"
+						aria-labelledby="deleteModalLabel-<%= report.reportType %>-<%= report._id %>">
+						<div class="custom-modal">
+							<div class="custom-modal-header bg-danger">
+								<h5
+									class="custom-modal-title"
+									id="deleteModalLabel-<%= report.reportType %>-<%= report._id %>">
+									<i class="fas fa-trash"></i>
+									Delete Report
+								</h5>
+								<button
+									type="button"
+									class="custom-modal-close"
+									aria-label="Close">
+									<i class="fas fa-times"></i>
+								</button>
+							</div>
+							<div class="custom-modal-body">
+								<div class="custom-modal-content">
+									<i class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+									<h4>Are you sure you want to delete this report?</h4>
+									<p class="text-danger mt-3">
+										<strong>This action cannot be undone.</strong>
+									</p>
+								</div>
+							</div>
+							<div class="custom-modal-footer">
+								<form
+									action="<%= report.reportType === 'timereport' ? '/admin/timereport/' + report._id + '/delete' : '/' + report.reportType + '/' + report._id + '?_method=DELETE' %>"
+									method="POST"
+									data-custom-message="Report has been deleted successfully"
+									data-action-type="delete"
+									class="d-inline delete-form">
+									<!-- Admin doesn't need to enter password -->
+									<input type="hidden" name="password" value="admin-bypass" />
+									<button
+										type="submit"
+										class="custom-modal-btn custom-modal-btn-danger">
+										<i class="fas fa-trash me-1"></i> Delete Report
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
+					<% }) %>
+				</tbody>
+			</table>
+		</div>
+		<% } else { %>
+		<div class="alert alert-info">
+			<i class="fas fa-info-circle"></i> No archived reports found.
+		</div>
+		<% } %>
+	</div>
+</div>
+
+<script src="/js/reportFilters.js"></script>
+<!-- Custom modal script is loaded in boilerplate.ejs -->
+
+<style>
+.bg-purple {
+	background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}
+
+.bg-teal {
+	background: linear-gradient(135deg, #1abc9c, #16a085);
+}
+
+.bg-orange {
+	background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+.bg-indigo {
+	background: linear-gradient(135deg, #4a69bd, #1e3799);
+}
+</style>

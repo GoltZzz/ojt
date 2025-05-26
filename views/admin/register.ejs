@@ -1,0 +1,441 @@
+<%- layout('layouts/boilerplate') %>
+<link rel="stylesheet" href="/css/dashboard.css" />
+<link rel="stylesheet" href="/css/adminRegister.css" />
+<div class="dashboard-container">
+	<div class="welcome-section">
+		<h1>Register New User</h1>
+		<p>Create a new user account</p>
+	</div>
+
+	<div class="row justify-content-center">
+		<div class="col-lg-8">
+			<div class="register-card">
+				<div class="register-header">
+					<div class="register-icon">
+						<i class="fas fa-user-plus"></i>
+					</div>
+					<h2>Create New Account</h2>
+					<p>Fill in the details below to register a new user</p>
+				</div>
+				<div class="register-body">
+					<form
+						class="needs-validation"
+						action="/admin/register"
+						method="POST"
+						enctype="multipart/form-data"
+						novalidate>
+						<div class="row">
+							<div class="col-md-6 form-group">
+								<label for="firstName" class="form-label">First Name</label>
+								<input
+									type="text"
+									class="form-control"
+									name="firstName"
+									id="firstName"
+									placeholder="Enter first name"
+									required />
+								<div class="valid-feedback">Looks good!</div>
+								<div class="invalid-feedback">Please enter first name</div>
+							</div>
+							<div class="col-md-6 form-group">
+								<label for="middleName" class="form-label"
+									>Middle Name
+									<small class="text-muted">(Optional)</small></label
+								>
+								<input
+									type="text"
+									class="form-control"
+									name="middleName"
+									id="middleName"
+									placeholder="Enter middle name" />
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="lastName" class="form-label">Last Name</label>
+							<input
+								type="text"
+								class="form-control"
+								name="lastName"
+								id="lastName"
+								placeholder="Enter last name"
+								required />
+							<div class="valid-feedback">Looks good!</div>
+							<div class="invalid-feedback">Please enter last name</div>
+						</div>
+
+						<div class="form-group">
+							<div class="d-flex align-items-center mb-2">
+								<label for="username" class="form-label mb-0">Username</label>
+								<button
+									type="button"
+									class="btn btn-sm btn-outline-info rounded-circle ms-2 p-0 d-flex align-items-center justify-content-center"
+									id="usernameInfoBtn"
+									style="width: 22px; height: 22px">
+									<i class="fas fa-info-circle fa-sm"></i>
+								</button>
+							</div>
+
+							<!-- Username Info Card -->
+							<div
+								class="card mb-3 shadow border-0"
+								id="usernameInfoCard"
+								style="display: none; border-radius: 12px; overflow: hidden">
+								<div class="card-header bg-info text-white py-3">
+									<div class="d-flex align-items-center">
+										<i class="fas fa-info-circle me-2"></i>
+										<span class="fw-bold">Username Requirements</span>
+										<button
+											type="button"
+											class="btn-close btn-close-white ms-auto"
+											id="closeUsernameInfo"
+											aria-label="Close"></button>
+									</div>
+								</div>
+								<div class="card-body p-4">
+									<p class="card-text">
+										Username must be unique in the system. Each user needs their
+										own unique identifier.
+									</p>
+									<ul class="list-group list-group-flush">
+										<li class="list-group-item d-flex align-items-center">
+											<i class="fas fa-check-circle text-success me-2"></i>
+											Must be at least 3 characters long
+										</li>
+										<li class="list-group-item d-flex align-items-center">
+											<i class="fas fa-check-circle text-success me-2"></i>
+											Must not already exist in the system
+										</li>
+										<li class="list-group-item d-flex align-items-center">
+											<i class="fas fa-check-circle text-success me-2"></i>
+											Can contain letters, numbers, and underscores
+										</li>
+									</ul>
+								</div>
+							</div>
+
+							<div class="position-relative">
+								<div class="input-group">
+									<span class="input-group-text"
+										><i class="fas fa-user"></i
+									></span>
+									<div class="position-relative flex-grow-1">
+										<input
+											type="text"
+											class="form-control"
+											name="username"
+											id="username"
+											placeholder="Choose a username"
+											required />
+
+										<!-- Username validation indicators -->
+										<div
+											class="position-absolute top-50 end-0 translate-middle-y me-3"
+											id="usernameCheckIndicator"
+											style="display: none; z-index: 5">
+											<div class="d-flex align-items-center">
+												<div
+													class="spinner-border spinner-border-sm text-primary"
+													role="status"
+													id="usernameSpinner">
+													<span class="visually-hidden">Loading...</span>
+												</div>
+												<i
+													class="fas fa-check-circle text-success ms-1"
+													style="font-size: 1.2rem; display: none"
+													id="usernameAvailable"
+													title="Username is available"></i>
+												<i
+													class="fas fa-times-circle text-danger ms-1"
+													style="font-size: 1.2rem; display: none"
+													id="usernameUnavailable"
+													title="Username already exists"></i>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Username validation indicators -->
+								<div
+									class="position-absolute top-50 end-0 translate-middle-y me-3"
+									id="usernameCheckIndicator"
+									style="display: none; z-index: 5">
+									<div class="d-flex align-items-center">
+										<div
+											class="spinner-border spinner-border-sm text-primary"
+											role="status"
+											id="usernameSpinner">
+											<span class="visually-hidden">Loading...</span>
+										</div>
+										<i
+											class="fas fa-check-circle text-success ms-1"
+											style="font-size: 1.2rem; display: none"
+											id="usernameAvailable"
+											title="Username is available"></i>
+										<i
+											class="fas fa-times-circle text-danger ms-1"
+											style="font-size: 1.2rem; display: none"
+											id="usernameUnavailable"
+											title="Username already exists"></i>
+									</div>
+								</div>
+							</div>
+
+							<div class="invalid-feedback">Please choose a username</div>
+							<div
+								class="text-danger small mt-2"
+								id="usernameError"
+								style="display: none">
+								<i class="fas fa-exclamation-circle me-1"></i> Username already
+								exists. Please choose a different one.
+							</div>
+						</div>
+
+						<div class="form-group">
+							<div class="d-flex align-items-center mb-2">
+								<label for="password" class="form-label mb-0">Password</label>
+								<button
+									type="button"
+									class="btn btn-sm btn-outline-info rounded-circle ms-2 p-0 d-flex align-items-center justify-content-center"
+									id="passwordInfoBtn"
+									style="width: 22px; height: 22px">
+									<i class="fas fa-info-circle fa-sm"></i>
+								</button>
+							</div>
+
+							<!-- Password Info Card -->
+							<div
+								class="card mb-3 shadow border-0"
+								id="passwordInfoCard"
+								style="display: none; border-radius: 12px; overflow: hidden">
+								<div class="card-header bg-info text-white py-3">
+									<div class="d-flex align-items-center">
+										<i class="fas fa-info-circle me-2"></i>
+										<span class="fw-bold">Password Requirements</span>
+										<button
+											type="button"
+											class="btn-close btn-close-white ms-auto"
+											id="closePasswordInfo"
+											aria-label="Close"></button>
+									</div>
+								</div>
+								<div class="card-body p-4">
+									<p class="card-text">
+										Password must meet the following requirements:
+									</p>
+									<ul class="list-group list-group-flush">
+										<li
+											class="list-group-item d-flex align-items-center"
+											id="lengthCheck">
+											<i class="fas fa-times-circle text-danger me-2"></i>
+											Between 8 and 16 characters
+										</li>
+										<li
+											class="list-group-item d-flex align-items-center"
+											id="uppercaseCheck">
+											<i class="fas fa-times-circle text-danger me-2"></i>
+											At least one uppercase letter
+										</li>
+										<li
+											class="list-group-item d-flex align-items-center"
+											id="specialCharCheck">
+											<i class="fas fa-times-circle text-danger me-2"></i>
+											No special characters
+										</li>
+									</ul>
+								</div>
+							</div>
+
+							<div class="position-relative">
+								<div class="input-group">
+									<span class="input-group-text"
+										><i class="fas fa-lock"></i
+									></span>
+									<div class="position-relative flex-grow-1">
+										<input
+											type="password"
+											class="form-control"
+											name="password"
+											id="password"
+											placeholder="Create a password"
+											required />
+
+										<!-- Password validation indicators -->
+										<div
+											class="position-absolute top-50 end-0 translate-middle-y me-3"
+											id="passwordCheckIndicator"
+											style="display: none; z-index: 5">
+											<i
+												class="fas fa-check-circle text-success"
+												style="font-size: 1.2rem; display: none"
+												id="passwordValid"
+												title="Password meets all requirements"></i>
+											<i
+												class="fas fa-times-circle text-danger"
+												style="font-size: 1.2rem; display: none"
+												id="passwordInvalid"
+												title="Password does not meet requirements"></i>
+										</div>
+									</div>
+									<button
+										class="btn btn-outline-secondary"
+										type="button"
+										id="togglePassword">
+										<i class="fas fa-eye"></i>
+									</button>
+								</div>
+							</div>
+
+							<div class="invalid-feedback">Please provide a password</div>
+							<div
+								class="text-danger small mt-2"
+								id="passwordError"
+								style="display: none">
+								<i class="fas fa-exclamation-circle me-1"></i> Password does not
+								meet the requirements.
+							</div>
+						</div>
+
+						<div class="form-group">
+							<div class="d-flex align-items-center mb-2">
+								<label class="form-label mb-0">Select Role</label>
+								<button
+									type="button"
+									class="btn btn-sm btn-outline-info rounded-circle ms-2 p-0 d-flex align-items-center justify-content-center"
+									id="roleInfoBtn"
+									style="width: 22px; height: 22px">
+									<i class="fas fa-info-circle fa-sm"></i>
+								</button>
+							</div>
+
+							<!-- Role Info Card -->
+							<div
+								class="card mb-3 shadow border-0"
+								id="roleInfoCard"
+								style="display: none; border-radius: 12px; overflow: hidden">
+								<div class="card-header bg-info text-white py-3">
+									<div class="d-flex align-items-center">
+										<i class="fas fa-info-circle me-2"></i>
+										<span class="fw-bold">Role Information</span>
+										<button
+											type="button"
+											class="btn-close btn-close-white ms-auto"
+											id="closeRoleInfo"
+											aria-label="Close"></button>
+									</div>
+								</div>
+								<div class="card-body p-4">
+									<h6 class="card-subtitle mb-3 text-muted fw-bold">
+										Understanding user roles in the system
+									</h6>
+									<div class="row">
+										<div class="col-md-6">
+											<div class="d-flex align-items-start mb-3">
+												<div class="me-3 text-primary">
+													<i class="fas fa-user fa-lg"></i>
+												</div>
+												<div>
+													<h6 class="mb-1">Regular User</h6>
+													<ul class="small text-muted ps-3 mb-0">
+														<li>
+															Can access Weekly Report, Documentation, and Time
+															Report
+														</li>
+														<li>
+															Can create, edit, and delete their own reports
+														</li>
+														<li>
+															Cannot approve or reject other users' reports
+														</li>
+														<li>Cannot access admin features</li>
+													</ul>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="d-flex align-items-start">
+												<div class="me-3 text-danger">
+													<i class="fas fa-user-shield fa-lg"></i>
+												</div>
+												<div>
+													<h6 class="mb-1">Administrator</h6>
+													<ul class="small text-muted ps-3 mb-0">
+														<li>Can access Admin Panel and User Management</li>
+														<li>Can approve, reject, and archive reports</li>
+														<li>
+															Can manage user accounts (create, delete, change
+															roles)
+														</li>
+														<li>Can view system statistics and all reports</li>
+													</ul>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="row g-3 role-selector">
+								<div class="col-md-6">
+									<div
+										class="role-option selected h-100 d-flex flex-column"
+										id="userRole">
+										<div class="role-icon mb-2">
+											<i class="fas fa-user"></i>
+										</div>
+										<h5 class="mb-2">Regular User</h5>
+										<p class="text-muted small mb-0">
+											Standard access to reports
+										</p>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div
+										class="role-option h-100 d-flex flex-column"
+										id="adminRole">
+										<div class="role-icon mb-2">
+											<i class="fas fa-user-shield"></i>
+										</div>
+										<h5 class="mb-2">Administrator</h5>
+										<p class="text-muted small mb-0">Full system access</p>
+									</div>
+								</div>
+							</div>
+							<input
+								type="hidden"
+								name="role"
+								id="roleInput"
+								value="user"
+								required />
+						</div>
+
+						<div class="form-group mt-4">
+							<label for="profileImage" class="form-label"
+								>Profile Image (Optional)</label
+							>
+							<input
+								type="file"
+								class="form-control"
+								id="profileImage"
+								name="profileImage"
+								accept="image/jpeg,image/png,image/jpg" />
+							<div class="form-text">
+								Upload a profile picture (JPG, JPEG, or PNG, max 2MB)
+							</div>
+						</div>
+
+						<div class="d-flex justify-content-between mt-4">
+							<a href="/admin/users" class="btn btn-secondary">
+								<i class="fas fa-arrow-left me-2"></i> Back to Users
+							</a>
+							<button class="btn btn-primary" type="submit">
+								<i class="fas fa-user-plus me-2"></i> Register User
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="/js/adminRegister.js"></script>

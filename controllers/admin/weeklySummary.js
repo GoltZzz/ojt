@@ -1,0 +1,344 @@
+import WeeklyReport from "../../models/weeklyReports.js";
+import TimeReport from "../../models/timeReport.js";
+import User from "../../models/users.js";
+import Week from "../../models/week.js";
+import dayjs from "dayjs";
+import Settings from "../../models/settings.js";
+
+// Helper to get all students
+async function getAllStudents() {
+	return User.find({ role: "user" });
+}
+
+// Helper to get or create the next week
+async function createNextWeek() {
+	const lastWeek = await Week.findOne().sort({ weekNumber: -1 });
+	if (!lastWeek) return;
+
+	const weekNumber = lastWeek.weekNumber + 1;
+
+	// Calculate next Monday (start of next week)
+	const weekStartDate = dayjs(lastWeek.weekEndDate)
+		.add(3, "day") // From Friday to next Monday
+		.startOf("day");
+
+	// Calculate Friday (end of week)
+	const weekEndDate = dayjs(weekStartDate)
+		.add(4, "day") // Monday to Friday
+		.endOf("day");
+
+	// Only create if not already present
+	const exists = await Week.findOne({ weekNumber });
+	if (!exists) {
+		const newWeek = await Week.create({
+			weekNumber,
+			weekStartDate: weekStartDate.toDate(),
+			weekEndDate: weekEndDate.toDate(),
+		});
+		console.log(
+			`Created Week ${weekNumber}: ${weekStartDate.format(
+				"YYYY-MM-DD"
+			)} to ${weekEndDate.format("YYYY-MM-DD")}`
+		);
+		return newWeek;
+	}
+	return exists;
+}
+
+// Helper to get or create the settings document
+async function getSettings() {
+	let settings = await Settings.findOne();
+	if (!settings) {
+		settings = await Settings.create({});
+	}
+	return settings;
+}
+
+// GET /admin/weekly-summary
+export async function getWeeklySummary(req, res) {
+	const students = await getAllStudents();
+	const weeks = await Week.find().sort({ weekNumber: 1 });
+
+	// Fetch all weekly reports with proper population
+	const weeklyReports = await WeeklyReport.find({
+		$or: [
+			{ weekNumber: { $in: weeks.map((w) => w.weekNumber) } },
+			{ weekStartDate: { $in: weeks.map((w) => w.weekStartDate) } },
+		],
+	})
+		.populate("author")
+		.populate("weekId")
+		.lean();
+
+	// Fetch all time reports with proper population
+	const timeReports = await TimeReport.find({
+		$or: [
+			{ weekId: { $in: weeks.map((w) => w._id) } },
+			{ weekStartDate: { $in: weeks.map((w) => w.weekStartDate) } },
+		],
+	})
+		.populate("author")
+		.populate("weekId")
+		.lean();
+
+	const settings = await getSettings();
+	const loopActive = settings.weeklyLoopActive;
+
+	// Build submission status per week per student
+	weeks.forEach((week) => {
+		week.submissions = {};
+		week.timeSubmissions = {};
+		week.startLabel = week.weekStartDate
+			? dayjs(week.weekStartDate).format("MMM D")
+			: "-";
+		week.endLabel = week.weekEndDate
+			? dayjs(week.weekEndDate).format("MMM D")
+			: "-";
+
+		students.forEach((student) => {
+			// Find matching weekly report for this student and week using all available matching criteria
+			const weeklyReport = weeklyReports.find(
+				(r) =>
+					r.author &&
+					r.author._id.toString() === student._id.toString() &&
+					(r.weekNumber === week.weekNumber ||
+						(r.weekId && r.weekId.toString() === week._id.toString()) ||
+						(r.weekStartDate &&
+							week.weekStartDate &&
+							r.weekStartDate.getTime() === week.weekStartDate.getTime()))
+			);
+
+			// Find matching time report for this student and week
+			const timeReport = timeReports.find(
+				(r) =>
+					r.author &&
+					r.author._id.toString() === student._id.toString() &&
+					((r.weekId && r.weekId.toString() === week._id.toString()) ||
+						(r.weekStartDate &&
+							week.weekStartDate &&
+							r.weekStartDate.getTime() === week.weekStartDate.getTime()))
+			);
+
+			week.submissions[student._id] = {
+				submitted: !!weeklyReport,
+				submittedAt: weeklyReport?.dateSubmitted,
+				status: weeklyReport ? "approved" : "not submitted",
+			};
+
+			week.timeSubmissions[student._id] = {
+				submitted: !!timeReport,
+				submittedAt: timeReport?.dateSubmitted,
+				status: timeReport ? "approved" : "not submitted",
+			};
+		});
+	});
+
+	res.render("admin/weekly-summary", {
+		weeks,
+		students,
+		loopActive,
+	});
+}
+
+// POST /admin/weekly-summary/start
+export async function startWeeklyLoop(req, res) {
+	const settings = await getSettings();
+	if (!settings.weeklyLoopActive) {
+		const weekCount = await Week.countDocuments();
+		if (weekCount === 0) {
+			// No weeks exist, require startDate
+			const startDate = req.body.startDate;
+			if (!startDate) {
+				req.flash("error", "Start date is required for the first week.");
+				return res.redirect("/admin/weekly-summary");
+			}
+
+			// Ensure the start date is set to Monday at midnight
+			const weekStart = dayjs(startDate).startOf("day");
+
+			// If the selected date is not Monday (1), adjust to the next Monday
+			if (weekStart.day() !== 1) {
+				req.flash("error", "Please select a Monday as the start date.");
+				return res.redirect("/admin/weekly-summary");
+			}
+
+			// End date is Friday (add 4 days to Monday)
+			const weekEnd = weekStart
+				.add(4, "day") // Monday + 4 days = Friday
+				.endOf("day"); // End of Friday
+
+			await Week.create({
+				weekNumber: 1,
+				weekStartDate: weekStart.toDate(),
+				weekEndDate: weekEnd.toDate(),
+			});
+		}
+		settings.weeklyLoopActive = true;
+		await settings.save();
+	}
+	res.redirect("/admin/weekly-summary");
+}
+
+// POST /admin/weekly-summary/stop
+export async function stopWeeklyLoop(req, res) {
+	const settings = await getSettings();
+	settings.weeklyLoopActive = false;
+	await settings.save();
+	res.redirect("/admin/weekly-summary");
+}
+
+// POST /admin/weekly-summary/restart
+export async function restartWeeklyLoop(req, res) {
+	const settings = await getSettings();
+	const startDate = req.body.startDate;
+
+	if (!startDate) {
+		req.flash("error", "Start date is required for restarting the loop.");
+		return res.redirect("/admin/weekly-summary");
+	}
+
+	// Ensure the start date is set to Monday at midnight
+	const weekStart = dayjs(startDate).startOf("day");
+
+	// If the selected date is not Monday (1), reject it
+	if (weekStart.day() !== 1) {
+		req.flash("error", "Please select a Monday as the start date.");
+		return res.redirect("/admin/weekly-summary");
+	}
+
+	// Calculate first week end date (Friday)
+	const weekEnd = weekStart
+		.add(4, "day") // Monday + 4 days = Friday
+		.endOf("day");
+
+	try {
+		// Delete all existing weeks and their associated reports
+		await Week.deleteMany({});
+		await WeeklyReport.deleteMany({});
+
+		// Create the first week
+		await Week.create({
+			weekNumber: 1,
+			weekStartDate: weekStart.toDate(),
+			weekEndDate: weekEnd.toDate(),
+		});
+
+		// Activate the loop
+		settings.weeklyLoopActive = true;
+		await settings.save();
+
+		req.flash(
+			"success",
+			"Weekly loop has been restarted with new dates. All previous weeks and reports have been cleared."
+		);
+	} catch (error) {
+		req.flash("error", "Failed to restart weekly loop. Please try again.");
+	}
+
+	res.redirect("/admin/weekly-summary");
+}
+
+// Cron-like logic: create next week on Sunday if loopActive
+export async function checkAndCreateNextWeek() {
+	const settings = await getSettings();
+	const now = dayjs();
+	console.log(
+		`[Weekly Check] Current date: ${now.format(
+			"YYYY-MM-DD"
+		)}, Day: ${now.day()} (0=Sunday, 1=Monday, etc.)`
+	);
+
+	if (!settings.weeklyLoopActive) {
+		console.log(
+			"[Weekly Check] Weekly loop is not active, skipping week creation"
+		);
+		return;
+	}
+
+	if (now.day() === 0) {
+		// 0 is Sunday
+		console.log(
+			"[Weekly Check] It's Sunday, checking if next week needs to be created..."
+		);
+
+		// Check if we need to create a week for the upcoming Monday
+		const nextMonday = now.add(1, "day").startOf("day"); // Tomorrow (Monday)
+		const nextFriday = nextMonday.add(4, "day").endOf("day"); // Friday of next week
+
+		// Check if a week already exists for next Monday
+		const existingWeek = await Week.findOne({
+			weekStartDate: {
+				$gte: nextMonday.toDate(),
+				$lt: nextMonday.add(1, "day").toDate(),
+			},
+		});
+
+		if (existingWeek) {
+			console.log(
+				`[Weekly Check] Week ${
+					existingWeek.weekNumber
+				} already exists for ${nextMonday.format(
+					"YYYY-MM-DD"
+				)}, no action needed`
+			);
+			return;
+		}
+
+		try {
+			const newWeek = await createNextWeek();
+			if (newWeek) {
+				console.log(
+					`[Weekly Check] Successfully created Week ${
+						newWeek.weekNumber
+					}: ${dayjs(newWeek.weekStartDate).format("YYYY-MM-DD")} to ${dayjs(
+						newWeek.weekEndDate
+					).format("YYYY-MM-DD")}`
+				);
+			} else {
+				console.log(
+					"[Weekly Check] Week was not created, it may already exist or there was an issue"
+				);
+			}
+		} catch (error) {
+			console.error("[Weekly Check] Error creating next week:", error);
+		}
+	} else {
+		console.log(
+			`[Weekly Check] Not Sunday (day ${now.day()}), skipping week creation`
+		);
+	}
+}
+
+// Manual function to force create the next week regardless of day
+export async function forceCreateNextWeek() {
+	const settings = await getSettings();
+	if (!settings.weeklyLoopActive) {
+		console.log("Weekly loop is not active. Cannot create next week.");
+		return false;
+	}
+
+	try {
+		const newWeek = await createNextWeek();
+		if (newWeek) {
+			console.log(
+				`Manually created Week ${newWeek.weekNumber}: ${dayjs(
+					newWeek.weekStartDate
+				).format("YYYY-MM-DD")} to ${dayjs(newWeek.weekEndDate).format(
+					"YYYY-MM-DD"
+				)}`
+			);
+			return true;
+		} else {
+			console.log("Failed to create next week or week already exists");
+			return false;
+		}
+	} catch (error) {
+		console.error("Error creating next week:", error);
+		return false;
+	}
+}
+
+export async function isWeeklyLoopActive() {
+	const settings = await getSettings();
+	return settings.weeklyLoopActive;
+}

@@ -1,0 +1,86 @@
+/* Report Buttons Styling */
+.action-buttons {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 15px;
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.action-buttons .btn {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.5rem 1rem;
+	border-radius: 0.25rem;
+	font-weight: 500;
+	transition: all 0.2s ease-in-out;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons .btn i {
+	margin-right: 0.5rem;
+}
+
+/* Warning buttons - Edit */
+.action-buttons .btn-warning {
+	background-color: #f39c12;
+	border: none;
+	color: white;
+}
+
+.action-buttons .btn-warning:hover {
+	background-color: #d68910;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Danger buttons - Delete */
+.action-buttons .btn-danger {
+	background-color: #e74c3c;
+	border: none;
+	color: white;
+}
+
+.action-buttons .btn-danger:hover {
+	background-color: #c0392b;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Success buttons - Approve, Unarchive */
+.action-buttons .btn-success {
+	background-color: #43a047;
+	border: none;
+	color: white;
+}
+
+.action-buttons .btn-success:hover {
+	background-color: #388e3c;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Secondary buttons - Archive */
+.action-buttons .btn-secondary {
+	background-color: #7f8c8d;
+	border: none;
+	color: white;
+}
+
+.action-buttons .btn-secondary:hover {
+	background-color: #6c7a7d;
+	transform: translateY(-2px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+	.action-buttons {
+		padding: 0 1rem;
+	}
+
+	.action-buttons .btn {
+		width: 100%;
+		justify-content: center;
+	}
+}

@@ -1,65 +1,174 @@
 <%- layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/css/weeklyReportsIndex.css" />
+<link rel="stylesheet" href="/css/customModal.css" />
+<link rel="stylesheet" href="/css/reportModals.css" />
+<script src="/js/reportTooltips.js" defer></script>
 <div class="container mt-4">
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<h1>Weekly Reports</h1>
-		<a href="/WeeklyReport/new" class="btn btn-primary">
-			<i class="fas fa-plus"></i> New Report
-		</a>
+		<div class="d-flex gap-2">
+			<% if (currentUser && currentUser.role !== 'admin') { %>
+			<a href="/weeklyreport/new" class="btn btn-primary">
+				<i class="fas fa-plus"></i> New Report
+			</a>
+			<% } %>
+		</div>
+	</div>
+
+	<!-- Filter Section -->
+	<div class="filter-card mb-4">
+		<div class="filter-header">
+			<h4><i class="fas fa-filter me-2"></i>Filter Reports</h4>
+			<button class="btn btn-sm btn-outline-secondary" id="toggleFilters">
+				<i class="fas fa-chevron-down"></i>
+			</button>
+		</div>
+		<div class="filter-body" id="filterBody">
+			<form id="filterForm" class="row g-3" method="GET" action="/weeklyreport">
+				<div class="col-md-4 col-lg-3">
+					<label for="studentName" class="form-label">Student Name</label>
+					<input
+						type="text"
+						class="form-control"
+						id="studentName"
+						name="studentName"
+						value="<%= filters?.studentName || '' %>"
+						placeholder="Search by name" />
+				</div>
+				<div class="col-md-4 col-lg-3">
+					<label for="internshipSite" class="form-label">Internship Site</label>
+					<input
+						type="text"
+						class="form-control"
+						id="internshipSite"
+						name="internshipSite"
+						value="<%= filters?.internshipSite || '' %>"
+						placeholder="Search by site" />
+				</div>
+				<div class="col-md-4 col-lg-2">
+					<label for="weekPeriod" class="form-label">Week Period</label>
+					<input
+						type="date"
+						class="form-control"
+						id="weekPeriod"
+						name="weekPeriod"
+						value="<%= filters?.weekPeriod || '' %>" />
+				</div>
+				<div class="col-md-4 col-lg-2">
+					<label for="archived" class="form-label">Archive Status</label>
+					<select class="form-select" id="archived" name="archived">
+						<option value="" <%= !filters?.archived ? 'selected' : '' %>>All Reports</option>
+						<option value="false" <%= filters?.archived === 'false' ? 'selected' : '' %>>Active Only</option>
+						<option value="true" <%= filters?.archived === 'true' ? 'selected' : '' %>>Archived Only</option>
+					</select>
+				</div>
+				<div class="col-md-4 col-lg-2">
+					<label for="sortBy" class="form-label">Sort By</label>
+					<select class="form-select" id="sortBy" name="sortBy">
+						<option value="dateSubmitted_desc" <%= filters?.sortBy === 'dateSubmitted_desc' || !filters?.sortBy ? 'selected' : '' %>>Newest First</option>
+						<option value="dateSubmitted_asc" <%= filters?.sortBy === 'dateSubmitted_asc' ? 'selected' : '' %>>Oldest First</option>
+						<option value="studentName_asc" <%= filters?.sortBy === 'studentName_asc' ? 'selected' : '' %>>Name (A-Z)</option>
+						<option value="studentName_desc" <%= filters?.sortBy === 'studentName_desc' ? 'selected' : '' %>>Name (Z-A)</option>
+						<option value="internshipSite_asc" <%= filters?.sortBy === 'internshipSite_asc' ? 'selected' : '' %>>Site (A-Z)</option>
+						<option value="internshipSite_desc" <%= filters?.sortBy === 'internshipSite_desc' ? 'selected' : '' %>>Site (Z-A)</option>
+						<option value="weekNumber_asc" <%= filters?.sortBy === 'weekNumber_asc' ? 'selected' : '' %>>Week Number (Ascending)</option>
+						<option value="weekNumber_desc" <%= filters?.sortBy === 'weekNumber_desc' ? 'selected' : '' %>>Week Number (Descending)</option>
+					</select>
+				</div>
+				<div class="col-12 mt-3 filter-actions">
+					<button type="submit" class="btn btn-primary">
+						<i class="fas fa-search me-1"></i> Apply Filters
+					</button>
+					<a href="/weeklyreport" class="btn btn-outline-secondary">
+						<i class="fas fa-times me-1"></i> Clear Filters
+					</a>
+				</div>
+			</form>
+		</div>
 	</div>
 
 	<% if (WeeklyReports && WeeklyReports.length) { %>
 	<div class="table-responsive">
-		<table class="table table-hover">
-			<thead class="table-light">
+		<table class="table table-hover report-table">
+			<thead>
 				<tr>
 					<th>Student Name</th>
 					<th>Internship Site</th>
-					<th>Week Start</th>
-					<th>Week End</th>
-					<th>Supervisor</th>
+					<th>Week</th>
+					<th>Period</th>
 					<th>Status</th>
 					<th>Actions</th>
 				</tr>
 			</thead>
 			<tbody>
 				<% WeeklyReports.forEach(report => { %>
-				<tr>
-					<td><%= report.studentName %></td>
-					<td><%= report.internshipSite %></td>
-					<td><%= report.weekStartDate.toLocaleDateString() %></td>
-					<td><%= report.weekEndDate.toLocaleDateString() %></td>
-					<td><%= report.supervisorName %></td>
+				<tr
+					class="<%= report.isCurrentUserReport ? 'current-user-report' : '' %>">
 					<td>
-						<% if (report.supervisorSignature) { %>
-						<span class="badge bg-success">Verified</span>
+						<div class="d-flex align-items-center">
+							<% if (report.isCurrentUserReport) { %>
+							<span
+								class="your-report-badge"
+								data-bs-toggle="tooltip"
+								title="This is your report">
+								<i class="fas fa-user-check"></i>
+							</span>
+							<span class="student-name your-name"
+								><%= report.studentName %></span
+							>
+							<% } else { %>
+							<span class="student-name"><%= report.studentName %></span>
+							<% } %>
+						</div>
+					</td>
+					<td><%= report.internshipSite %></td>
+					<td>
+						<% if (report.weekNumber) { %>
+							Week <%= report.weekNumber %>
+						<% } else if (report.weekId && report.weekId.weekNumber) { %>
+							Week <%= report.weekId.weekNumber %>
 						<% } else { %>
-						<span class="badge bg-warning text-dark">Pending</span>
+							Week Unknown
 						<% } %>
 					</td>
 					<td>
-						<div class="btn-group" role="group">
+						<span class="text-nowrap">
+							<%= report.formattedWeekPeriod %>
+						</span>
+					</td>
+					<td>
+						<div class="status-badge">
+							<span class="badge bg-success">
+								<i class="fas fa-check-circle me-1"></i> Approved
+							</span>
+							<% if (report.approvedBy) { %>
+							<small class="d-block text-muted mt-1">
+								by <%= report.approvedBy.username %>
+							</small>
+							<% } %>
+						</div>
+						<% if (report.archived) { %>
+						<div class="status-badge mt-1">
+							<span class="badge bg-secondary">
+								<i class="fas fa-archive me-1"></i> Archived
+							</span>
+						</div>
+						<% } %>
+					</td>
+					<td>
+						<div class="action-buttons">
 							<a
-								href="/WeeklyReport/<%= report._id %>"
-								class="btn btn-sm btn-info text-white">
+								href="/weeklyreport/<%= report._id %>"
+								class="btn btn-sm btn-info text-white"
+								data-bs-toggle="tooltip"
+								title="View Report">
 								<i class="fas fa-eye"></i>
 							</a>
-							<a
-								href="/WeeklyReport/<%= report._id %>/edit"
-								class="btn btn-sm btn-warning">
-								<i class="fas fa-edit"></i>
-							</a>
-							<form
-								class="d-inline"
-								action="/WeeklyReport/<%= report._id %>?_method=DELETE"
-								method="POST">
-								<button
-									type="submit"
-									class="btn btn-sm btn-danger"
-									onclick="return confirm('Are you sure you want to delete this report?')">
+							<% if (report.isCurrentUserReport && !report.archived) { %>
+								<button type="button" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" title="Delete Report" data-custom-modal-target="deleteReportModal<%= report._id %>">
 									<i class="fas fa-trash"></i>
 								</button>
-							</form>
+							<% } %>
 						</div>
 					</td>
 				</tr>
@@ -67,10 +176,201 @@
 			</tbody>
 		</table>
 	</div>
+
+	<!-- Pagination Controls -->
+	<% if (pagination && pagination.totalPages > 1) { %>
+	<div class="pagination-container mt-4">
+		<div class="pagination-info">
+			Showing <span class="fw-bold"><%= (pagination.currentPage - 1) * pagination.pageSize + 1 %></span> to
+			<span class="fw-bold"><%= Math.min(pagination.currentPage * pagination.pageSize, pagination.totalReports) %></span> of
+			<span class="fw-bold"><%= pagination.totalReports %></span> reports
+		</div>
+		<nav aria-label="Page navigation">
+			<ul class="pagination">
+				<!-- First Page -->
+				<li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+					<a class="page-link" href="/weeklyreport?<%= new URLSearchParams({...filters, page: 1}).toString() %>" aria-label="First">
+						<i class="fas fa-angle-double-left"></i>
+					</a>
+				</li>
+				<!-- Previous Page -->
+				<li class="page-item <%= !pagination.hasPrev ? 'disabled' : '' %>">
+					<a class="page-link" href="/weeklyreport?<%= new URLSearchParams({...filters, page: pagination.prevPage}).toString() %>" aria-label="Previous">
+						<i class="fas fa-angle-left"></i>
+					</a>
+				</li>
+
+				<!-- Page Numbers -->
+				<%
+					let startPage = Math.max(1, pagination.currentPage - 2);
+					let endPage = Math.min(pagination.totalPages, startPage + 4);
+
+					// Adjust start page if we're near the end
+					if (endPage - startPage < 4) {
+						startPage = Math.max(1, endPage - 4);
+					}
+
+					for (let i = startPage; i <= endPage; i++) {
+				%>
+					<li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+						<a class="page-link" href="/weeklyreport?<%= new URLSearchParams({...filters, page: i}).toString() %>">
+							<%= i %>
+						</a>
+					</li>
+				<% } %>
+
+				<!-- Next Page -->
+				<li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+					<a class="page-link" href="/weeklyreport?<%= new URLSearchParams({...filters, page: pagination.nextPage}).toString() %>" aria-label="Next">
+						<i class="fas fa-angle-right"></i>
+					</a>
+				</li>
+				<!-- Last Page -->
+				<li class="page-item <%= !pagination.hasNext ? 'disabled' : '' %>">
+					<a class="page-link" href="/weeklyreport?<%= new URLSearchParams({...filters, page: pagination.totalPages}).toString() %>" aria-label="Last">
+						<i class="fas fa-angle-double-right"></i>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+	<% } %>
 	<% } else { %>
 	<div class="alert alert-info text-center">
 		<i class="fas fa-info-circle me-2"></i>
-		No reports found. Create your first weekly report!
+		<% if (Object.keys(filters || {}).length > 0 && Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit')) { %>
+			No reports found matching your filters. <a href="/weeklyreport" class="alert-link">Clear filters</a> to see all reports.
+		<% } else { %>
+			No reports found. Create your first weekly report!
+		<% } %>
 	</div>
 	<% } %>
 </div>
+
+<!-- Filter Toggle Script -->
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const toggleFiltersBtn = document.getElementById('toggleFilters');
+		const filterBody = document.getElementById('filterBody');
+
+		// Check if there are active filters
+		const hasActiveFilters = <%= Object.keys(filters || {}).some(key => filters[key] && key !== 'page' && key !== 'limit') ? 'true' : 'false' %>;
+
+		// If no active filters, collapse the filter section by default
+		if (!hasActiveFilters) {
+			filterBody.style.display = 'none';
+			toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-down');
+			toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-up');
+		}
+
+		toggleFiltersBtn.addEventListener('click', function(e) {
+			e.preventDefault();
+			if (filterBody.style.display === 'none') {
+				filterBody.style.display = 'block';
+				toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-up');
+				toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-down');
+			} else {
+				filterBody.style.display = 'none';
+				toggleFiltersBtn.querySelector('i').classList.remove('fa-chevron-down');
+				toggleFiltersBtn.querySelector('i').classList.add('fa-chevron-up');
+			}
+		});
+	});
+</script>
+
+<!-- Delete Report Modals -->
+<% if (WeeklyReports && WeeklyReports.length) { %>
+	<% WeeklyReports.forEach(report => { %>
+		<% if (report.isCurrentUserReport && !report.archived) { %>
+			<!-- Delete Report Modal for <%= report._id %> -->
+			<div
+				class="custom-modal-overlay report-modal"
+				id="deleteReportModal<%= report._id %>"
+				role="dialog"
+				aria-labelledby="deleteReportModalLabel<%= report._id %>">
+				<div class="custom-modal">
+					<div class="custom-modal-header bg-danger">
+						<h5 class="custom-modal-title" id="deleteReportModalLabel<%= report._id %>">
+							<i class="fas fa-lock"></i>
+							Confirm Password
+						</h5>
+						<button type="button" class="custom-modal-close" aria-label="Close">
+							<i class="fas fa-times"></i>
+						</button>
+					</div>
+					<div class="custom-modal-body">
+						<div class="custom-modal-content">
+							<i class="fas fa-exclamation-triangle custom-modal-icon text-danger"></i>
+							<h4>Please confirm your password to delete this report</h4>
+							<p class="text-danger mt-3">
+								<strong>This action cannot be undone.</strong>
+							</p>
+
+							<div class="form-group mt-3">
+								<label for="confirmPassword<%= report._id %>" class="form-label">
+									<strong>Your Password:</strong>
+								</label>
+								<input
+									type="password"
+									class="form-control"
+									id="confirmPassword<%= report._id %>"
+									name="password"
+									required
+									placeholder="Enter your password to confirm">
+								<div class="invalid-feedback">
+									Please enter your password.
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="custom-modal-footer">
+						<form
+							id="passwordConfirmForm<%= report._id %>"
+							action="/weeklyreport/<%= report._id %>?_method=DELETE"
+							method="POST"
+							class="d-inline">
+							<!-- Hidden input to store the password -->
+							<input
+								type="hidden"
+								id="hiddenPassword<%= report._id %>"
+								name="password"
+								value="" />
+							<button
+								type="submit"
+								class="custom-modal-btn custom-modal-btn-danger">
+								<i class="fas fa-trash me-1"></i> Delete Report
+							</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		<% } %>
+	<% }) %>
+<% } %>
+
+<!-- Custom modal scripts -->
+<script src="/js/reportModals.js"></script>
+<script src="/js/customModal.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // For each delete modal, set up the password confirmation
+    <% if (WeeklyReports && WeeklyReports.length) { %>
+        <% WeeklyReports.forEach(function(report) { %>
+            <% if (report.isCurrentUserReport && !report.archived) { %>
+                (function() {
+                    const modalId = '<%= report._id %>';
+                    const passwordInput = document.getElementById(`confirmPassword${modalId}`);
+                    const hiddenPassword = document.getElementById(`hiddenPassword${modalId}`);
+                    const passwordForm = document.getElementById(`passwordConfirmForm${modalId}`);
+
+                    if (passwordForm && passwordInput && hiddenPassword) {
+                        passwordForm.addEventListener("submit", function () {
+                            hiddenPassword.value = passwordInput.value;
+                        });
+                    }
+                })();
+            <% } %>
+        <% }); %>
+    <% } %>
+});
+</script>

@@ -1,0 +1,228 @@
+import User from "../../models/users.js";
+import WeeklyReport from "../../models/weeklyReports.js";
+import TimeReport from "../../models/timeReport.js";
+import Notification from "../../models/notification.js";
+import catchAsync from "../../utils/catchAsync.js";
+import { cloudinary } from "../../utils/cloudinary.js";
+
+// Render the user profile page
+const renderProfile = catchAsync(async (req, res) => {
+	const user = await User.findById(req.user._id);
+	if (!user) {
+		req.flash("error", "User not found");
+		return res.redirect("/dashboard");
+	}
+
+	// For regular users, count their reports
+	if (user.role !== "admin") {
+		// Count user's reports
+		const weeklyReportsCount = await WeeklyReport.countDocuments({
+			author: req.user._id,
+			archived: false,
+		});
+
+		const timeReportsCount = await TimeReport.countDocuments({
+			author: req.user._id,
+			archived: false,
+		});
+
+		// Prepare report stats
+		const reportStats = {
+			weeklyReports: weeklyReportsCount,
+			timeReports: timeReportsCount,
+		};
+
+		res.render("profile/index", { user, reportStats });
+	} else {
+		// For admin users, get system-wide stats
+		const userCount = await User.countDocuments({ role: "user" });
+
+		// Count pending reports across all types
+		const pendingWeeklyReports = await WeeklyReport.countDocuments({
+			archived: false,
+		});
+		const pendingTimeReports = await TimeReport.countDocuments({
+			archived: false,
+		});
+
+		// Get notifications for revised reports
+		const revisedReportNotifications = await Notification.find({
+			recipient: req.user._id,
+			action: "revised",
+			isRead: false,
+		})
+			.sort({ createdAt: -1 })
+			.populate({
+				path: "reportId",
+				select: "_id studentName internshipSite weekNumber",
+			});
+
+		const pendingReportsCount = pendingWeeklyReports + pendingTimeReports;
+
+		// Count total reports
+		const totalWeeklyReports = await WeeklyReport.countDocuments({});
+		const totalTimeReports = await TimeReport.countDocuments({});
+
+		const totalReportsCount = totalWeeklyReports + totalTimeReports;
+
+		// Count archived reports
+		const archivedWeeklyReports = await WeeklyReport.countDocuments({
+			archived: true,
+		});
+		const archivedTimeReports = await TimeReport.countDocuments({
+			archived: true,
+		});
+
+		const archivedReportsCount = archivedWeeklyReports + archivedTimeReports;
+
+		res.render("profile/index", {
+			user,
+			userCount,
+			pendingReportsCount,
+			totalReportsCount,
+			archivedReportsCount,
+			revisedReportNotifications,
+		});
+	}
+});
+
+// Update the user profile
+const updateProfile = catchAsync(async (req, res) => {
+	try {
+		const { firstName, middleName, lastName } = req.body;
+
+		// Find the user and update their profile
+		const user = await User.findById(req.user._id);
+		if (!user) {
+			req.flash("error", "User not found");
+			return res.redirect("/profile");
+		}
+
+		// Update user fields
+		user.firstName = firstName;
+		user.middleName = middleName;
+		user.lastName = lastName;
+
+		// Handle profile image update if a new one is uploaded
+		if (req.file) {
+			// Delete the old image from Cloudinary if it exists
+			if (user.profileImage && user.profileImage.publicId) {
+				await cloudinary.uploader.destroy(user.profileImage.publicId);
+			}
+
+			// Update with the new image
+			user.profileImage = {
+				url: req.file.path,
+				publicId: req.file.filename,
+			};
+		}
+
+		await user.save();
+
+		req.flash("success", "Profile updated successfully");
+		res.redirect("/profile");
+	} catch (error) {
+		// If there was an error and we uploaded an image, delete it from Cloudinary
+		if (req.file && req.file.path) {
+			await cloudinary.uploader.destroy(req.file.filename);
+		}
+		req.flash(
+			"error",
+			error.message || "An error occurred while updating your profile"
+		);
+		res.redirect("/profile");
+	}
+});
+
+// Render the change password page
+const renderChangePassword = catchAsync(async (req, res) => {
+	res.render("profile/change-password");
+});
+
+// Update the user's password
+const updatePassword = catchAsync(async (req, res) => {
+	const { currentPassword, newPassword, confirmPassword } = req.body;
+
+	// Check if new password and confirm password match
+	if (newPassword !== confirmPassword) {
+		req.flash("error", "New passwords do not match");
+		return res.redirect("/profile/change-password");
+	}
+
+	// Validate password requirements
+	const isLengthValid = newPassword.length >= 8 && newPassword.length <= 16;
+	const hasUppercase = /[A-Z]/.test(newPassword);
+	const hasNoSpecialChars = !/[^a-zA-Z0-9]/.test(newPassword);
+
+	if (!isLengthValid || !hasUppercase || !hasNoSpecialChars) {
+		let errorMessage = "Password does not meet the requirements: ";
+		if (!isLengthValid) {
+			errorMessage += "must be between 8-16 characters. ";
+		}
+		if (!hasUppercase) {
+			errorMessage += "must contain at least one uppercase letter. ";
+		}
+		if (!hasNoSpecialChars) {
+			errorMessage += "must not contain special characters. ";
+		}
+
+		req.flash("error", errorMessage);
+		return res.redirect("/profile/change-password");
+	}
+
+	// Change the password using passport-local-mongoose's method
+	const user = await User.findById(req.user._id);
+	await user.changePassword(currentPassword, newPassword);
+
+	req.flash("success", "Password changed successfully");
+	res.redirect("/profile");
+});
+
+// Mark a notification as read
+const markNotificationAsRead = catchAsync(async (req, res) => {
+	const { id } = req.params;
+
+	// Find the notification and update it
+	const notification = await Notification.findById(id);
+
+	if (!notification) {
+		req.flash("error", "Notification not found");
+		return res.redirect("/profile");
+	}
+
+	// Check if the notification belongs to the current user
+	if (!notification.recipient.equals(req.user._id)) {
+		req.flash("error", "You don't have permission to update this notification");
+		return res.redirect("/profile");
+	}
+
+	// Mark as read
+	notification.isRead = true;
+	await notification.save();
+
+	// Redirect to the appropriate report page based on the report type
+	const reportType = notification.reportType;
+	const reportId = notification.reportId;
+
+	let redirectUrl;
+	switch (reportType) {
+		case "weeklyreport":
+			redirectUrl = `/weeklyreport/${reportId}`;
+			break;
+		case "timereport":
+			redirectUrl = `/timereport/${reportId}`;
+			break;
+		default:
+			redirectUrl = "/profile";
+	}
+
+	res.redirect(redirectUrl);
+});
+
+export default {
+	renderProfile,
+	updateProfile,
+	renderChangePassword,
+	updatePassword,
+	markNotificationAsRead,
+};

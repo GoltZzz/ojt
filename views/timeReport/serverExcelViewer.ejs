@@ -1,0 +1,804 @@
+<%- layout('layouts/boilerplate') %>
+
+<link rel="stylesheet" href="/css/excel-viewer.css" />
+
+<style>
+	/* Modern gradient for header */
+	.bg-gradient-primary {
+		background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+	}
+
+	/* Card enhancements */
+	.card {
+		transition: all 0.3s ease;
+	}
+
+	.card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+	}
+
+	/* Button enhancements */
+	.btn {
+		transition: all 0.3s ease;
+		font-weight: 500;
+	}
+
+	.btn:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+	}
+
+	.btn-group .btn:hover {
+		transform: none;
+	}
+</style>
+
+<div class="container mt-4">
+	<div class="row mb-4">
+		<div class="col-md-8">
+			<h2>Time Report Details</h2>
+			<% if (timeReport) { %>
+			<div class="card mb-3">
+				<div class="card-body">
+					<div class="row">
+						<div class="col-md-6">
+							<p><strong>Student:</strong> <%= timeReport.studentName %></p>
+							<p>
+								<strong>Internship Site:</strong> <%= timeReport.internshipSite
+								%>
+							</p>
+							<p>
+								<strong>Date Submitted:</strong> <%= new
+								Date(timeReport.dateSubmitted).toLocaleDateString() %>
+							</p>
+							<% if (timeReport.status) { %>
+							<p>
+								<strong>Status:</strong>
+								<span class="badge bg-success">Approved</span>
+							</p>
+							<% } %>
+						</div>
+						<div class="col-md-6">
+							<p>
+								<strong>Week Period:</strong>
+								<%= new Date(timeReport.weekStartDate).toLocaleDateString() %> -
+								<%= new Date(timeReport.weekEndDate).toLocaleDateString() %>
+							</p>
+							<p>
+								<strong>Excel File:</strong> <%=
+								timeReport.excelFile.originalName %>
+							</p>
+							<p>
+								<strong>Upload Date:</strong> <%= new
+								Date(timeReport.excelFile.uploadDate).toLocaleString() %>
+							</p>
+							<% if (timeReport.summary && timeReport.summary.totalHours) { %>
+							<p>
+								<strong>Total Hours:</strong> <%= timeReport.summary.totalHours
+								%> hours
+							</p>
+							<% } %>
+						</div>
+					</div>
+					<% if (previewUrl) { %>
+					<div class="mt-3">
+						<div class="d-flex justify-content-center">
+							<img
+								src="<%= previewUrl %>"
+								alt="Excel Preview"
+								class="img-fluid border rounded shadow-sm"
+								style="max-height: 200px" />
+						</div>
+						<p class="text-center text-muted small mt-2">
+							Preview of the Excel file
+						</p>
+					</div>
+					<% } %>
+				</div>
+			</div>
+			<% } else { %>
+			<div class="alert alert-info">
+				No time report data available for this file.
+			</div>
+			<% } %>
+		</div>
+		<div class="col-md-4 text-end">
+			<div class="d-grid gap-2">
+				<a
+					href="/uploads/excel/<%= excelFilename %>"
+					download
+					class="btn btn-primary">
+					<i class="fas fa-file-download"></i> Download Excel File
+				</a>
+				<a href="/timereport" class="btn btn-secondary">
+					<i class="fas fa-arrow-left"></i> Back to Time Reports
+				</a>
+				<a href="/timereport/show/<%= excelFilename %>" class="btn btn-info">
+					<i class="fas fa-desktop"></i> Switch to Office Viewer
+				</a>
+
+				<!-- Admin Actions -->
+				<% if (currentUser.role === 'admin') { %> <% if (!timeReport.archived) {
+				%>
+				<button
+					type="button"
+					class="btn btn-warning"
+					data-bs-toggle="modal"
+					data-bs-target="#archiveTimeReportModal">
+					<i class="fas fa-archive"></i> Archive Report
+				</button>
+				<% } else { %>
+				<button
+					type="button"
+					class="btn btn-success"
+					data-bs-toggle="modal"
+					data-bs-target="#unarchiveTimeReportModal">
+					<i class="fas fa-box-open"></i> Unarchive Report
+				</button>
+				<% } %> <% } %>
+
+				<!-- Author Actions -->
+				<% if (timeReport && timeReport.author && currentUser &&
+				timeReport.author.toString() === currentUser._id.toString()) { %>
+				<button
+					type="button"
+					class="btn btn-danger"
+					data-bs-toggle="modal"
+					data-bs-target="#deleteConfirmModal">
+					<i class="fas fa-trash me-1"></i> Delete Report
+				</button>
+				<% } %>
+			</div>
+		</div>
+	</div>
+
+	<div class="card mb-4 shadow-sm border-0">
+		<div class="card-header bg-gradient-primary text-white border-0">
+			<div
+				class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+				<div class="d-flex align-items-center">
+					<div class="me-3">
+						<i class="fas fa-file-excel fa-2x opacity-75"></i>
+					</div>
+					<div>
+						<h4 class="mb-1 fw-bold">Excel Time Report Viewer</h4>
+						<small class="opacity-75"
+							>Server-rendered spreadsheet with formula support</small
+						>
+					</div>
+				</div>
+				<div class="btn-toolbar" role="toolbar">
+					<div class="btn-group me-2" role="group">
+						<a
+							href="/timereport/show/<%= excelFilename %>"
+							class="btn btn-light btn-sm">
+							<i class="fas fa-desktop me-1"></i>
+							<span class="d-none d-sm-inline">Office View</span>
+						</a>
+					</div>
+					<div class="btn-group" role="group">
+						<a
+							href="/uploads/excel/<%= excelFilename %>"
+							download
+							class="btn btn-outline-light btn-sm">
+							<i class="fas fa-download me-1"></i>
+							<span class="d-none d-sm-inline">Download</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card-body p-0">
+			<!-- Server Rendered Excel Preview -->
+			<div id="serverRenderedViewer">
+				<div class="excel-viewer-container">
+					<div id="server-excel-container" class="h-100">
+						<% if (typeof serverRenderedHtml === 'object' && serverRenderedHtml
+						&& serverRenderedHtml.sheets) { %>
+						<div class="server-excel-viewer">
+							<!-- Enhanced Sheet tabs -->
+							<div class="sheet-tabs-container bg-light border-bottom">
+								<div class="container-fluid px-3 py-2">
+									<div
+										class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+										<div class="sheet-tabs flex-grow-1">
+											<ul class="nav nav-pills nav-fill" role="tablist">
+												<% serverRenderedHtml.sheets.forEach((sheet, index) => {
+												%>
+												<li class="nav-item" role="presentation">
+													<button
+														class="nav-link <%= index === 0 ? 'active' : '' %> rounded-pill px-3"
+														onclick="showServerSheet('<%= sheet.name %>')"
+														data-sheet-name="<%= sheet.name %>"
+														type="button"
+														role="tab">
+														<i class="fas fa-table me-1"></i>
+														<%= sheet.name %> <% if (sheet.hasFormulas) { %>
+														<span
+															class="badge bg-primary ms-1"
+															title="Contains formulas"
+															>ƒ</span
+														>
+														<% } %>
+													</button>
+												</li>
+												<% }); %>
+											</ul>
+										</div>
+										<div class="sheet-info text-muted small">
+											<i class="fas fa-info-circle me-1"></i>
+											<span class="d-none d-md-inline">Showing </span><%=
+											serverRenderedHtml.metadata.renderedSheets %> of <%=
+											serverRenderedHtml.metadata.totalSheets %> sheets
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Enhanced Sheet content -->
+							<div class="sheet-content-wrapper">
+								<% serverRenderedHtml.sheets.forEach((sheet, index) => { %>
+								<div
+									class="server-sheet-container <%= index === 0 ? 'server-sheet-active' : '' %>"
+									id="server-sheet-<%= sheet.name %>">
+									<!-- Sheet content with modern styling -->
+									<div class="excel-content-area"><%- sheet.html %></div>
+
+									<% if (sheet.isTruncated) { %>
+									<div class="alert alert-info mx-3 mb-3 border-0 shadow-sm">
+										<div class="d-flex align-items-center">
+											<i class="fas fa-info-circle text-info me-2"></i>
+											<div class="flex-grow-1">
+												<strong>Content Truncated</strong>
+												<p class="mb-2 small">
+													This sheet has been truncated for optimal performance.
+												</p>
+											</div>
+											<a
+												href="/uploads/excel/<%= excelFilename %>"
+												download
+												class="btn btn-sm btn-outline-info">
+												<i class="fas fa-download me-1"></i>Download Full File
+											</a>
+										</div>
+									</div>
+									<% } %>
+								</div>
+								<% }); %>
+							</div>
+						</div>
+						<% } else { %>
+						<div class="excel-error-state p-4 text-center">
+							<div class="py-5">
+								<i
+									class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+								<h5 class="fw-bold">Server Rendering Unavailable</h5>
+								<p class="text-muted mb-4">
+									Could not generate a server-side preview for this Excel file.
+								</p>
+								<div
+									class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+									<a
+										href="/timereport/show/<%= excelFilename %>"
+										class="btn btn-primary">
+										<i class="fas fa-desktop me-1"></i> Try Office Viewer
+									</a>
+									<a
+										href="/uploads/excel/<%= excelFilename %>"
+										download
+										class="btn btn-outline-secondary">
+										<i class="fas fa-download me-1"></i> Download File
+									</a>
+								</div>
+							</div>
+						</div>
+						<% } %>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<% if (timeReport && timeReport.versions && timeReport.versions.length > 0) {
+	%>
+	<div class="card mb-4">
+		<div class="card-header bg-info text-white">
+			<h5 class="mb-0"><i class="fas fa-history me-2"></i> Version History</h5>
+		</div>
+		<div class="card-body">
+			<% if (timeReport.versions.length === 1) { %>
+			<p class="text-muted">This is the first version of this time report.</p>
+			<% } else { %>
+			<div class="table-responsive">
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th>Version</th>
+							<th>Date</th>
+							<th>Updated By</th>
+							<th>Reason</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<% timeReport.versions.forEach(version => { %>
+						<tr>
+							<td>
+								<span class="badge bg-secondary"
+									>v<%= version.versionNumber %></span
+								>
+							</td>
+							<td><%= new Date(version.uploadDate).toLocaleString() %></td>
+							<td>
+								<% if (version.updatedBy) { %> <%= version.updatedBy.firstName
+								%> <%= version.updatedBy.lastName %> <% } else { %> - <% } %>
+							</td>
+							<td><%= version.changeReason || 'Initial upload' %></td>
+							<td>
+								<% if (version.versionNumber !== timeReport.currentVersion) { %>
+								<a href="#" class="btn btn-sm btn-outline-primary">View</a>
+								<% } else { %>
+								<span class="badge bg-success">Current</span>
+								<% } %>
+							</td>
+						</tr>
+						<% }) %>
+					</tbody>
+				</table>
+			</div>
+			<% } %> <% if (timeReport.author && timeReport.author.toString() ===
+			currentUser._id.toString()) { %>
+			<div class="mt-3">
+				<button
+					class="btn btn-outline-primary"
+					data-bs-toggle="modal"
+					data-bs-target="#newVersionModal">
+					<i class="fas fa-upload me-1"></i> Upload New Version
+				</button>
+			</div>
+			<% } %>
+		</div>
+	</div>
+	<% } %>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<% if (timeReport && timeReport.author && currentUser &&
+timeReport.author.toString() === currentUser._id.toString()) { %>
+<div
+	class="modal fade"
+	id="deleteConfirmModal"
+	tabindex="-1"
+	aria-labelledby="deleteConfirmModalLabel"
+	aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header bg-danger text-white">
+				<h5 class="modal-title" id="deleteConfirmModalLabel">
+					<i class="fas fa-exclamation-triangle me-2"></i>
+					Confirm Deletion
+				</h5>
+				<button
+					type="button"
+					class="btn-close btn-close-white"
+					data-bs-dismiss="modal"
+					aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<p>Are you sure you want to delete this time report?</p>
+				<div class="alert alert-warning">
+					<i class="fas fa-exclamation-circle me-2"></i>
+					This action cannot be undone!
+				</div>
+				<% if (timeReport.excelFile && timeReport.excelFile.originalName) { %>
+				<p>
+					<strong>Excel File:</strong> <%= timeReport.excelFile.originalName %>
+				</p>
+				<% } %>
+				<p>
+					<strong>Date:</strong> <%= new
+					Date(timeReport.date).toLocaleDateString() %>
+				</p>
+
+				<!-- Password Confirmation -->
+				<form
+					action="/timereport/<%= timeReport._id %>?_method=DELETE"
+					method="POST"
+					id="deleteTimeReportForm">
+					<div class="form-group mb-3">
+						<label for="confirmPassword" class="form-label">
+							<strong>Enter your password to confirm:</strong>
+						</label>
+						<div class="input-group">
+							<span class="input-group-text"><i class="fas fa-lock"></i></span>
+							<input
+								type="password"
+								class="form-control"
+								id="confirmPassword"
+								name="password"
+								placeholder="Enter your password"
+								required />
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+					Cancel
+				</button>
+				<button
+					type="submit"
+					form="deleteTimeReportForm"
+					class="btn btn-danger">
+					<i class="fas fa-trash me-1"></i> Delete
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Archive Time Report Modal (Admin Only) -->
+<% if (currentUser.role === 'admin' && !timeReport.archived) { %>
+<div
+	class="modal fade"
+	id="archiveTimeReportModal"
+	tabindex="-1"
+	aria-labelledby="archiveTimeReportModalLabel"
+	aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header bg-warning text-white">
+				<h5 class="modal-title" id="archiveTimeReportModalLabel">
+					<i class="fas fa-archive me-2"></i>
+					Archive Time Report
+				</h5>
+				<button
+					type="button"
+					class="btn-close btn-close-white"
+					data-bs-dismiss="modal"
+					aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<p>Are you sure you want to archive this time report?</p>
+				<div class="form-group">
+					<label for="archiveReason" class="form-label">
+						<strong>Reason for archiving (optional):</strong>
+					</label>
+					<textarea
+						class="form-control"
+						id="archiveReason"
+						name="archivedReason"
+						rows="3"
+						placeholder="Enter a reason for archiving this time report"></textarea>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+					Cancel
+				</button>
+				<form
+					action="/timereport/<%= timeReport._id %>/archive"
+					method="POST"
+					id="archiveTimeReportForm"
+					class="d-inline">
+					<input
+						type="hidden"
+						id="hiddenArchiveReason"
+						name="archivedReason"
+						value="" />
+					<button type="submit" class="btn btn-warning">
+						<i class="fas fa-archive me-1"></i> Archive Report
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Unarchive Time Report Modal (Admin Only) -->
+<% if (currentUser.role === 'admin' && timeReport.archived) { %>
+<div
+	class="modal fade"
+	id="unarchiveTimeReportModal"
+	tabindex="-1"
+	aria-labelledby="unarchiveTimeReportModalLabel"
+	aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header bg-success text-white">
+				<h5 class="modal-title" id="unarchiveTimeReportModalLabel">
+					<i class="fas fa-box-open me-2"></i>
+					Unarchive Time Report
+				</h5>
+				<button
+					type="button"
+					class="btn-close btn-close-white"
+					data-bs-dismiss="modal"
+					aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<p>Are you sure you want to unarchive this time report?</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+					Cancel
+				</button>
+				<form
+					action="/timereport/<%= timeReport._id %>/unarchive"
+					method="POST"
+					class="d-inline">
+					<button type="submit" class="btn btn-success">
+						<i class="fas fa-box-open me-1"></i> Unarchive Report
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<!-- Upload New Version Modal -->
+<% if (timeReport && timeReport.author && currentUser &&
+timeReport.author.toString() === currentUser._id.toString()) { %>
+<div
+	class="modal fade"
+	id="newVersionModal"
+	tabindex="-1"
+	aria-labelledby="newVersionModalLabel"
+	aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header bg-primary text-white">
+				<h5 class="modal-title" id="newVersionModalLabel">
+					Upload New Version
+				</h5>
+				<button
+					type="button"
+					class="btn-close btn-close-white"
+					data-bs-dismiss="modal"
+					aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form
+					action="/timereport/<%= timeReport._id %>/versions"
+					method="POST"
+					enctype="multipart/form-data"
+					id="newVersionForm">
+					<div class="mb-3">
+						<label for="xlsxFile" class="form-label">Select Excel File</label>
+						<input
+							type="file"
+							class="form-control"
+							id="xlsxFile"
+							name="xlsxFile"
+							accept=".xlsx, .xls"
+							required />
+						<div class="form-text">
+							Only Excel files (.xlsx, .xls) are accepted.
+						</div>
+					</div>
+					<div class="mb-3">
+						<label for="changeReason" class="form-label"
+							>Reason for Update</label
+						>
+						<textarea
+							class="form-control"
+							id="changeReason"
+							name="changeReason"
+							rows="3"
+							placeholder="Describe what changes you made..."></textarea>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+					Cancel
+				</button>
+				<button type="submit" form="newVersionForm" class="btn btn-primary">
+					Upload Version
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<% } %>
+
+<script>
+	// Function to switch between server-rendered sheets
+	function showServerSheet(sheetName) {
+		// Hide all sheets
+		const sheetContainers = document.querySelectorAll(
+			".server-sheet-container"
+		);
+		sheetContainers.forEach((container) => {
+			container.classList.remove("server-sheet-active");
+		});
+
+		// Show the selected sheet
+		const selectedSheet = document.getElementById(`server-sheet-${sheetName}`);
+		if (selectedSheet) {
+			selectedSheet.classList.add("server-sheet-active");
+		}
+
+		// Update active tab
+		const tabs = document.querySelectorAll(".sheet-tabs .nav-link");
+		tabs.forEach((tab) => {
+			tab.classList.remove("active");
+			if (tab.dataset.sheetName === sheetName) {
+				tab.classList.add("active");
+			}
+		});
+	}
+
+	// Formula Toggle Functions
+	function toggleFormulas(sheetName, showFormulas) {
+		const sheet = document.querySelector(`[data-sheet-name="${sheetName}"]`);
+		if (!sheet) return;
+
+		if (showFormulas) {
+			sheet.classList.add("show-formulas");
+		} else {
+			sheet.classList.remove("show-formulas");
+		}
+
+		// Update all formula cells in this sheet
+		const formulaCells = sheet.querySelectorAll('[data-has-formula="true"]');
+		formulaCells.forEach((cell) => {
+			const valueSpan = cell.querySelector(".cell-value");
+			const formulaSpan = cell.querySelector(".cell-formula");
+
+			if (showFormulas) {
+				if (valueSpan) valueSpan.style.display = "none";
+				if (formulaSpan) formulaSpan.style.display = "inline";
+			} else {
+				if (valueSpan) valueSpan.style.display = "inline";
+				if (formulaSpan) formulaSpan.style.display = "none";
+			}
+		});
+
+		// Store preference in localStorage
+		localStorage.setItem(`showFormulas_${sheetName}`, showFormulas);
+	}
+
+	function toggleFormulaHighlight(sheetName, highlight) {
+		const sheet = document.querySelector(`[data-sheet-name="${sheetName}"]`);
+		if (!sheet) return;
+
+		const formulaCells = sheet.querySelectorAll(".formula-cell");
+		formulaCells.forEach((cell) => {
+			if (highlight) {
+				cell.classList.add("formula-highlighted");
+			} else {
+				cell.classList.remove("formula-highlighted");
+			}
+		});
+
+		// Store preference in localStorage
+		localStorage.setItem(`highlightFormulas_${sheetName}`, highlight);
+	}
+
+	// Enhanced tooltip functionality for formula cells
+	function initializeFormulaTooltips() {
+		const formulaCells = document.querySelectorAll('[data-has-formula="true"]');
+
+		formulaCells.forEach((cell) => {
+			// Add click handler to copy formula
+			cell.addEventListener("click", function (e) {
+				const formula = this.getAttribute("data-formula");
+				if (formula) {
+					// Try to copy to clipboard
+					if (navigator.clipboard) {
+						navigator.clipboard
+							.writeText("=" + formula)
+							.then(() => {
+								showToast("Formula copied to clipboard!", "success");
+							})
+							.catch(() => {
+								showToast("Could not copy formula", "warning");
+							});
+					} else {
+						// Fallback for older browsers
+						const textArea = document.createElement("textarea");
+						textArea.value = "=" + formula;
+						document.body.appendChild(textArea);
+						textArea.select();
+						try {
+							document.execCommand("copy");
+							showToast("Formula copied to clipboard!", "success");
+						} catch (err) {
+							showToast("Could not copy formula", "warning");
+						}
+						document.body.removeChild(textArea);
+					}
+				}
+			});
+
+			// Enhanced hover effect
+			cell.addEventListener("mouseenter", function () {
+				this.style.transform = "scale(1.02)";
+				this.style.zIndex = "10";
+			});
+
+			cell.addEventListener("mouseleave", function () {
+				this.style.transform = "scale(1)";
+				this.style.zIndex = "auto";
+			});
+		});
+	}
+
+	// Toast notification function
+	function showToast(message, type = "info") {
+		// Create toast element
+		const toast = document.createElement("div");
+		toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+		toast.style.cssText =
+			"top: 20px; right: 20px; z-index: 9999; min-width: 250px;";
+		toast.innerHTML = `
+			${message}
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		`;
+
+		document.body.appendChild(toast);
+
+		// Auto-remove after 3 seconds
+		setTimeout(() => {
+			if (toast.parentNode) {
+				toast.parentNode.removeChild(toast);
+			}
+		}, 3000);
+	}
+
+	// Initialize formula functionality when DOM is ready
+	function initializeFormulaFeatures() {
+		// Initialize tooltips
+		initializeFormulaTooltips();
+
+		// Restore user preferences from localStorage
+		const sheets = document.querySelectorAll(".excel-sheet");
+		sheets.forEach((sheet) => {
+			const sheetName = sheet.getAttribute("data-sheet-name");
+
+			// Restore formula display preference
+			const showFormulas =
+				localStorage.getItem(`showFormulas_${sheetName}`) === "true";
+			const showFormulasCheckbox = document.getElementById(
+				`showFormulas_${sheetName}`
+			);
+			if (showFormulasCheckbox) {
+				showFormulasCheckbox.checked = showFormulas;
+				toggleFormulas(sheetName, showFormulas);
+			}
+
+			// Restore highlight preference
+			const highlightFormulas =
+				localStorage.getItem(`highlightFormulas_${sheetName}`) !== "false"; // Default to true
+			const highlightCheckbox = document.getElementById(
+				`highlightFormulas_${sheetName}`
+			);
+			if (highlightCheckbox) {
+				highlightCheckbox.checked = highlightFormulas;
+				toggleFormulaHighlight(sheetName, highlightFormulas);
+			}
+		});
+	}
+
+	// Initialize when DOM is ready
+	document.addEventListener("DOMContentLoaded", function () {
+		// Initialize formula features after a short delay to ensure DOM is ready
+		setTimeout(initializeFormulaFeatures, 100);
+
+		// For archive modal
+		const archiveForm = document.getElementById("archiveTimeReportForm");
+		const archiveReasonTextarea = document.getElementById("archiveReason");
+		const hiddenArchiveReason = document.getElementById("hiddenArchiveReason");
+
+		if (archiveForm && archiveReasonTextarea && hiddenArchiveReason) {
+			archiveForm.addEventListener("submit", function () {
+				hiddenArchiveReason.value = archiveReasonTextarea.value;
+			});
+		}
+	});
+</script>
