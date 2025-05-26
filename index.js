@@ -1,9 +1,13 @@
+if (process.env.NODE_ENV !== "production") {
+	import("dotenv").then((dotenv) => dotenv.config());
+}
 import express from "express";
 import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 import ejsMate from "ejs-mate";
 import session from "express-session";
+import MongoDBStore from "connect-mongo";
 import methodOverride from "method-override";
 import passport from "passport";
 import LocalStrategy from "passport-local";
@@ -44,8 +48,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // for mongoose
+const dbUrl = "mongodb://127.0.0.1:27017/ojt";
+
 mongoose
-	.connect("mongodb://127.0.0.1:27017/ojt")
+	.connect(dbUrl)
 	.then(() => {
 		console.log("MONGO Connection Open!!!");
 	})
@@ -105,8 +111,18 @@ app.use(
 // Apply sanitization middleware to all routes
 app.use(sanitizeBody);
 
+const store = MongoDBStore.create({
+	mongoUrl: dbUrl,
+	secret: "thisshouldbeabettersecret!",
+	touchAfter: 24 * 60 * 60,
+});
+store.on("error", function (e) {
+	console.log(`Session Store Error: ${e}`);
+});
+
 // for session & cookie
 const sessionConfig = {
+	store,
 	name: "session",
 	secret: "thisshouldbeabettersecret!",
 	resave: false,
